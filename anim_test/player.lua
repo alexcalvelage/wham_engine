@@ -23,6 +23,10 @@ function player.update(dt)
 		goalX = goalX + (v.xVel * dt)
 		goalY = goalY + (v.yVel * dt)
 
+		if goalX <= 0 then
+			goalX = 0
+		end
+
 		--Fall detection
 		if v.yVel ~= 0 then
 			v.isOnGround = false
@@ -45,12 +49,10 @@ function player.update(dt)
 			end
 		end
 
-		if mouseMoved then
-			block.clickReleaseAction(player[i])
-		end
+		block.clickReleaseAction(player[i])
 	end
 
-	print(player[1].x, player[1].y, player[1].width, player[1].height)
+	--print(player[1].x, player[1].y, player[1].width, player[1].height)
 end
 
 function player.draw()

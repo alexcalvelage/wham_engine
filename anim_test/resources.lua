@@ -6,12 +6,11 @@ function resourceLoad()
 	love.graphics.setFont(defaultFont)
 --TEXTURES
 	--Images
-	block_all_IMG = love.graphics.newImage("resources/textures/block/block_all.png")
-	ui_all_IMG = love.graphics.newImage("resources/textures/ui/greySheet.png")
-	ui_hover_all_IMG = love.graphics.newImage("resources/textures/ui/redSheet.png")
+	block_all_IMG = love.graphics.newImage("resources/textures/block/block_sheet.png")
+	ui_all_buttons_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
 	--SpriteBatches
 	block_SB = love.graphics.newSpriteBatch(block_all_IMG)
-	button_SB = love.graphics.newSpriteBatch(ui_all_IMG)
+	button_SB = love.graphics.newSpriteBatch(ui_all_buttons_IMG)
 	--Quads
 	--*blockQDs
 	ground_block_QD = love.graphics.newQuad(0, 0, 32, 32, block_all_IMG:getDimensions())
@@ -19,8 +18,22 @@ function resourceLoad()
 	item_block_QD = love.graphics.newQuad(0, 32, 32, 32, block_all_IMG:getDimensions())
 	highlight_block_QD = love.graphics.newQuad(32, 32, 32, 32, block_all_IMG:getDimensions())
 	--*buttonQDS
-	long_button_QD = love.graphics.newQuad(0, 0, 190, 49, ui_all_IMG:getDimensions())
-	long_button_QD_2 = love.graphics.newQuad(0, 0, 190, 49, ui_hover_all_IMG:getDimensions())
+	--**Long buttons
+	resume_button_QD = love.graphics.newQuad(0, 0, 194, 49, ui_all_buttons_IMG:getDimensions())
+	resume_button_QD_2 = love.graphics.newQuad(0, 49, 194, 49, ui_all_buttons_IMG:getDimensions())
+	options_button_QD = love.graphics.newQuad(0, 98, 194, 49, ui_all_buttons_IMG:getDimensions())
+	options_button_QD_2 = love.graphics.newQuad(0, 147, 194, 49, ui_all_buttons_IMG:getDimensions())
+	quit_sesh_button_QD = love.graphics.newQuad(0, 196, 194, 49, ui_all_buttons_IMG:getDimensions())
+	quit_sesh_button_QD_2 = love.graphics.newQuad(0, 245, 194, 49, ui_all_buttons_IMG:getDimensions())
+	--**Small buttons
+	select_button_QD = love.graphics.newQuad(194, 0, 50, 50, ui_all_buttons_IMG:getDimensions())
+	select_button_QD_2 = love.graphics.newQuad(194, 50, 50, 50, ui_all_buttons_IMG:getDimensions())
+	draw_button_QD = love.graphics.newQuad(194, 100, 50, 50, ui_all_buttons_IMG:getDimensions())
+	draw_button_QD_2 = love.graphics.newQuad(194, 150, 50, 50, ui_all_buttons_IMG:getDimensions())
+	eraser_button_QD = love.graphics.newQuad(194, 200, 50, 50, ui_all_buttons_IMG:getDimensions())
+	eraser_button_QD_2 = love.graphics.newQuad(194, 250, 50, 50, ui_all_buttons_IMG:getDimensions())
+	dropper_button_QD = love.graphics.newQuad(194, 300, 50, 50, ui_all_buttons_IMG:getDimensions())
+	dropper_button_QD_2 = love.graphics.newQuad(194, 350, 50, 50, ui_all_buttons_IMG:getDimensions())
 
 --ANIMATIONS
 	--must initialize each animation table before adding indices to it

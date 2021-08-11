@@ -8,8 +8,11 @@ end
 
 function block.update(dt)
 	for i = 1, #block do
-		block.highlight(block[i])
-		block.editor_paint(block[i])
+		--Check to disable default block highlighitng behavior
+		--This allows the editor to display what blocks are selected
+		if LET_EDITOR_DEFAULT_TOOL ~= "editor_tool_select" then
+			block.highlight(block[i])
+		end
 	end
 end
 
@@ -60,10 +63,20 @@ end
 function block.clickAction(user, mButton)
 	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
 		if mButton == 1 then
-			user.editor.select_x = worldMouseX
-			user.editor.select_y = worldMouseY
+				for i = 1, #block do
+				if block[i].highlight then
+					user.editor.select_x = 0
+					user.editor.select_y = 0
+					user.editor.select_width = 0
+					user.editor.select_height = 0
+				elseif not block[i].highlight then
+					user.editor.select_x = worldMouseX
+					user.editor.select_y = worldMouseY
+				end
+			end
 		end
-	elseif LET_EDITOR_DEFAULT_TOOL == "editor_tool_draw" then
+	end
+	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_draw" then
 		if mButton == 1 then
 			for i = 1, #block do
 				if block[i].highlight then
@@ -94,22 +107,35 @@ end
 
 function block.clickReleaseAction(user)
 	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
-		user.editor.select_width = mouseX - user.editor.select_x
-		user.editor.select_height = mouseY - user.editor.select_y
-		for i = 1, #block do
-			if CheckCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
-				block[i].highlight = true
-				--sets block highlight texture
-				block[i].quad_overlay = highlight_block_QD
+		if love.mouse.isDown(1) then
+			user.editor.select_width = worldMouseX - user.editor.select_x
+			user.editor.select_height = worldMouseY - user.editor.select_y
+			for i = 1, #block do
+				if CheckCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
+					block[i].highlight = true
+					--sets block highlight texture
+					block[i].quad_overlay = highlight_block_QD
+				else
+					block[i].highlight = false
+					--sets block highlight texture
+					block[i].quad_overlay = nil
+				end
 			end
 		end
 	end
 end
 
 function block.editor_paint()
+	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
+		for i = 1, #block do
+			if block[i].highlight then
+				block.typeChange(block[i], LET_EDITOR_BLOCKTYPE_SELECTED)
+			end
+		end
+	end
 end
 
-function block.clickAction2()
+--[[function block.clickAction2()
 	if LET_DEFAULT_EDITOR_TOOL == "editor_tool_select" then
 		if love.mouse.isDown(1) then
 			select_x = worldMouseX
@@ -144,4 +170,4 @@ function block.clickAction2()
 			end
 		end
 	end
-end
+end--]]

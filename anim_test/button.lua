@@ -1,5 +1,3 @@
---add support for activeState
-
 button = {}
 function button.spawn(quad, action, activeState, x, y, w, h)
 	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 190, height = h or 49, highlight = false})
@@ -8,9 +6,6 @@ function button.spawn(quad, action, activeState, x, y, w, h)
 	--Concatenate quad extension
 	button[#button].quad = tostring(button[#button].quad)
 end
-
-			--if (gameState ~= "play" and not gameIsPaused) or 
-			--(gameState == "play" and gameIsPaused) or (gameState == "options") then
 
 function button.update(dt)
 	for i = 1, #button do
@@ -24,7 +19,7 @@ function button.draw()
 		button_SB:clear()
 		for i = 1, #button do
 			if button[i].enabled then
-				--Turn string back into Global
+				--Turn string back into Global		
 				button_SB:add(_G[button[i].quad], button[i].x, button[i].y)
 			end
 		end
@@ -37,7 +32,7 @@ function button.draw()
 		for i = 1, #button do
 		if button[i].enabled then
 			if button[i].quad_overlay ~= nil then
-				love.graphics.draw(ui_hover_all_IMG, button[i].quad_overlay, button[i].x, button[i].y)
+				love.graphics.draw(ui_all_buttons_IMG, button[i].quad_overlay, button[i].x, button[i].y)
 			end
 		end
 	end
@@ -45,7 +40,7 @@ end
 
 function button.detectVisibility(me)
 	for i = 1, #button do
-		if (me.activeState == "pauseButton" and LET_CUR_GAME_STATE == "play_state" and LET_GAME_PAUSED) or (me.activeState == "play_state") then
+		if (me.activeState == "pauseButton" and LET_GAME_PAUSED and (LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state")) or (me.activeState == "play_state") or (me.activeState == "create_state") then
 			me.enabled = true
 		elseif (me.activeState ~= LET_CUR_GAME_STATE) then
 			me.enabled = false
@@ -85,9 +80,14 @@ function button.clickAction()
 					switchGameState("menu_0_state")
 				--EDITOR ACTIONS
 				elseif button[i].action == "tool_selection" then
+					LET_EDITOR_DEFAULT_TOOL = "editor_tool_select"
 				elseif button[i].action == "tool_draw" then
+					LET_EDITOR_DEFAULT_TOOL = "editor_tool_draw"
+				elseif button[i].action == "tool_eraser" then
+					LET_EDITOR_DEFAULT_TOOL = "editor_tool_eraser"
 				elseif button[i].action == "tool_fill" then
-				elseif button[i].action == "tool_item_dropper" then
+				elseif button[i].action == "tool_dropper" then
+					LET_EDITOR_DEFAULT_TOOL = "editor_tool_dropper"
 				elseif button[i].action == "save" then
 				elseif button[i].action == "load" then
 				end
