@@ -3,7 +3,7 @@ enemy = {}
 enemy_collision = {}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
-	table.insert(enemy, {type = "enemy", subtype = subtype, x = x, y = y, width = 28, height = 80, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12})
+	table.insert(enemy, {type = "enemy", subtype = subtype, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12})
 	--adds collisions to each enemy created
 	enemy_collision[#enemy] = world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
 end
@@ -42,20 +42,11 @@ function enemy.update(dt)
 end
 
 function enemy.draw()
-	local enemyScaling = 2
+	local enemyScaling = 1.66
 	for i,v in ipairs(enemy) do
+		local scaleX = v.dir
 		love.graphics.setColor(1, 0, 0)
-		--width is used here to calculate offset when mirroring texture
-		local meWidth = v.animationTable[math.floor(v.current_frame)]:getWidth() * enemyScaling
-		local meHeight = v.animationTable[math.floor(v.current_frame)]:getHeight() * enemyScaling
-		v.width, v.height = meWidth, meHeight
-
-		--flips enemy's texture when switching directions
-		if v.dir == "right" then
-			love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x, v.y, 0, enemyScaling, enemyScaling, 0, 0)
-		elseif v.dir == "left" then
-			love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x, v.y, 0, -enemyScaling, enemyScaling, v.width / enemyScaling, 0)
-		end
+		love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x + (v.width / 2), v.y, 0, scaleX * enemyScaling, enemyScaling, v.animationTable[math.floor(v.current_frame)]:getWidth() / 2, 0)
 	end
 end
 
@@ -66,9 +57,9 @@ function enemy.movementController(dt, me)
 
 	if me.target then
 		if me.x <= me.target.x then
-			me.dir = "right"
+			me.dir = 1
 		elseif me.x >= me.target.x then
-			me.dir = "left"
+			me.dir = -1
 		end
 
 		moveInProgress = true
@@ -93,9 +84,9 @@ function enemy.movementController(dt, me)
 	end
 
 	if moveInProgress then
-		if me.dir == "right" and me.isOnGround then
+		if me.dir == 1 and me.isOnGround then
 			me.xVel = me.speed
-		elseif me.dir == "left" and me.isOnGround then
+		elseif me.dir == -1 and me.isOnGround then
 			me.xVel = -me.speed
 		end
 
@@ -167,11 +158,12 @@ enemy.filter = function(item, other)
 	local otherBottom = y + h
 
 	--Resolves colliding with the top of blocks
-	if other.subtype == "platform_block" then
+	--Checks which hitbox to check against
+	if other.subtype == "wooden_plat" then
 		if enemyBottom <= y then
 			return 'slide'
 		end
-	elseif other.subtype == "item_block" or other.subtype == "ground_block" then
+	elseif other.subtype == "item_block" or other.subtype == "ground_block" or other.subtype == "grass_block" or other.subtype == "grass_block_l" or other.subtype == "grass_block_r" then
 		if py >= y or enemyBottom <= y then
 			return 'slide'
 		end

@@ -1,5 +1,6 @@
 local gamera = require "resources/libraries/gamera"
 local bump = require "resources/libraries/bump"
+local Binser = require "resources/libraries/binser"
 require "utilities"
 require "resources"
 require "button"
@@ -8,22 +9,23 @@ require "player"
 require "enemy"
 
 function love.load()
+	love.graphics.setDefaultFilter("nearest", "nearest")
 	--Load our textures, sounds, etc
 	resourceLoad()
 	love.graphics.setBackgroundColor(0, 0, 0)
-	love.graphics.setDefaultFilter("nearest", "nearest")
 	gwidth, gheight = 1280, 720
 	love.window.setMode(gwidth, gheight, {vsync = 0})
 --sets coordinates for camera
 	cam = gamera.new(0, 0, 8000, 720)
-	cam:setWorld(0, 0, 8000, 720)
+	cam:setScale(1.25)
+	cam:setWorld(0, 0, 8000, 1000)
 	cam:setWindow(0, 0, 1280, 720)
 	--sets the collisions cell space to 32
 	--smaller values make collision more accurate
 	world = bump.newWorld(32)
 	gridWorldCreated = false
 	gridRowsX = 158
-	gridColsY = 22
+	gridColsY = 31
 
 --BEGIN GAME
 	--initialize some 'constants' first
@@ -55,10 +57,10 @@ function love.load()
 	button.spawn("options_button_QD", "options", "pauseButton", gwidth / 2, (gheight / 2) + 49 * 2)
 	button.spawn("quit_sesh_button_QD", "exit_session", "pauseButton", gwidth / 2, (gheight / 2) + 49 * 4)
 	--Editor Mode buttons
-	button.spawn("select_button_QD", "tool_selection", "create_state", 50, gheight / 2 -  105, 50, 50)
-	button.spawn("draw_button_QD", "tool_draw", "create_state", 50, gheight / 2 - 50, 50, 50)
-	button.spawn("eraser_button_QD", "tool_eraser", "create_state", 50, gheight / 2 + 5, 50, 50)
-	button.spawn("dropper_button_QD", "tool_dropper", "create_state", 50, gheight / 2 + 60, 50, 50)
+	button.spawn("select_button_QD", "tool_selection", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
+	button.spawn("draw_button_QD", "tool_draw", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
+	--button.spawn("eraser_button_QD", "tool_eraser", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
+	button.spawn("dropper_button_QD", "tool_dropper", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
 	--enemy.spawn("goon", 1600, gheight - love.math.random(200, 1000), "right")
 	--enemy.spawn("goon", 1200, gheight - love.math.random(200, 1000), "left")
 end
@@ -78,6 +80,12 @@ function love.keypressed(key)
 		else
 			LET_GAME_PAUSED = true
 		end
+	elseif key == "o" then
+		for i = 1, #block do
+			saveLevel("level_test", Binser.serialize(block[i].id, block[i].subtype))
+		end
+	elseif key == "p" then
+		loadLevel("level_test")
 	end
 end
 
@@ -126,6 +134,7 @@ function love.draw()
 	--Draws to camera
 	love.graphics.setColor(1, 1, 1)
 	button.draw()
+	editorHUDDraw()
 	--Displays FPS benchmark
 	love.graphics.print(CONST_FPS, 0, 0)
 	debugMenuDraw()
@@ -148,10 +157,33 @@ function createGridWorld() --Called in block.lua
 		end
 
 		--Blocks that spawn underneath the player at spawn
-		block.typeChange(block[8], "ground_block")
-		block.typeChange(block[31], "ground_block")
-		block.typeChange(block[54], "ground_block")
-		block.typeChange(block[77], "ground_block")
+		block.typeChange(block[15], "grass_block_l")
+		block.typeChange(block[47], "grass_block")
+		block.typeChange(block[79], "grass_block")
+		block.typeChange(block[111], "grass_block_r")
+	end
+end
+
+function saveLevel(name, data)
+	love.filesystem.write(name .. ".txt", Binser.serialize(data))
+
+	return data
+end
+
+function loadLevel(name)
+	if love.filesystem.getInfo(name) then
+		local data, size = love.filesystem.read(name .. ".txt")
+
+		print( Binser.deserialize(data)[1])
+	end
+end
+
+function newLevel(name)
+	createGridWorld()
+	for i = 1, #block do
+		SAVE = Saver:save(name, {
+			blocks = {block.id, block.subtype}
+		})
 	end
 end
 
@@ -162,10 +194,16 @@ function switchGameState(newState) --Used for button.lua actions
 	end
 end
 
+function editorHUDDraw()
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.rectangle("fill", gwidth - 128, gheight / 2 - 320, 96, 96)
+	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
+end
+
 function debugMenuDraw()
 	if CONST_DEBUG_M then
 		local CONST_DEBUG_W = 350
-		local CONST_DEBUG_H = 200
+		local CONST_DEBUG_H = 225
 		local CONST_DEBUG_X = gwidth - CONST_DEBUG_W
 		local CONST_DEBUG_Y = 12
 		love.graphics.setColor(0, 1, 0, .25)
@@ -183,11 +221,11 @@ function debugMenuDraw()
 		love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, CONST_DEBUG_X, CONST_DEBUG_Y * 17, CONST_DEBUG_W, "left")
 		
 		--Button hitbox must be drawn here, otherwise camera takes it away
-		for i,v in ipairs(button) do
+		--[[for i,v in ipairs(button) do
 			--Butotn Hitbox
 			love.graphics.setColor(.35, 1, 1)
 			love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
-		end
+		end--]]
 
 	end
 end
