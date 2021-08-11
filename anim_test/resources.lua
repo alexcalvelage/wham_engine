@@ -4,13 +4,18 @@ function resourceLoad()
 	defaultFontHuge = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 96)
 	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 10)
 	love.graphics.setFont(defaultFont)
+--CURSORS
+	selection_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_selection.png", 0, 0)
+	draw_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_draw.png", 0, 0)
+	eraser_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_eraser.png", 0, 0)
+	dropper_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_dropper.png", 0, 0)
 --TEXTURES
 	--Images
 	block_all_IMG = love.graphics.newImage("resources/textures/block/block_sheet.png")
-	ui_all_buttons_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
+	ui_buttons_all_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
 	--SpriteBatches
 	block_SB = love.graphics.newSpriteBatch(block_all_IMG)
-	button_SB = love.graphics.newSpriteBatch(ui_all_buttons_IMG)
+	button_SB = love.graphics.newSpriteBatch(ui_buttons_all_IMG)
 	--Quads
 	--*blockQDs
 	ground_block_QD = love.graphics.newQuad(0, 0, 32, 32, block_all_IMG:getDimensions())
@@ -19,22 +24,21 @@ function resourceLoad()
 	highlight_block_QD = love.graphics.newQuad(32, 32, 32, 32, block_all_IMG:getDimensions())
 	--*buttonQDS
 	--**Long buttons
-	resume_button_QD = love.graphics.newQuad(0, 0, 194, 49, ui_all_buttons_IMG:getDimensions())
-	resume_button_QD_2 = love.graphics.newQuad(0, 49, 194, 49, ui_all_buttons_IMG:getDimensions())
-	options_button_QD = love.graphics.newQuad(0, 98, 194, 49, ui_all_buttons_IMG:getDimensions())
-	options_button_QD_2 = love.graphics.newQuad(0, 147, 194, 49, ui_all_buttons_IMG:getDimensions())
-	quit_sesh_button_QD = love.graphics.newQuad(0, 196, 194, 49, ui_all_buttons_IMG:getDimensions())
-	quit_sesh_button_QD_2 = love.graphics.newQuad(0, 245, 194, 49, ui_all_buttons_IMG:getDimensions())
+	resume_button_QD = love.graphics.newQuad(0, 0, 194, 49, ui_buttons_all_IMG:getDimensions())
+	resume_button_QD_2 = love.graphics.newQuad(0, 49, 194, 49, ui_buttons_all_IMG:getDimensions())
+	options_button_QD = love.graphics.newQuad(0, 98, 194, 49, ui_buttons_all_IMG:getDimensions())
+	options_button_QD_2 = love.graphics.newQuad(0, 147, 194, 49, ui_buttons_all_IMG:getDimensions())
+	quit_sesh_button_QD = love.graphics.newQuad(0, 196, 194, 49, ui_buttons_all_IMG:getDimensions())
+	quit_sesh_button_QD_2 = love.graphics.newQuad(0, 245, 194, 49, ui_buttons_all_IMG:getDimensions())
 	--**Small buttons
-	select_button_QD = love.graphics.newQuad(194, 0, 50, 50, ui_all_buttons_IMG:getDimensions())
-	select_button_QD_2 = love.graphics.newQuad(194, 50, 50, 50, ui_all_buttons_IMG:getDimensions())
-	draw_button_QD = love.graphics.newQuad(194, 100, 50, 50, ui_all_buttons_IMG:getDimensions())
-	draw_button_QD_2 = love.graphics.newQuad(194, 150, 50, 50, ui_all_buttons_IMG:getDimensions())
-	eraser_button_QD = love.graphics.newQuad(194, 200, 50, 50, ui_all_buttons_IMG:getDimensions())
-	eraser_button_QD_2 = love.graphics.newQuad(194, 250, 50, 50, ui_all_buttons_IMG:getDimensions())
-	dropper_button_QD = love.graphics.newQuad(194, 300, 50, 50, ui_all_buttons_IMG:getDimensions())
-	dropper_button_QD_2 = love.graphics.newQuad(194, 350, 50, 50, ui_all_buttons_IMG:getDimensions())
-
+	select_button_QD = love.graphics.newQuad(194, 0, 50, 50, ui_buttons_all_IMG:getDimensions())
+	select_button_QD_2 = love.graphics.newQuad(194, 50, 50, 50, ui_buttons_all_IMG:getDimensions())
+	draw_button_QD = love.graphics.newQuad(194, 100, 50, 50, ui_buttons_all_IMG:getDimensions())
+	draw_button_QD_2 = love.graphics.newQuad(194, 150, 50, 50, ui_buttons_all_IMG:getDimensions())
+	eraser_button_QD = love.graphics.newQuad(194, 200, 50, 50, ui_buttons_all_IMG:getDimensions())
+	eraser_button_QD_2 = love.graphics.newQuad(194, 250, 50, 50, ui_buttons_all_IMG:getDimensions())
+	dropper_button_QD = love.graphics.newQuad(194, 300, 50, 50, ui_buttons_all_IMG:getDimensions())
+	dropper_button_QD_2 = love.graphics.newQuad(194, 350, 50, 50, ui_buttons_all_IMG:getDimensions())
 --ANIMATIONS
 	--must initialize each animation table before adding indices to it
 	player_idle = {}

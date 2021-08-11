@@ -1,6 +1,6 @@
 button = {}
 function button.spawn(quad, action, activeState, x, y, w, h)
-	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 190, height = h or 49, highlight = false})
+	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 194, height = h or 49, highlight = false})
 	--Center our button according to our width, height
 	button[#button].x, button[#button].y = button[#button].x - (button[#button].width / 2), button[#button].y - (button[#button].height / 2)
 	--Concatenate quad extension
@@ -32,7 +32,7 @@ function button.draw()
 		for i = 1, #button do
 		if button[i].enabled then
 			if button[i].quad_overlay ~= nil then
-				love.graphics.draw(ui_all_buttons_IMG, button[i].quad_overlay, button[i].x, button[i].y)
+				love.graphics.draw(ui_buttons_all_IMG, button[i].quad_overlay, button[i].x, button[i].y)
 			end
 		end
 	end
@@ -49,10 +49,10 @@ function button.detectVisibility(me)
 end
 
 function button.highlight(me)
-	if worldMouseX >= me.x and
-	worldMouseX <= me.x + me.width and
-	worldMouseY >= me.y and
-	worldMouseY <= me.y + me.height then
+	if mouseX >= me.x and
+	mouseX <= me.x + me.width and
+	mouseY >= me.y and
+	mouseY <= me.y + me.height then
 		me.highlight = true
 		local quad_string = tostring(me.quad) .. "_2"
 		me.quad_overlay = _G[quad_string]
@@ -62,9 +62,9 @@ function button.highlight(me)
 	end
 end
 
-function button.clickAction()
-	for i = 1, #button do
-		if button[i].enabled then
+function button.clickAction(mButton)
+	if mButton == 1 then
+		for i = 1, #button do
 			if button[i].highlight then
 				--MAIN MENU ACTIONS
 				if button[i].action == "play" then
@@ -75,23 +75,29 @@ function button.clickAction()
 					love.event.quit()
 				--PAUSE MENU ACTIONS
 				elseif button[i].action == "resume" then
+					LET_GAME_PAUSED = false
 				--elseif button[i].action == "options" --use other action and just check state?
 				elseif button[i].action == "exit_session" then
 					switchGameState("menu_0_state")
 				--EDITOR ACTIONS
 				elseif button[i].action == "tool_selection" then
-					LET_EDITOR_DEFAULT_TOOL = "editor_tool_select"
+					editor_change_mode("editor_tool_select", selection_cursor)
 				elseif button[i].action == "tool_draw" then
-					LET_EDITOR_DEFAULT_TOOL = "editor_tool_draw"
+					editor_change_mode("editor_tool_draw", draw_cursor)
 				elseif button[i].action == "tool_eraser" then
-					LET_EDITOR_DEFAULT_TOOL = "editor_tool_eraser"
+					editor_change_mode("editor_tool_eraser", eraser_cursor)
 				elseif button[i].action == "tool_fill" then
 				elseif button[i].action == "tool_dropper" then
-					LET_EDITOR_DEFAULT_TOOL = "editor_tool_dropper"
+					editor_change_mode("editor_tool_dropper", dropper_cursor)
 				elseif button[i].action == "save" then
 				elseif button[i].action == "load" then
 				end
 			end
 		end
 	end
+end
+
+function editor_change_mode(mode, cursor)
+	love.mouse.setCursor(cursor)
+	LET_EDITOR_DEFAULT_TOOL = mode
 end

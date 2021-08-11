@@ -110,6 +110,14 @@ function block.clickReleaseAction(user)
 		if love.mouse.isDown(1) then
 			user.editor.select_width = worldMouseX - user.editor.select_x
 			user.editor.select_height = worldMouseY - user.editor.select_y
+
+			if math.ceil(user.editor.select_width) < 100 then
+				--user.editor.select_width = math.abs(user.editor.select_width)
+				user.editor.select_width = math.abs(user.editor.select_width)
+			end
+			if math.ceil(user.editor.select_height) < 100 then
+				user.editor.select_height = math.abs(user.editor.select_height)
+			end
 			for i = 1, #block do
 				if CheckCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
 					block[i].highlight = true
@@ -121,6 +129,8 @@ function block.clickReleaseAction(user)
 					block[i].quad_overlay = nil
 				end
 			end
+		elseif love.mouse.isDown(2) then
+			block.editor_paint()
 		end
 	end
 end
@@ -135,39 +145,24 @@ function block.editor_paint()
 	end
 end
 
---[[function block.clickAction2()
-	if LET_DEFAULT_EDITOR_TOOL == "editor_tool_select" then
-		if love.mouse.isDown(1) then
-			select_x = worldMouseX
-			select_y = worldMouseY
-		elseif not love.mouse.isDown(1) then
-			select_width = mouseX - select_x
-			select_height = mouseY - select_y
-			if CheckCollision(select_x, select_y, select_width, select_height, me.x, me.y, me.width, me.height) then
-				me.highlight = true
-				--sets block highlight texture
-				me.quad_overlay = highlight_block_QD
-			end
-		end
-	elseif LET_DEFAULT_EDITOR_TOOL == "editor_tool_draw" then
-		if love.mouse.isDown(1) then
-			if me.highlight then
-				if me.subtype ~= "ground_block" then
-					block.typeChange(me, "ground_block")
-				end
-			end
-		elseif love.mouse.isDown(2) then
-			if me.highlight then
-				if me.subtype ~= "item_block" then
-					block.typeChange(me, "item_block")
-				end
-			end
-		elseif love.mouse.isDown(3) then
-			if me.highlight then
-				if me.subtype ~= "air_block" then
-					block.typeChange(me, "air_block")
-				end
-			end
-		end
+function block.cycleSelectedBlock(y)
+	if y > 0 then
+		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = LET_EDITOR_BLOCKTYPE_SELECTED_INDEX + 1
+	elseif y < 0 then
+		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = LET_EDITOR_BLOCKTYPE_SELECTED_INDEX - 1
 	end
-end--]]
+
+	if LET_EDITOR_BLOCKTYPE_SELECTED_INDEX > 3 then
+		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX < 1 then
+		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 3
+	end
+
+	if LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 1 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "ground_block"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 2 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "item_block"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 3 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "air_block"
+	end
+end

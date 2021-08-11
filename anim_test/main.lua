@@ -37,6 +37,7 @@ function love.load()
 
 	--Editor Vars
 	LET_EDITOR_DEFAULT_TOOL = "editor_tool_select"
+	editor_change_mode("editor_tool_select", selection_cursor)
 	LET_EDITOR_BLOCKTYPE_SELECTED = "ground_block"
 	LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
 
@@ -77,8 +78,6 @@ function love.keypressed(key)
 		else
 			LET_GAME_PAUSED = true
 		end
-	elseif key == "return" then
-		block.editor_paint()
 	end
 end
 
@@ -86,26 +85,17 @@ function love.mousepressed(x, y, mButton)
 	for i = 1, #player do
 		block.clickAction(player[i], mButton)
 	end
-	if mButton == 1 then
-		button.clickAction()
-	end
 end
 
 function love.mousereleased(x, y, mButton)
 	for i = 1, #player do
-		if mButton == 1 then
-			button.clickAction()
-			--block.clickReleaseAction(player[i])
-		end
+		button.clickAction(mButton)
 	end
 end
 
---[[function love.wheelmoved(x, y)
-	if y > 0 then
-	elseif y < 0 then
-	end
-end--]]
-
+function love.wheelmoved(x, y)
+	block.cycleSelectedBlock(y)
+end
 
 function love.update(dt)
 	--dt = .002 --slows down time
@@ -132,6 +122,7 @@ function love.draw()
 	item.draw()
 	debugDraw()
 	end)
+
 	--Draws to camera
 	love.graphics.setColor(1, 1, 1)
 	button.draw()
@@ -173,7 +164,7 @@ end
 
 function debugMenuDraw()
 	if CONST_DEBUG_M then
-		local CONST_DEBUG_W = 400
+		local CONST_DEBUG_W = 350
 		local CONST_DEBUG_H = 200
 		local CONST_DEBUG_X = gwidth - CONST_DEBUG_W
 		local CONST_DEBUG_Y = 12
@@ -189,6 +180,15 @@ function debugMenuDraw()
 		love.graphics.printf("Game State: " .. LET_CUR_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 11.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("Previous Game State: " .. LET_PREV_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 13, CONST_DEBUG_W, "left")
 		love.graphics.printf("Current Editor Tool: " .. LET_EDITOR_DEFAULT_TOOL, CONST_DEBUG_X, CONST_DEBUG_Y * 15.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, CONST_DEBUG_X, CONST_DEBUG_Y * 17, CONST_DEBUG_W, "left")
+		
+		--Button hitbox must be drawn here, otherwise camera takes it away
+		for i,v in ipairs(button) do
+			--Butotn Hitbox
+			love.graphics.setColor(.35, 1, 1)
+			love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
+		end
+
 	end
 end
 

@@ -3,7 +3,7 @@ player = {}
 player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "alex", x = x, y = y, width = 28, height = 80, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = "right", state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, editor = {select_x = 0, select_y = 0, select_width = 0, select_height = 0}})
+	table.insert(player, {type = player, name = "alex", x = x, y = y, width = 28, height = 80, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, editor = {select_x = 0, select_y = 0, select_width = 0, select_height = 0}})
 	--adds collisions to each player created
 	player_collision[#player] = world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -49,16 +49,17 @@ function player.update(dt)
 			end
 		end
 
+		print(player[i].editor.select_x, player[i].editor.select_y, player[i].editor.select_width, player[i].editor.select_height)
+
 		block.clickReleaseAction(player[i])
 	end
-
-	--print(player[1].x, player[1].y, player[1].width, player[1].height)
 end
 
 function player.draw()
 	local playerScaling = 2
 	for i,v in ipairs(player) do
 		love.graphics.setColor(1, 1, 1)
+		--[[
 		--width is used here to calculate offset when mirroring texture
 		local plrWidth = v.animationTable[math.floor(v.current_frame)]:getWidth() * playerScaling
 		local plrHeight = v.animationTable[math.floor(v.current_frame)]:getHeight() * playerScaling
@@ -69,10 +70,9 @@ function player.draw()
 			love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x, v.y, 0, playerScaling, playerScaling, 0, 0)
 		elseif v.dir == "left" then
 			love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x, v.y, 0, -playerScaling, playerScaling, v.width / playerScaling, 0)
-		end
-
-		love.graphics.setColor(0, 0, 1, .5)
-		love.graphics.rectangle("fill", v.editor.select_x, v.editor.select_y, v.editor.select_width, v.editor.select_height)
+		end--]]
+		local scaleX = v.dir
+		love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x, v.y, 0, scaleX * playerScaling, playerScaling, v.animationTable[math.floor(v.current_frame)]:getWidth() / 2, 0)
 	end
 end
 
@@ -91,11 +91,11 @@ function player.movementController(dt, plr)
 	--Right, Left + Falling
 	if love.keyboard.isDown("d") and plr.isOnGround then
 		plr.xVel = plr.speed
-		plr.dir = "right"
+		plr.dir = 1
 		player.stateChange(plr, "run")
 	elseif love.keyboard.isDown("a") and plr.isOnGround then
 		plr.xVel = -plr.speed
-		plr.dir = "left"
+		plr.dir = -1
 		player.stateChange(plr, "run")
 	end
 
