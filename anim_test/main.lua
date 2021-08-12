@@ -134,10 +134,10 @@ function love.draw()
 	--Draws to camera
 	love.graphics.setColor(1, 1, 1)
 	button.draw()
-	editorHUDDraw()
 	--Displays FPS benchmark
 	love.graphics.print(CONST_FPS, 0, 0)
 	debugMenuDraw()
+	editorHUDDraw()
 
 	if LET_GAME_PAUSED then
 		love.graphics.setFont(defaultFontHuge)
@@ -198,12 +198,13 @@ function editorHUDDraw()
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.rectangle("fill", gwidth - 128, gheight / 2 - 320, 96, 96)
 	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
+	love.graphics.print("WASD - Movement\nSPACE- Jump\nLMB - Select Blocks/Draw\nRMB - Fill Selected/Erase\nMouse Wheel - Change Block", 20, 20)
 end
 
 function debugMenuDraw()
 	if CONST_DEBUG_M then
 		local CONST_DEBUG_W = 350
-		local CONST_DEBUG_H = 225
+		local CONST_DEBUG_H = 215
 		local CONST_DEBUG_X = gwidth - CONST_DEBUG_W
 		local CONST_DEBUG_Y = 12
 		love.graphics.setColor(0, 1, 0, .25)

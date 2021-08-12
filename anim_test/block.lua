@@ -81,7 +81,7 @@ function block.clickAction(user, mButton)
 	end
 end
 
-function block.clickReleaseAction(user)
+function block.clickActionUpdate(user)
 	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
 		if love.mouse.isDown(1) then
 			user.editor.select_width = worldMouseX - user.editor.select_x

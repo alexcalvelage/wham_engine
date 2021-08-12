@@ -52,7 +52,7 @@ function player.update(dt)
 		--testing for fixing drag selection bug
 		--print(player[i].editor.select_x, player[i].editor.select_y, player[i].editor.select_width, player[i].editor.select_height)
 
-		block.clickReleaseAction(player[i])
+		block.clickActionUpdate(player[i])
 	end
 end
 
