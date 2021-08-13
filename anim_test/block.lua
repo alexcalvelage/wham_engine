@@ -49,6 +49,12 @@ function block.draw()
 			love.graphics.draw(block_all_IMG, block[i].quad_overlay, block[i].x, block[i].y)
 		end
 	end
+
+	love.graphics.setColor(0, 0, 1, .2)
+	love.graphics.rectangle("fill", player[1].editor.select_x, player[1].editor.select_y, player[1].editor.select_width, player[1].editor.select_height)
+	--love.graphics.setColor(1, 1, 1)
+	--love.graphics.print(player[1].editor.select_x .. ", " .. player[1].editor.select_y .. ", " .. player[1].editor.select_width .. ", " .. player[1].editor.select_height, player[1].editor.select_x + 200, player[1].editor.select_y + 200)
+	--love.graphics.print(tostring(newX) .. ", " .. tostring(newY) .. ", " .. tostring(newW) .. ", " .. tostring(newH), 200, 200)
 end
 
 function block.highlight(me)
@@ -65,14 +71,11 @@ function block.highlight(me)
 		me.quad_overlay = nil
 	end
 end
-
 function block.clickAction(user, mButton)
 	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
 		if mButton == 1 then
-			for i = 1, #block do
-				user.editor.select_x = worldMouseX
-				user.editor.select_y = worldMouseY
-			end
+			user.editor.select_x = worldMouseX
+			user.editor.select_y = worldMouseY
 		end
 	elseif LET_EDITOR_DEFAULT_TOOL == "editor_tool_dropper" then
 		if mButton == 1 then
@@ -82,14 +85,23 @@ function block.clickAction(user, mButton)
 end
 
 function block.clickActionUpdate(user)
+	--newX, newY, newW, newH = nil, nil, nil, nil
 	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
 		if love.mouse.isDown(1) then
 			user.editor.select_width = worldMouseX - user.editor.select_x
 			user.editor.select_height = worldMouseY - user.editor.select_y
 
+			--[[if user.editor.select_width < 0 or user.editor.select_height < 0 then
+				newX = worldMouseX
+				newY = worldMouseY
+				newW = user.editor.select_x
+				newH = user.editor.select_y
+			end--]]
+
 			for i = 1, #block do
-				--if CheckCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
-				if bump.rect.detectCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
+				--if bump.rect.detectCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, , block[i].y, block[i].width, block[i].height) then
+				--if bump.rect.getSegmentIntersectionIndices(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
+				if bump.rect.containsPoint(newX or user.editor.select_x, newY or user.editor.select_y, newW or user.editor.select_width, newH or user.editor.select_height, block[i].x + block[i].width / 2, block[i].y + block[i].height / 2) then
 					block[i].highlight = true
 					--sets block highlight texture
 					block[i].quad_overlay = highlight_block_QD

@@ -9,6 +9,7 @@ function player.spawn(x, y)
 end
 
 function player.update(dt)
+	dt = dt * LET_TIME_DILATION
 	for i,v in ipairs(player) do
 		--Cue gravity
 		v.yVel = v.yVel + (CONST_GRAVITY * dt)

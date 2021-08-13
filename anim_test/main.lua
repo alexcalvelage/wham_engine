@@ -33,6 +33,7 @@ function love.load()
 	CONST_DEBUG_M = false
 	CONST_WORLD_LIMIT = 1200
 	CONST_GRAVITY = 1800
+	LET_TIME_DILATION = 1
 	LET_CUR_GAME_STATE = "create_state"
 	LET_PREV_GAME_STATE = ""
 	LET_GAME_PAUSED = false
@@ -198,7 +199,7 @@ function editorHUDDraw()
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.rectangle("fill", gwidth - 128, gheight / 2 - 320, 96, 96)
 	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
-	love.graphics.print("WASD - Movement\nSPACE- Jump\nLMB - Select Blocks/Draw\nRMB - Fill Selected/Erase\nMouse Wheel - Change Block", 20, 20)
+	love.graphics.print("AD - Movement\nSPACE- Jump\nLMB - Select Blocks/Draw\nRMB - Fill Selected/Erase\nMouse Wheel - Change Block", 20, 20)
 end
 
 function debugMenuDraw()
