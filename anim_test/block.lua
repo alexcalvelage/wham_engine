@@ -2,7 +2,7 @@
 local bump = require "resources/libraries/bump"
 
 block = {}
-block_collision = {}
+--block_collision = {}
 function block.spawn(subtype, x, y, w, h)
 	table.insert(block, {id = #block + 1, type = "block", subtype = subtype, quad = subtype, quad_overlay = nil, x = x, y = y, width = w or 32, height = h or 32, highlight = false})
 	--Concatenate quad extension
@@ -124,8 +124,8 @@ function block.typeChange(me, subtype)
 	me.subtype = subtype
 	me.quad = tostring(me.subtype) .. "_QD"
 	--Checks to make sure collision on this doesn't already exist
-	if not block_collision[me.id] then
-		block_collision[me.id] = world:add(me, me.x, me.y, me.width, me.height)
+	if not world:hasItem(me) then
+		world:add(me, me.x, me.y, me.width, me.height)
 	end
 end
 

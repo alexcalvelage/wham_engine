@@ -10,7 +10,10 @@ end
 function button.update(dt)
 	for i = 1, #button do
 		button.detectVisibility(button[i])
-		button.highlight(button[i])
+
+		if button[i].enabled then
+			button.highlight(button[i])
+		end
 	end
 end
 
@@ -40,10 +43,16 @@ end
 
 function button.detectVisibility(me)
 	for i = 1, #button do
-		if (me.activeState == "pauseButton" and LET_GAME_PAUSED and (LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state")) or (me.activeState == "play_state") or (me.activeState == "create_state") then
+		--Checks to make sure buttons are only usable/rendered when they need to be.
+		--
+		if (me.activeState == "pauseButton" and LET_GAME_PAUSED and (LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state")) or (me.activeState ~= "pauseButton" and not LET_GAME_PAUSED) then
 			me.enabled = true
 		elseif (me.activeState ~= LET_CUR_GAME_STATE) then
 			me.enabled = false
+
+			--if a button is selected and then it becomes disabled, this 
+			--ensures that it is unselected
+			me.highlight = false
 		end
 	end
 end
@@ -67,30 +76,31 @@ function button.clickAction(mButton)
 		for i = 1, #button do
 			if button[i].highlight then
 				--MAIN MENU ACTIONS
-				if button[i].action == "play" then
-				elseif button[i].action == "load" then
-				elseif button[i].action == "create" then
-				elseif button[i].action == "options" then
-				elseif button[i].action == "quit" then
+				if button[i].action == "play_action" then
+				elseif button[i].action == "load_action" then
+				elseif button[i].action == "create_action" then
+				elseif button[i].action == "options_action" then
+				elseif button[i].action == "quit_action" then
 					love.event.quit()
 				--PAUSE MENU ACTIONS
-				elseif button[i].action == "resume" then
+				elseif button[i].action == "resume_action" then
 					LET_GAME_PAUSED = false
-				--elseif button[i].action == "options" --use other action and just check state?
-				elseif button[i].action == "exit_session" then
+				elseif button[i].action == "save_level_action" then
+					saveLevel("level_test", block)
+				elseif button[i].action == "load_level_action" then
+					loadLevel("level_test")
+				elseif button[i].action == "exit_session_action" then
 					switchGameState("menu_0_state")
 				--EDITOR ACTIONS
-				elseif button[i].action == "tool_selection" then
+				elseif button[i].action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
-				elseif button[i].action == "tool_draw" then
+				elseif button[i].action == "tool_draw_action" then
 					editor_change_mode("editor_tool_draw", draw_cursor)
-				elseif button[i].action == "tool_eraser" then
+				elseif button[i].action == "tool_eraser_action" then
 					editor_change_mode("editor_tool_eraser", eraser_cursor)
-				elseif button[i].action == "tool_fill" then
-				elseif button[i].action == "tool_dropper" then
+				elseif button[i].action == "tool_fill_action" then
+				elseif button[i].action == "tool_dropper_action" then
 					editor_change_mode("editor_tool_dropper", dropper_cursor)
-				elseif button[i].action == "save" then
-				elseif button[i].action == "load" then
 				end
 			end
 		end

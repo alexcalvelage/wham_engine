@@ -1,11 +1,12 @@
 --initialize player data table
 player = {}
-player_collision = {}
+--player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "Phil", x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, editor = {select_x = 0, select_y = 0, select_width = 0, select_height = 0}})
+	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, editor = {select_x = 0, select_y = 0, select_width = 0, select_height = 0}})
 	--adds collisions to each player created
-	player_collision[#player] = world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
+	--player_collision[#player] = world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
+	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
 
 function player.update(dt)
@@ -31,6 +32,16 @@ function player.update(dt)
 		--Fall detection
 		if v.yVel ~= 0 then
 			v.isOnGround = false
+		end
+
+		--Death detection
+		if goalY >= CONST_WORLD_LIMIT then
+			v.health = 0
+		end
+		if v.health <= 0 then
+			v.xVel, v.yVel = 0, 0
+			goalX, goalY = 32, gheight - (32 * gridColsY)
+			v.health = 1
 		end
 
 		--Handles animation state switching

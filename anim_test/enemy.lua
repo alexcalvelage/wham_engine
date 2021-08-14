@@ -1,11 +1,10 @@
 --initialize enemy data table
 enemy = {}
-enemy_collision = {}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
 	table.insert(enemy, {type = "enemy", subtype = subtype, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12})
 	--adds collisions to each enemy created
-	enemy_collision[#enemy] = world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
+	world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
 end
 
 function enemy.update(dt)
