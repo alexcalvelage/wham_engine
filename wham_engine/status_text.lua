@@ -4,6 +4,7 @@ function status_text.create(text)
 end
 
 function status_text.update(dt)
+	--Has to be looped with ipairs otherwise table.remove fails
 	for i,v in ipairs(status_text) do
 		v.y = v.y - 10 * dt
 		v.alpha = v.alpha - .30 * dt

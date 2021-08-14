@@ -24,11 +24,11 @@ function button.draw()
 			if button[i].enabled then
 				--Turn string back into Global		
 				button_SB:add(_G[button[i].quad], button[i].x, button[i].y)
+				love.graphics.setColor(1, 1, 1)
 			end
 		end
 
 		--Draws our spritebatch
-		love.graphics.setColor(1, 1, 1)
 		love.graphics.draw(button_SB)
 
 		--Loop over table twice to render highlight visual effect
@@ -44,12 +44,10 @@ end
 function button.detectVisibility(me)
 	for i = 1, #button do
 		--Checks to make sure buttons are only usable/rendered when they need to be.
-		--
-		if (me.activeState == "pauseButton" and LET_GAME_PAUSED and (LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state")) or (me.activeState ~= "pauseButton" and not LET_GAME_PAUSED) then
+		if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN and LET_GAME_PAUSED) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED) then
 			me.enabled = true
-		elseif (me.activeState ~= LET_CUR_GAME_STATE) then
+		else
 			me.enabled = false
-
 			--if a button is selected and then it becomes disabled, this 
 			--ensures that it is unselected
 			me.highlight = false
@@ -76,21 +74,41 @@ function button.clickAction(mButton)
 		for i = 1, #button do
 			if button[i].highlight then
 				--MAIN MENU ACTIONS
-				if button[i].action == "play_action" then
-				elseif button[i].action == "load_action" then
-				elseif button[i].action == "create_action" then
+				if button[i].action == "play_game_action" then
+				elseif button[i].action == "load_game_action" then
+				elseif button[i].action == "create_level_action" then
 				elseif button[i].action == "options_action" then
 				elseif button[i].action == "quit_action" then
 					love.event.quit()
 				--PAUSE MENU ACTIONS
 				elseif button[i].action == "resume_action" then
+					LET_PANEL_FOCUS = false
+					LET_PANEL_OPEN = ""
 					LET_GAME_PAUSED = false
 				elseif button[i].action == "save_level_action" then
-					saveLevel("level_test", block)
+					panel.typeChange("savePanel")
+					love.keyboard.setTextInput(true)
+					love.keyboard.setKeyRepeat(true)
+					--saveLevel("level_test", block)
 				elseif button[i].action == "load_level_action" then
-					loadLevel("level_test")
+					panel.typeChange("loadPanel")
+					love.keyboard.setTextInput(true)
+					love.keyboard.setKeyRepeat(true)
+					--loadLevel("level_test")
 				elseif button[i].action == "exit_session_action" then
-					switchGameState("menu_0_state")
+					switchGameState("menu_state")
+					love.mouse.setCursor(default_cursor)
+				elseif button[i].action == "back_action" then
+					panel.typeChange("")
+					love.keyboard.setTextInput(false)
+					love.keyboard.setKeyRepeat(false)
+					LET_BROWSE_PATH = ""
+				elseif button[i].action == "browse_action" then
+					love.system.openURL("file://"..love.filesystem.getSaveDirectory())
+				elseif button[i].action == "save_action" then
+					saveLevel(tostring(LET_BROWSE_PATH), block)
+				elseif button[i].action == "load_action" then
+					loadLevel(tostring(LET_BROWSE_PATH))
 				--EDITOR ACTIONS
 				elseif button[i].action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)

@@ -6,6 +6,7 @@ function resourceLoad()
 	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 10)
 	love.graphics.setFont(defaultFont)
 --CURSORS
+	default_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_default.png", 0, 0)
 	selection_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_selection.png", 0, 0)
 	draw_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_draw.png", 0, 0)
 	eraser_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_eraser.png", 0, 0)
@@ -14,9 +15,11 @@ function resourceLoad()
 	--Images
 	block_all_IMG = love.graphics.newImage("resources/textures/block/block_sheet.png")
 	ui_buttons_all_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
+	ui_panels_all_IMG = love.graphics.newImage("resources/textures/ui/panel_sheet.png")
 	--SpriteBatches
 	block_SB = love.graphics.newSpriteBatch(block_all_IMG)
 	button_SB = love.graphics.newSpriteBatch(ui_buttons_all_IMG)
+	panel_SB = love.graphics.newSpriteBatch(ui_panels_all_IMG)
 	--Quads
 	--*blockQDs
 	ground_block_QD = love.graphics.newQuad(0, 0, 32, 32, block_all_IMG:getDimensions())
@@ -48,6 +51,18 @@ function resourceLoad()
 	eraser_button_QD_2 = love.graphics.newQuad(194, 250, 50, 50, ui_buttons_all_IMG:getDimensions())
 	dropper_button_QD = love.graphics.newQuad(194, 300, 50, 50, ui_buttons_all_IMG:getDimensions())
 	dropper_button_QD_2 = love.graphics.newQuad(194, 350, 50, 50, ui_buttons_all_IMG:getDimensions())
+	--*panelQDS
+	--**Saving/Loading
+	saving_panel_QD = love.graphics.newQuad(0, 0, 298, 98, ui_panels_all_IMG:getDimensions())
+	loading_panel_QD = love.graphics.newQuad(0, 98, 298, 98, ui_panels_all_IMG:getDimensions())
+	browse_button_QD = love.graphics.newQuad(268.5, 400, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	browse_button_QD_2 = love.graphics.newQuad(268.5, 424.5, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	save_button_QD = love.graphics.newQuad(194, 400, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	save_button_QD_2 = love.graphics.newQuad(194, 424.5, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	load_button_QD = love.graphics.newQuad(194, 449, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	load_button_QD_2 = love.graphics.newQuad(194, 473.5, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	back_button_QD = love.graphics.newQuad(268.5, 449, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
+	back_button_QD_2 = love.graphics.newQuad(268.5, 473.5, 74.5, 24.5, ui_panels_all_IMG:getDimensions())
 --ANIMATIONS
 	--must initialize each animation table before adding indices to it
 	player_idle = {}

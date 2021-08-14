@@ -5,12 +5,17 @@ require "utilities"
 require "resources"
 require "status_text"
 require "button"
+require "panel"
 require "block"
 require "player"
 require "enemy"
 
+local utf8 = require("utf8")
+
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
+	love.keyboard.setTextInput(false)
+	love.keyboard.setKeyRepeat(false)
 	--Load our textures, sounds, etc
 	resourceLoad()
 	love.graphics.setBackgroundColor(0, 0, 0)
@@ -38,6 +43,9 @@ function love.load()
 	LET_CUR_GAME_STATE = "create_state"
 	LET_PREV_GAME_STATE = ""
 	LET_GAME_PAUSED = false
+	LET_BROWSE_PATH = ""
+	LET_PANEL_FOCUS = false
+	LET_PANEL_OPEN = ""
 
 	--Editor Vars
 	LET_EDITOR_DEFAULT_TOOL = "editor_tool_select"
@@ -47,14 +55,14 @@ function love.load()
 
 	--begins game logic
 	createGridWorld()
-	--ground]]
-	--block.spawn("ground_block", -300, (gheight - 62) - gridColsY, 2000, 32)
-	--block.spawn("ground_block", -300, gheight-48, 2000, 32)
-	--items]]
-	--item.spawn(600, gheight - 215)
 	--ents]]
 	player.spawn(32, gheight - (32 * gridColsY))
-	--Menu buttons
+	--Panel
+	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
+	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
+	--Main Menu buttons
+	button.spawn("resume_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5)
+	--Pause Menu buttons
 	button.spawn("resume_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5)
 	button.spawn("save_level_button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5)
 	button.spawn("load_level_button_QD", "load_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 4.5)
@@ -63,10 +71,14 @@ function love.load()
 	--Editor Mode buttons
 	button.spawn("select_button_QD", "tool_selection_action", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
-	--button.spawn("eraser_button_QD", "tool_eraser", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
 	button.spawn("dropper_button_QD", "tool_dropper_action", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
-	--enemy.spawn("goon", 1600, gheight - love.math.random(200, 1000), "right")
-	--enemy.spawn("goon", 1200, gheight - love.math.random(200, 1000), "left")
+	--Save Load buttons
+	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
+	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
+	button.spawn("browse_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 74.5, 24.5)
+	button.spawn("browse_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 74.5, 24.5)
+	button.spawn("load_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
+	button.spawn("save_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
 end
 
 function love.keypressed(key)
@@ -79,17 +91,17 @@ function love.keypressed(key)
 			CONST_DEBUG_M = true
 		end
 	elseif key == "f" then
-		if LET_GAME_PAUSED then
-			LET_GAME_PAUSED = false
-		else
-			LET_GAME_PAUSED = true
+		if LET_CUR_GAME_STATE ~= "menu_state" and not love.keyboard.hasTextInput() then
+			pauseGame()
 		end
-	elseif key == "o" then
-		saveLevel("level_test", block)
-	elseif key == "p" then
-		loadLevel("level_test")
-	elseif key == "t" then
-		status_text.create("Test string")
+	elseif key == "backspace" then
+		if love.keyboard.hasTextInput() then
+			local byteoffset = utf8.offset(LET_BROWSE_PATH, -1)
+
+			if byteoffset then
+				LET_BROWSE_PATH = string.sub(LET_BROWSE_PATH, 1, byteoffset - 1)
+			end
+		end
 	end
 end
 
@@ -100,13 +112,24 @@ function love.mousepressed(x, y, mButton)
 end
 
 function love.mousereleased(x, y, mButton)
-	for i = 1, #player do
-		button.clickAction(mButton)
-	end
+	button.clickAction(mButton)
 end
 
 function love.wheelmoved(x, y)
 	block.cycleSelectedBlock(y)
+end
+
+function love.textinput(t)
+	LET_BROWSE_PATH = LET_BROWSE_PATH .. t
+end
+
+function love.filedropped(file)
+	if love.keyboard.hasTextInput() then
+		local dropped_file = file:getFilename()
+		dropped_file, LET_BROWSE_PATH = getFileName(dropped_file)
+
+		status_text.create("Dropped file: " .. LET_BROWSE_PATH)
+	end
 end
 
 function love.update(dt)
@@ -115,33 +138,37 @@ function love.update(dt)
 	CONST_FPS = love.timer.getFPS()
 	mouseX, mouseY = love.mouse.getPosition()
 	worldMouseX, worldMouseY = cam:toWorld(mouseX, mouseY)
-	button.update(dt)
 	status_text.update(dt)
+	button.update(dt)
+	panel.update(dt)
 
-	if not LET_GAME_PAUSED then
+	if LET_CUR_GAME_STATE ~= "menu_state" and not LET_GAME_PAUSED then
 		player.update(dt)
 		enemy.update(dt)
 		block.update(dt)
 		item.update(dt)
 	end
-	print(#status_text)
 end
 
 function love.draw()
-	--Draws to worldspace
-	cam:draw(function()
-	block.draw()
-	player.draw()
-	enemy.draw()
-	item.draw()
-	debugDraw()
-	end)
+	if LET_CUR_GAME_STATE ~= "menu_state" then
+		cam:draw(function()
+		--Draws to worldspace
+		block.draw()
+		player.draw()
+		enemy.draw()
+		item.draw()
+		debugDraw()
+		end)
+		--Draws to screen
+		editorHUDDraw()
+	end
 
-	--Draws to camera
+--resets colors
 	love.graphics.setColor(1, 1, 1)
+	panel.draw()
 	button.draw()
 	debugMenuDraw()
-	editorHUDDraw()
 
 	if LET_GAME_PAUSED then
 		love.graphics.setFont(defaultFontHuge)
@@ -162,22 +189,33 @@ function createGridWorld() --Called in block.lua
 			end
 		end
 
-		status_text.create("World created")
-
 		--Blocks that spawn underneath the player at spawn
 		block.typeChange(block[15], "grass_block_l")
 		block.typeChange(block[47], "grass_block")
 		block.typeChange(block[79], "grass_block")
 		block.typeChange(block[111], "grass_block_r")
+
+		status_text.create("World created")
 	end
 end
 
-function saveLevel(name, t, t_collision)
+function pauseGame()
+	if LET_GAME_PAUSED then
+		--close out of any previously opened panels
+		LET_PANEL_FOCUS = false
+		LET_PANEL_OPEN = ""
+		LET_GAME_PAUSED = false
+	else
+		LET_GAME_PAUSED = true
+	end
+end
+
+function saveLevel(name, t)
 	local success, message = love.filesystem.write(name  .. ".txt", TSerial.pack(t, true))
 	if success then
 		status_text.create("Level Saved!")
 	else
-		print("LEVEL SAVE FAILED (Unable to write to directory)")
+		status_text.create("LEVEL SAVE FAILED (Unable to write to directory)")
 	end
 end
 
@@ -200,7 +238,7 @@ function loadLevel(name)
 
 		status_text.create("Level Loaded!")
 	else
-		print("LEVEL LOAD FAILED (Level file does not exist)")
+		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
 	end
 end
 
@@ -208,6 +246,8 @@ function switchGameState(newState) --Used for button.lua actions
 	if LET_CUR_GAME_STATE ~= newState then
 		LET_PREV_GAME_STATE = LET_CUR_GAME_STATE
 		LET_CUR_GAME_STATE = newState
+		--force unpausing
+		LET_GAME_PAUSED = false
 	end
 end
 

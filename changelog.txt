@@ -1,0 +1,16 @@
+--CHANGES
+*Added panels to UI options
+	-Panels can be used to shift focus to other buttons on screen
+*Fixed editor buttons being usable in pause menu
+*Polished saving + loading a bit more
+	-Added naming of saved levels
+	-Added loading of a specific level file
+	-Added Browse button to take you directly to the custom levels directory
+	-Added drag+drop functionality to load level panel
+
+
+
+--KNOWN BUGS
+*Editor cannot select blocks when dragging right to left, or bottom to top
+*Saving+Loading UI button elements incorrectly positioned in Quad
+*When respawning, the player may occasionally fall through the floor until a new level is loaded
