@@ -1,12 +1,5 @@
 --CHANGES
-*Added panels to UI options
-	-Panels can be used to shift focus to other buttons on screen
-*Fixed editor buttons being usable in pause menu
-*Polished saving + loading a bit more
-	-Added naming of saved levels
-	-Added loading of a specific level file
-	-Added Browse button to take you directly to the custom levels directory
-	-Added drag+drop functionality to load level panel
+*Added new block sprites to raw files + block_sheet
 
 
 
