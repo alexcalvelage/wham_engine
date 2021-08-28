@@ -1,5 +1,5 @@
 local gamera = require "resources/libraries/gamera"
-local bump = require "resources/libraries/bump"
+bump = require "resources/libraries/bump"
 require "resources/libraries/TSerial"
 require "utilities"
 require "resources"
@@ -48,7 +48,7 @@ function love.load()
 	LET_PANEL_OPEN = ""
 
 	--Editor Vars
-	LET_EDITOR_DEFAULT_TOOL = "editor_tool_select"
+	LET_EDITOR_TOOL = "editor_tool_select"
 	editor_change_mode("editor_tool_select", selection_cursor)
 	LET_EDITOR_BLOCKTYPE_SELECTED = "ground_block"
 	LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
@@ -56,7 +56,6 @@ function love.load()
 	--begins game logic
 	createGridWorld()
 	--ents]]
-	player.spawn(32, gheight - (32 * gridColsY))
 	--Panel
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
@@ -102,12 +101,20 @@ function love.keypressed(key)
 				LET_BROWSE_PATH = string.sub(LET_BROWSE_PATH, 1, byteoffset - 1)
 			end
 		end
+	elseif key == "return" then
+		if love.keyboard.hasTextInput() then
+			if LET_PANEL_OPEN == "savePanel" then
+				saveLevel(tostring(LET_BROWSE_PATH), block, enemy)
+			elseif LET_PANEL_OPEN == "loadPanel" then
+				loadLevel(tostring(LET_BROWSE_PATH))
+			end
+		end
 	end
 end
 
 function love.mousepressed(x, y, mButton)
-	for i = 1, #player do
-		block.clickAction(player[i], mButton)
+	if not LET_GAME_PAUSED then
+		block.clickAction(mButton)
 	end
 end
 
@@ -116,11 +123,15 @@ function love.mousereleased(x, y, mButton)
 end
 
 function love.wheelmoved(x, y)
-	block.cycleSelectedBlock(y)
+	if not LET_GAME_PAUSED then
+		block.cycleSelectedBlock(y)
+	end
 end
 
 function love.textinput(t)
-	LET_BROWSE_PATH = LET_BROWSE_PATH .. t
+	if LET_GAME_PAUSED then
+		LET_BROWSE_PATH = LET_BROWSE_PATH .. t
+	end
 end
 
 function love.filedropped(file)
@@ -138,6 +149,7 @@ function love.update(dt)
 	CONST_FPS = love.timer.getFPS()
 	mouseX, mouseY = love.mouse.getPosition()
 	worldMouseX, worldMouseY = cam:toWorld(mouseX, mouseY)
+
 	status_text.update(dt)
 	button.update(dt)
 	panel.update(dt)
@@ -190,12 +202,14 @@ function createGridWorld() --Called in block.lua
 		end
 
 		--Blocks that spawn underneath the player at spawn
-		block.typeChange(block[15], "grass_block_l")
-		block.typeChange(block[47], "grass_block")
-		block.typeChange(block[79], "grass_block")
-		block.typeChange(block[111], "grass_block_r")
+		block.typeChange(block[15], "ground_block")
+		block.typeChange(block[47], "ground_block")
+		block.typeChange(block[79], "ground_block")
+		block.typeChange(block[111], "ground_block")
+		block.typeChange(block[46], "player_spawn")
+		player.spawn(block[46].x + 4, block[46].y - 4)
 
-		status_text.create("World created")
+		status_text.create(" New world created!")
 	end
 end
 
@@ -210,35 +224,67 @@ function pauseGame()
 	end
 end
 
-function saveLevel(name, t)
-	local success, message = love.filesystem.write(name  .. ".txt", TSerial.pack(t, true))
+function saveLevel(name, t1, t2)
+	local lower_name = string.lower(name)
+	local mainTable = {}
+	local blockTable = {}
+	local enemyTable = {}
+	for i = 1, #t1 do
+		table.insert(blockTable, {subtype = t1[i].subtype, quad = t1[i].quad})
+	end
+	for i = 1, #t2 do
+		table.insert(enemyTable, {subtype = t2[i].subtype, x = t2[i].x, y = t2[i].y, dir = t2[i].dir})
+	end
+
+	table.insert(mainTable, blockTable)
+	table.insert(mainTable, enemyTable)
+
+	local success, message = love.filesystem.write(lower_name  .. ".txt", TSerial.pack(mainTable, true))
 	if success then
-		status_text.create("Level Saved!")
+		status_text.create("Level Saved! ('" .. lower_name .. "')")
 	else
 		status_text.create("LEVEL SAVE FAILED (Unable to write to directory)")
 	end
 end
 
 function loadLevel(name)
-	local file = love.filesystem.getInfo(name .. ".txt")
+	local lower_name = string.lower(name)
+	local file = love.filesystem.getInfo(lower_name .. ".txt")
 
 	if file then
-		local data_string = love.filesystem.read(name .. ".txt")
+		--Read save file text
+		local data_string = love.filesystem.read(lower_name .. ".txt")
+		--Unserialize string into table
 		data_string = TSerial.unpack(data_string, true)
 
+		--Delete any enemies in current level
+		sterilizeLevel()
+
+		--Load in block data from new save table
 		for i = 1, #block do
-			block[i].id = data_string[i].id
-			block[i].subtype = data_string[i].subtype
-			block[i].quad = data_string[i].quad
+			block[i].subtype = data_string[1][i].subtype
+			block[i].quad = data_string[1][i].quad
 
 			if not world:hasItem(block[i]) then
 				world:add(block[i], block[i].x, block[i].y, block[i].width, block[i].height)
 			end
 		end
+		for i = 1, #data_string[2] do
+			if data_string[2] ~= nil then
+				enemy.spawn(data_string[2][i].subtype, data_string[2][i].x, data_string[2][i].y, data_string[2][i].dir)
+			end
+		end
 
-		status_text.create("Level Loaded!")
+		status_text.create("Level Loaded! ('" .. lower_name .. "')")
 	else
 		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
+	end
+end
+
+--Function used to scrub memory of all level objects before loading a new stage
+function sterilizeLevel()
+	for i = 1, #enemy do
+		table.remove(enemy, i)
 	end
 end
 
@@ -276,7 +322,7 @@ function debugMenuDraw()
 		love.graphics.printf("#Enemies: " .. #enemy, CONST_DEBUG_X, CONST_DEBUG_Y * 10.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("Game State: " .. LET_CUR_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 12, CONST_DEBUG_W, "left")
 		love.graphics.printf("Previous Game State: " .. LET_PREV_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 13.5, CONST_DEBUG_W, "left")
-		love.graphics.printf("Current Editor Tool: " .. LET_EDITOR_DEFAULT_TOOL, CONST_DEBUG_X, CONST_DEBUG_Y * 15, CONST_DEBUG_W, "left")
+		love.graphics.printf("Current Editor Tool: " .. LET_EDITOR_TOOL, CONST_DEBUG_X, CONST_DEBUG_Y * 15, CONST_DEBUG_W, "left")
 		love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
 	end
 end

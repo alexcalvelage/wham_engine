@@ -5,7 +5,6 @@ function player.spawn(x, y)
 	--insert (1) player into the player table with included values
 	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, editor = {select_x = 0, select_y = 0, select_width = 0, select_height = 0}})
 	--adds collisions to each player created
-	--player_collision[#player] = world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
 
@@ -25,6 +24,7 @@ function player.update(dt)
 		goalX = goalX + (v.xVel * dt)
 		goalY = goalY + (v.yVel * dt)
 
+		--Left side of screen collision
 		if goalX <= 0 then
 			goalX = 0
 		end
@@ -40,7 +40,13 @@ function player.update(dt)
 		end
 		if v.health <= 0 then
 			v.xVel, v.yVel = 0, 0
-			goalX, goalY = 32, gheight - (32 * gridColsY)
+			for a = 1, #block do
+				if block[a].subtype == "player_spawn" then
+					goalX, goalY = block[a].x + 4, block[a].y - 4
+					world:update(player[i], goalX, goalY, v.width, v.height)
+				end
+			end
+
 			v.health = 1
 		end
 
@@ -89,7 +95,7 @@ function player.movementController(dt, plr)
 		player.stateChange(plr, "idle")
 	end
 
-	--Right, Left + Falling
+	--Right, Left
 	if love.keyboard.isDown("d") and plr.isOnGround then
 		plr.xVel = plr.speed
 		plr.dir = 1
@@ -181,22 +187,21 @@ function player.animationTimeScale(plr, time)
 end
 
 player.filter = function(item, other)
-	local x, y, w, h = world:getRect(other)
-	local px, py, pw, ph = world:getRect(item)
-	local playerBottom = py + ph
-	local playerRight = px + pw
-	local otherBottom = y + h
+	local playerX, playerY, playerW, playerH = world:getRect(item)
+	local otherX, otherY, otherW, otherH = world:getRect(other)
+
+	local playerBottom, playerRight = playerY + playerH, playerX + playerW
 
 --Checks which hitbox to check against
 	if other.subtype == "wooden_plat" then
-		if playerBottom <= y then
+		if playerBottom <= otherY then
 			return 'slide'
 		end
 	elseif other.subtype == "item_block" or other.subtype == "ground_block" or other.subtype == "grass_block" or other.subtype == "grass_block_l" or other.subtype == "grass_block_r" then
-		if py >= y or playerBottom <= y then
+		if playerY >= otherY or playerBottom <= otherY then
 			return 'slide'
 		end
-		if px <= x or playerRight >= x then
+		if playerX >= otherX or playerRight <= otherX then
 			return 'slide'
 		end
 	end

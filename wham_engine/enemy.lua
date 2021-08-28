@@ -2,7 +2,7 @@
 enemy = {}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
-	table.insert(enemy, {type = "enemy", subtype = subtype, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12})
+	table.insert(enemy, {subtype = subtype, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = player_fall, current_frame = 1, animation_timescale = 12})
 	--adds collisions to each enemy created
 	world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
 end
@@ -21,6 +21,16 @@ function enemy.update(dt)
 		--Constantly is updating our enemy's x,y position
 		goalX = goalX + (v.xVel * dt)
 		goalY = goalY + (v.yVel * dt)
+
+		--Fall detection
+		if v.yVel ~= 0 then
+			v.isOnGround = false
+		end
+
+		--Death detection
+		if goalY >= CONST_WORLD_LIMIT then
+			v.health = 0
+		end
 
 		--Handles animation state switching
 		enemy.animationStateController(dt, enemy[i])
@@ -77,9 +87,10 @@ function enemy.movementController(dt, me)
 		end
 	end
 
+	--Idle
 	if not moveInProgress and me.isOnGround then
 		me.xVel = 0
-		enemy.stateChange(me, "idle", love.math.random(1, #player_idle))
+		enemy.stateChange(me, "idle")
 	end
 
 	if moveInProgress then
@@ -90,6 +101,11 @@ function enemy.movementController(dt, me)
 		end
 
 		enemy.stateChange(me, "run")
+	end
+
+	--Falling
+	if me.state ~= "front_flip" and me.state ~= "jump" and not me.isOnGround then
+		enemy.stateChange(me, "fall")
 	end
 end
 

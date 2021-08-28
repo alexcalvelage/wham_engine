@@ -12,3 +12,22 @@ end
 function getFileName(path)
 	return path:match("^(.-)([^\\/]-)%.([^\\/%.]-)%.?$")
 end
+
+function Set(list)
+    local set = {}
+    for _, l in ipairs(list) do set[l] = true end
+    return set
+end
+
+function Unset(list)
+    local set = {}
+    for _, l in ipairs(list) do set[l] = false end
+    return set
+end
+
+function Contains(list, x)
+	for _, v in pairs(list) do
+		if v == x then return true end
+	end
+	return false
+end

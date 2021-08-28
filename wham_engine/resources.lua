@@ -30,6 +30,7 @@ function resourceLoad()
 	grass_block_r_QD = love.graphics.newQuad(96, 0, 32, 32, block_all_IMG:getDimensions())
 	grass_block_l_QD = love.graphics.newQuad(64, 32, 32, 32, block_all_IMG:getDimensions())
 	wooden_plat_QD = love.graphics.newQuad(96, 32, 32, 32, block_all_IMG:getDimensions())
+	player_spawn_QD = love.graphics.newQuad(0, 96, 32, 32, block_all_IMG:getDimensions())
 	--*buttonQDS
 	--**Long buttons
 	resume_button_QD = love.graphics.newQuad(0, 0, 194, 49, ui_buttons_all_IMG:getDimensions())

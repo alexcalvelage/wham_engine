@@ -42,16 +42,14 @@ function button.draw()
 end
 
 function button.detectVisibility(me)
-	for i = 1, #button do
-		--Checks to make sure buttons are only usable/rendered when they need to be.
-		if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN and LET_GAME_PAUSED) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED) then
-			me.enabled = true
-		else
-			me.enabled = false
-			--if a button is selected and then it becomes disabled, this 
-			--ensures that it is unselected
-			me.highlight = false
-		end
+	--Checks to make sure buttons are only usable/rendered when they need to be.
+	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN and LET_GAME_PAUSED) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED) then
+		me.enabled = true
+	else
+		me.enabled = false
+		--if a button is selected and then it becomes disabled, this 
+		--ensures that it is unselected
+		me.highlight = false
 	end
 end
 
@@ -89,12 +87,10 @@ function button.clickAction(mButton)
 					panel.typeChange("savePanel")
 					love.keyboard.setTextInput(true)
 					love.keyboard.setKeyRepeat(true)
-					--saveLevel("level_test", block)
 				elseif button[i].action == "load_level_action" then
 					panel.typeChange("loadPanel")
 					love.keyboard.setTextInput(true)
 					love.keyboard.setKeyRepeat(true)
-					--loadLevel("level_test")
 				elseif button[i].action == "exit_session_action" then
 					switchGameState("menu_state")
 					love.mouse.setCursor(default_cursor)
@@ -106,7 +102,7 @@ function button.clickAction(mButton)
 				elseif button[i].action == "browse_action" then
 					love.system.openURL("file://"..love.filesystem.getSaveDirectory())
 				elseif button[i].action == "save_action" then
-					saveLevel(tostring(LET_BROWSE_PATH), block)
+					saveLevel(tostring(LET_BROWSE_PATH), block, enemy)
 				elseif button[i].action == "load_action" then
 					loadLevel(tostring(LET_BROWSE_PATH))
 				--EDITOR ACTIONS
@@ -127,5 +123,5 @@ end
 
 function editor_change_mode(mode, cursor)
 	love.mouse.setCursor(cursor)
-	LET_EDITOR_DEFAULT_TOOL = mode
+	LET_EDITOR_TOOL = mode
 end

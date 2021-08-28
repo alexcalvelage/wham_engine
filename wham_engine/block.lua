@@ -1,5 +1,4 @@
---required for rectCollision func
-local bump = require "resources/libraries/bump"
+local select_x, select_y, select_width, select_height
 
 block = {}
 --block_collision = {}
@@ -11,20 +10,20 @@ end
 
 function block.update(dt)
 	for i = 1, #block do
-		local selected_block
 		--Check to disable default block highlighitng behavior
 		--This allows the editor to display what blocks are selected
-		if LET_EDITOR_DEFAULT_TOOL ~= "editor_tool_select" then
+		if LET_EDITOR_TOOL ~= "editor_tool_select" then
 			block.highlight(block[i])
 		end
+
 		--Draw tool
 		if love.mouse.isDown(1) then
-			if LET_EDITOR_DEFAULT_TOOL == "editor_tool_draw" then
+			if LET_EDITOR_TOOL == "editor_tool_draw" then
 				block.editor_paint(block[i])
 			end
 		--Draw tool Eraser
 		elseif love.mouse.isDown(2) then
-			if LET_EDITOR_DEFAULT_TOOL == "editor_tool_draw" then
+			if LET_EDITOR_TOOL == "editor_tool_draw" then
 				block.editor_paint(block[i], true)
 			end
 		end
@@ -52,9 +51,6 @@ function block.draw()
 
 	love.graphics.setColor(0, 0, 1, .2)
 	love.graphics.rectangle("fill", player[1].editor.select_x, player[1].editor.select_y, player[1].editor.select_width, player[1].editor.select_height)
-	--love.graphics.setColor(1, 1, 1)
-	--love.graphics.print(player[1].editor.select_x .. ", " .. player[1].editor.select_y .. ", " .. player[1].editor.select_width .. ", " .. player[1].editor.select_height, player[1].editor.select_x + 200, player[1].editor.select_y + 200)
-	--love.graphics.print(tostring(newX) .. ", " .. tostring(newY) .. ", " .. tostring(newW) .. ", " .. tostring(newH), 200, 200)
 end
 
 function block.highlight(me)
@@ -71,13 +67,14 @@ function block.highlight(me)
 		me.quad_overlay = nil
 	end
 end
-function block.clickAction(user, mButton)
-	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
+
+function block.clickAction(mButton)
+	if LET_EDITOR_TOOL == "editor_tool_select" then
 		if mButton == 1 then
-			user.editor.select_x = worldMouseX
-			user.editor.select_y = worldMouseY
+			select_x = worldMouseX
+			select_y = worldMouseY
 		end
-	elseif LET_EDITOR_DEFAULT_TOOL == "editor_tool_dropper" then
+	elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
 		if mButton == 1 then
 			enemy.spawn("goon", worldMouseX, worldMouseY, 1)
 		end
@@ -85,23 +82,13 @@ function block.clickAction(user, mButton)
 end
 
 function block.clickActionUpdate(user)
-	--newX, newY, newW, newH = nil, nil, nil, nil
-	if LET_EDITOR_DEFAULT_TOOL == "editor_tool_select" then
+	if LET_EDITOR_TOOL == "editor_tool_select" then
 		if love.mouse.isDown(1) then
-			user.editor.select_width = worldMouseX - user.editor.select_x
-			user.editor.select_height = worldMouseY - user.editor.select_y
-
-			--[[if user.editor.select_width < 0 or user.editor.select_height < 0 then
-				newX = worldMouseX
-				newY = worldMouseY
-				newW = user.editor.select_x
-				newH = user.editor.select_y
-			end--]]
+			select_width = worldMouseX - select_x
+			select_height = worldMouseY - select_y
 
 			for i = 1, #block do
-				--if bump.rect.detectCollision(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, , block[i].y, block[i].width, block[i].height) then
-				--if bump.rect.getSegmentIntersectionIndices(user.editor.select_x, user.editor.select_y, user.editor.select_width, user.editor.select_height, block[i].x, block[i].y, block[i].width, block[i].height) then
-				if bump.rect.containsPoint(newX or user.editor.select_x, newY or user.editor.select_y, newW or user.editor.select_width, newH or user.editor.select_height, block[i].x + block[i].width / 2, block[i].y + block[i].height / 2) then
+				if bump.rect.containsPoint(newX or select_x, newY or select_y, newW or select_width, newH or select_height, block[i].x + block[i].width / 2, block[i].y + block[i].height / 2) then
 					block[i].highlight = true
 					--sets block highlight texture
 					block[i].quad_overlay = highlight_block_QD
@@ -140,7 +127,7 @@ function block.editor_paint(me, erase)
 end
 
 function block.cycleSelectedBlock(y)
-	local maxIndex = 7
+	local maxIndex = 6
 	if y > 0 then
 		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = LET_EDITOR_BLOCKTYPE_SELECTED_INDEX + 1
 	elseif y < 0 then
@@ -160,12 +147,13 @@ function block.cycleSelectedBlock(y)
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 3 then
 		LET_EDITOR_BLOCKTYPE_SELECTED = "wooden_plat"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 4 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_l"
-	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 5 then
 		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 5 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "player_spawn"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 6 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_r"
-	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 7 then
 		LET_EDITOR_BLOCKTYPE_SELECTED = "air_block"
 	end
+end
+
+function block.interact(me)
 end

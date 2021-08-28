@@ -36,7 +36,7 @@ function panel.draw()
 				if panel[i].activeState == "loadPanel" then
 					hint_path = "From '%APPDATA%' you can drag+drop a level file here."
 				elseif panel[i].activeState == "savePanel" then
-					hint_path = "Ex: 'Something_Funny_V1'"
+					hint_path = "Ex: 'something_funny_v1'"
 				end
 			else
 				love.graphics.setColor(0, 0, 0)
