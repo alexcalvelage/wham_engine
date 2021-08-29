@@ -9,6 +9,21 @@ function CheckCollision(x1, y1, w1, h1, x2, y2, w2, h2)
 	y2 < y1 + h1
 end
 
+function playSound(name)
+	name:play()
+end
+
+function stopSound(name)
+	name:stop()
+end
+
+function increaseVolume()
+
+end
+
+function decreaseVolume()
+end
+
 function getFileName(path)
 	return path:match("^(.-)([^\\/]-)%.([^\\/%.]-)%.?$")
 end

@@ -1,3 +1,5 @@
+local selectedButtons = {}
+
 button = {}
 function button.spawn(quad, action, activeState, x, y, w, h)
 	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 194, height = h or 49, highlight = false})
@@ -61,6 +63,7 @@ function button.highlight(me)
 		me.highlight = true
 		local quad_string = tostring(me.quad) .. "_2"
 		me.quad_overlay = _G[quad_string]
+		LET_BUTTON_SELECTED = me.highlight
 	else
 		me.highlight = false
 		me.quad_overlay = nil
@@ -125,3 +128,6 @@ function editor_change_mode(mode, cursor)
 	love.mouse.setCursor(cursor)
 	LET_EDITOR_TOOL = mode
 end
+
+--Check if create buttons are hovered over
+--If these specific buttons are hovered then dont allow block highlight

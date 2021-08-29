@@ -1,15 +1,10 @@
 --CHANGES
-*Added new block sprites to raw files + block_sheet (Spikes, Player Spawn blocks)
-*Added ability to save enemies inside a level
-*Added enter key support for saving + loading level panel
-*Fixed save and load level buttons crashing game if enemies were present in level
-*Fixed being able to spawn objects while the game is paused
-*Modified block click events to remove looping over users
-*Modified player respawn code to support a placeable spawn point block for the player(Can be used as checkpoints as well)
-	-Fixes the infinite falling glitch
+*Added jump and footsteps sound effects
+*Changed variable name for storing FPS
+*Fixed being able to click through UI buttons and select blocks in editor mode
+*Modified animation state controller to use a tickrate + sound support
 
 
 --KNOWN BUGS
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *Saving+Loading UI button elements incorrectly positioned in Quad
-*UI Buttons can be click through to place tiles or ents

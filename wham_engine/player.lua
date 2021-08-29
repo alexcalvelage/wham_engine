@@ -3,7 +3,7 @@ player = {}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, editor = {select_x = 0, select_y = 0, select_width = 0, select_height = 0}})
+	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -43,15 +43,18 @@ function player.update(dt)
 			for a = 1, #block do
 				if block[a].subtype == "player_spawn" then
 					goalX, goalY = block[a].x + 4, block[a].y - 4
-					world:update(player[i], goalX, goalY, v.width, v.height)
 				end
 			end
 
+			world:update(player[i], goalX, goalY, v.width, v.height)
 			v.health = 1
 		end
 
 		--Handles animation state switching
 		player.animationStateController(dt, player[i])
+
+		--Called after animation controller..handles sounds
+		player.soundStateController(dt, player[i])
 
 		--checks to see the player will collide with something using the goalX,Y
 		v.x, v.y, collisions, len = world:move(player[i], goalX, goalY, player.filter)
@@ -79,7 +82,7 @@ function player.draw()
 	for i,v in ipairs(player) do
 		local scaleX = v.dir
 		love.graphics.setColor(1, 1, 1)
-		love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x + (v.width / 2), v.y, 0, scaleX * playerScaling, playerScaling, v.animationTable[math.floor(v.current_frame)]:getWidth() / 2, 0)
+		love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * playerScaling, playerScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
 	end
 end
 
@@ -100,11 +103,18 @@ function player.movementController(dt, plr)
 		plr.xVel = plr.speed
 		plr.dir = 1
 		player.stateChange(plr, "run")
+		if math.floor(plr.current_frame) == 1 or math.floor(plr.current_frame) == 5 then
+			playSound(footstep_hard_floor)
+		end
 	elseif love.keyboard.isDown("a") and plr.isOnGround then
 		plr.xVel = -plr.speed
 		plr.dir = -1
 		player.stateChange(plr, "run")
+		if math.floor(plr.current_frame) == 1 or math.floor(plr.current_frame) == 5 then
+			playSound(footstep_hard_floor)
+		end
 	end
+
 
 	--Jumping
 	if love.keyboard.isDown("space") and plr.isOnGround then
@@ -118,6 +128,9 @@ function player.movementController(dt, plr)
 			--starts on 4th frame to make jumping more immediate
 			player.stateChange(plr, "front_flip", 4)
 		end
+
+		--plays jump sound
+		playSound(jump_exert)
 
 		plr.isOnGround = false
 	end
@@ -146,22 +159,37 @@ end
 function player.animationStateController(dt, plr)
 	--Resets animation timing if it has been changed
 	player.animationTimeScale(plr, 12)
+	--Changes our animation tick rate based on timescale
+	plr.tick = plr.tick + dt * plr.animation_timescale
 
 	--Change player's animation based on his current state
 	player.animationChange(plr, plr.state, startFrame)
 
-	--Every game frame, move ahead an animation frame based on animation timing
-	plr.current_frame = plr.current_frame + plr.animation_timescale * dt
-	if plr.current_frame >= #plr.animationTable then
-		--Instead of just resetting our current animation frame we instead switch
-		--player states to falling so that the jump and flip anims don't loop
-		if plr.state == "jump" or plr.state == "front_flip" then
-			--overrides any previous animation changes
-			player.stateChange(plr, "fall")
+	--Checks if the current anim tick is greater than .9(seems to prevent footstep sound dupe)
+	if plr.tick > 0.9 then
+		plr.current_frame = plr.current_frame + 1
+
+		if plr.current_frame > #plr.animationTable then
+			--Instead of just resetting our current animation frame we instead switch
+			--player states to falling so that the jump and flip anims don't loop
+			if plr.state == "jump" or plr.state == "front_flip" then
+				--overrides any previous animation changes
+				player.stateChange(plr, "fall")
+			end
+			--Once we reach the end of the animation data table, start back at the beginning
+			--Lua indices start at 1 instead of 0 :l
+			plr.current_frame = 1
 		end
-		--Once we reach the end of the animation data table, start back at the beginning
-		--Lua indices start at 1 instead of 0 :l
-		plr.current_frame = 1
+		--reset our timing ticks when reaching end of frames
+		plr.tick = 0
+	end
+end
+
+function player.soundStateController(dt, plr)
+	if plr.state == "run" then
+		if plr.current_frame == 1 or plr.current_frame == 5 then
+			playSound(footstep_hard_floor)
+		end
 	end
 end
 
@@ -185,6 +213,8 @@ end
 function player.animationTimeScale(plr, time)
 	plr.animation_timescale = time
 end
+
+
 
 player.filter = function(item, other)
 	local playerX, playerY, playerW, playerH = world:getRect(item)

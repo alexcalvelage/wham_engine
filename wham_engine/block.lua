@@ -14,6 +14,11 @@ function block.update(dt)
 		--This allows the editor to display what blocks are selected
 		if LET_EDITOR_TOOL ~= "editor_tool_select" then
 			block.highlight(block[i])
+			for a = 1, #button do
+				if block[i].highlight and button[a].highlight then
+					block.unHighlight(block[i])
+				end
+			end
 		end
 
 		--Draw tool
@@ -50,7 +55,7 @@ function block.draw()
 	end
 
 	love.graphics.setColor(0, 0, 1, .2)
-	love.graphics.rectangle("fill", player[1].editor.select_x, player[1].editor.select_y, player[1].editor.select_width, player[1].editor.select_height)
+	love.graphics.rectangle("fill", select_x or 0, select_y or 0, select_width or 0, select_height or 0)
 end
 
 function block.highlight(me)
@@ -63,8 +68,7 @@ function block.highlight(me)
 		--sets block highlight texture
 		me.quad_overlay = highlight_block_QD
 	else
-		me.highlight = false
-		me.quad_overlay = nil
+		block.unHighlight(me)
 	end
 end
 
@@ -76,7 +80,12 @@ function block.clickAction(mButton)
 		end
 	elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
 		if mButton == 1 then
-			enemy.spawn("goon", worldMouseX, worldMouseY, 1)
+			--seems sloppy to reloop here..but this fixes placing enemies through UI buttons
+			for i = 1, #block do
+				if block[i].highlight then
+					enemy.spawn("goon", worldMouseX, worldMouseY, 1)
+				end
+			end
 		end
 	end
 end
@@ -93,9 +102,7 @@ function block.clickActionUpdate(user)
 					--sets block highlight texture
 					block[i].quad_overlay = highlight_block_QD
 				else
-					block[i].highlight = false
-					--sets block highlight texture
-					block[i].quad_overlay = nil
+					block.unHighlight(block[i])
 				end
 			end
 		elseif love.mouse.isDown(2) then
@@ -156,4 +163,10 @@ function block.cycleSelectedBlock(y)
 end
 
 function block.interact(me)
+end
+
+function block.unHighlight(me)
+	me.highlight = false
+	--sets block highlight texture
+	me.quad_overlay = nil
 end

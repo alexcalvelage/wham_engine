@@ -35,10 +35,10 @@ function love.load()
 
 --BEGIN GAME
 	--initialize some 'constants' first
-	CONST_FPS = 0
 	CONST_DEBUG_M = false
 	CONST_WORLD_LIMIT = 1800
 	CONST_GRAVITY = 1800
+	LET_FPS = 0
 	LET_TIME_DILATION = 1
 	LET_CUR_GAME_STATE = "create_state"
 	LET_PREV_GAME_STATE = ""
@@ -46,6 +46,7 @@ function love.load()
 	LET_BROWSE_PATH = ""
 	LET_PANEL_FOCUS = false
 	LET_PANEL_OPEN = ""
+	LET_BUTTON_SELECTED = nil
 
 	--Editor Vars
 	LET_EDITOR_TOOL = "editor_tool_select"
@@ -93,6 +94,7 @@ function love.keypressed(key)
 		if LET_CUR_GAME_STATE ~= "menu_state" and not love.keyboard.hasTextInput() then
 			pauseGame()
 		end
+		--Backspacing functionality for level path input
 	elseif key == "backspace" then
 		if love.keyboard.hasTextInput() then
 			local byteoffset = utf8.offset(LET_BROWSE_PATH, -1)
@@ -101,6 +103,7 @@ function love.keypressed(key)
 				LET_BROWSE_PATH = string.sub(LET_BROWSE_PATH, 1, byteoffset - 1)
 			end
 		end
+		--Enables 'enter' key functionality for level path input
 	elseif key == "return" then
 		if love.keyboard.hasTextInput() then
 			if LET_PANEL_OPEN == "savePanel" then
@@ -144,9 +147,9 @@ function love.filedropped(file)
 end
 
 function love.update(dt)
-	--dt = .002 --slows down time
+	--dt = .001 --slows down time
 	--Grabs game FPS
-	CONST_FPS = love.timer.getFPS()
+	LET_FPS = love.timer.getFPS()
 	mouseX, mouseY = love.mouse.getPosition()
 	worldMouseX, worldMouseY = cam:toWorld(mouseX, mouseY)
 
@@ -315,7 +318,7 @@ function debugMenuDraw()
 		love.graphics.setColor(1, 1, 1)
 		love.graphics.printf("DEBUG MENU", CONST_DEBUG_X, CONST_DEBUG_Y, CONST_DEBUG_W, "center")
 		--Displays FPS benchmark
-		love.graphics.printf("FPS: " .. CONST_FPS, CONST_DEBUG_X, CONST_DEBUG_Y * 3, CONST_DEBUG_W, "left")
+		love.graphics.printf("FPS: " .. LET_FPS, CONST_DEBUG_X, CONST_DEBUG_Y * 3, CONST_DEBUG_W, "left")
 		love.graphics.printf("Player State: " .. player[1].state, CONST_DEBUG_X, CONST_DEBUG_Y * 6, CONST_DEBUG_W, "left")
 		love.graphics.printf("Player Frame: " .. math.floor(player[1].current_frame), CONST_DEBUG_X, CONST_DEBUG_Y * 7.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("#Blocks: " .. #block, CONST_DEBUG_X, CONST_DEBUG_Y * 9, CONST_DEBUG_W, "left")

@@ -2,49 +2,55 @@
 enemy = {}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
-	table.insert(enemy, {subtype = subtype, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = player_fall, current_frame = 1, animation_timescale = 12})
+	table.insert(enemy, {subtype = subtype, health = 1, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = player_fall, current_frame = 1, animation_timescale = 12})
 	--adds collisions to each enemy created
 	world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
 end
 
 function enemy.update(dt)
 	for i,v in ipairs(enemy) do
-		--Cue gravity
-		v.yVel = v.yVel + (CONST_GRAVITY * dt)
+		if not v.cleanup then
+			--Cue gravity
+			v.yVel = v.yVel + (CONST_GRAVITY * dt)
 
-		--where we WANT to go provided no collisions
-		local goalX, goalY = v.x, v.y
+			--where we WANT to go provided no collisions
+			local goalX, goalY = v.x, v.y
 
-		--Handles keyboard movements (NO BINDINGS SUPPORT)
-		enemy.movementController(dt, enemy[i])
+			--Handles keyboard movements (NO BINDINGS SUPPORT)
+			enemy.movementController(dt, enemy[i])
 
-		--Constantly is updating our enemy's x,y position
-		goalX = goalX + (v.xVel * dt)
-		goalY = goalY + (v.yVel * dt)
+			--Constantly is updating our enemy's x,y position
+			goalX = goalX + (v.xVel * dt)
+			goalY = goalY + (v.yVel * dt)
 
-		--Fall detection
-		if v.yVel ~= 0 then
-			v.isOnGround = false
-		end
-
-		--Death detection
-		if goalY >= CONST_WORLD_LIMIT then
-			v.health = 0
-		end
-
-		--Handles animation state switching
-		enemy.animationStateController(dt, enemy[i])
-
-		--checks to see the enemy will collide with something using the goalX,Y
-		v.x, v.y, collisions, len = world:move(enemy[i], goalX, goalY, enemy.filter)
-		
-		for a,coll in ipairs(collisions) do
-			--we are goin' up and thru!
-			if coll.touch.y >= goalY then
+			--Fall detection
+			if v.yVel ~= 0 then
 				v.isOnGround = false
-			elseif coll.normal.y < 0 then --coming down onto block
-				v.isOnGround = true
-				v.yVel = 0
+			end
+
+			--Death detection
+			if goalY >= CONST_WORLD_LIMIT then
+				v.health = 0
+			end
+			if v.health <= 0 then
+				v.xVel, v.yVel = 0, 0
+				v.cleanup = true
+			end
+
+			--Handles animation state switching
+			enemy.animationStateController(dt, enemy[i])
+
+			--checks to see the enemy will collide with something using the goalX,Y
+			v.x, v.y, collisions, len = world:move(enemy[i], goalX, goalY, enemy.filter)
+			
+			for a,coll in ipairs(collisions) do
+				--we are goin' up and thru!
+				if coll.touch.y >= goalY then
+					v.isOnGround = false
+				elseif coll.normal.y < 0 then --coming down onto block
+					v.isOnGround = true
+					v.yVel = 0
+				end
 			end
 		end
 	end

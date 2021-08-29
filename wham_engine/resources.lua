@@ -4,6 +4,7 @@ function resourceLoad()
 	defaultFontBold = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 16)
 	defaultFontHuge = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 96)
 	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 10)
+	--sets our default font on game launch
 	love.graphics.setFont(defaultFont)
 --CURSORS
 	default_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_default.png", 0, 0)
@@ -107,6 +108,8 @@ function resourceLoad()
 --SOUNDS
 	masterVolume = 1.0
 	soundsVolume = 1.0
-	--heartPickup = love.audio.newSource("resources/sounds/score.ogg", "static")
-	--heartPickup:setVolume(masterVolume * soundsVolume)
+	jump_exert = love.audio.newSource("resources/sounds/jump/exert.ogg", "static")
+	jump_exert:setVolume(masterVolume * soundsVolume)
+	footstep_hard_floor = love.audio.newSource("resources/sounds/footsteps/hard_floor.ogg", "static")
+	footstep_hard_floor:setVolume(masterVolume * soundsVolume)
 end
