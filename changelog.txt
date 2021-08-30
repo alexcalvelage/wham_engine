@@ -1,14 +1,10 @@
 --CHANGES
-*Added ability to crouch + crouch walk (anims unfinished for walking)
-*Added new sounds to placing blocks
-*Fixed footstep sound being played in two different spots
-*Fixed being able to change change a block type to the same type
-*Fixed player animation timing not being changed properly after adding ticks
-*Modified block.update code to speed up performance
-*Slowed down jump animation slightly(From 4 to 3)
+*Fixed crouching and walking not working at all
+
 
 --KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *Saving+Loading UI button elements incorrectly positioned in Quad
 *Enemies don't use the updated animation controllers
-*Crouching doesn't happen instantly. Fall off a ledge while crouch walking also causes an animation error
+*Crouching and standing back up while on a platform makes you fall through
+*Collision fails when uncrouching and on the leftmost side of a block

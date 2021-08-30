@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -71,10 +71,6 @@ function player.update(dt)
 				v.yVel = 0
 			end
 		end
-
-		--testing for fixing drag selection bug
-		--print(player[i].editor.select_x, player[i].editor.select_y, player[i].editor.select_width, player[i].editor.select_height)
-
 	end
 end
 
@@ -99,27 +95,27 @@ function player.movementController(dt, plr)
 	end
 
 	--Running
-	if love.keyboard.isDown("d") and plr.height == defaultHeight and plr.isOnGround then
+	if love.keyboard.isDown("d") and not plr.isCrouching and plr.isOnGround then
 		plr.xVel = plr.speed
 		plr.dir = 1
 		player.stateChange(plr, "run")
-	elseif love.keyboard.isDown("a") and plr.height == defaultHeight and plr.isOnGround then
+	elseif love.keyboard.isDown("a") and not plr.isCrouching and plr.isOnGround then
 		plr.xVel = -plr.speed
 		plr.dir = -1
 		player.stateChange(plr, "run")
 	end
 
 	--Crouching
-	if love.keyboard.isDown("lctrl") and plr.isOnGround then
+	if love.keyboard.isDown("lctrl") and plr.isOnGround and not love.keyboard.isDown("a", "d") then
 		plr.xVel = 0
 		player.stateChange(plr, "crouch")
 	end
 	--Crouch Walking
-	if love.keyboard.isDown("d") and plr.height == 32 and plr.isOnGround then
+	if love.keyboard.isDown("d") and plr.isCrouching then
 		plr.xVel = plr.speed / 2
 		plr.dir = 1
 		player.stateChange(plr, "crouch_walk")
-	elseif love.keyboard.isDown("a") and plr.height == 32 and plr.isOnGround then
+	elseif love.keyboard.isDown("a") and plr.isCrouching then
 		plr.xVel = -plr.speed / 2
 		plr.dir = -1
 		player.stateChange(plr, "crouch_walk")
@@ -158,10 +154,12 @@ function player.stateChange(plr, state, startFrame)
 		plr.current_frame = startFrame or 1
 
 		if state == "crouch" or state == "crouch_walk" then
-			--plr.yVel = 1500
 			plr.height = defaultHeight / 2
-		elseif state ~= "crouch" then
+			plr.yVel = -plr.jumpHeight
+			plr.isCrouching = true
+		else
 			plr.height = defaultHeight
+			plr.isCrouching = false
 		end
 		
 		status_text.create("WORLD UPDATE")
