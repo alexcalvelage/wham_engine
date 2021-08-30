@@ -72,6 +72,8 @@ function resourceLoad()
 	player_jump = {}
 	player_front_flip = {}
 	player_fall = {}
+	player_crouch = {}
+	player_crouch_walk = {}
 	--Animation Tables
 	player_idle[1] = love.graphics.newImage("resources/textures/player/idle/1.png")
 		player_idle[2] = love.graphics.newImage("resources/textures/player/idle/2.png")
@@ -105,11 +107,30 @@ function resourceLoad()
 		player_front_flip[12] = love.graphics.newImage("resources/textures/player/front_flip/12.png")
 		player_front_flip[13] = love.graphics.newImage("resources/textures/player/front_flip/13.png")
 	player_fall[1] = love.graphics.newImage("resources/textures/player/jump_fall/1.png")
+	player_crouch[1] = love.graphics.newImage("resources/textures/player/crouch/1.png")
+		player_crouch[2] = love.graphics.newImage("resources/textures/player/crouch/2.png")
+		player_crouch[3] = love.graphics.newImage("resources/textures/player/crouch/3.png")
+		player_crouch[4] = love.graphics.newImage("resources/textures/player/crouch/4.png")
+		player_crouch[5] = love.graphics.newImage("resources/textures/player/crouch/5.png")
+		player_crouch[6] = love.graphics.newImage("resources/textures/player/crouch/6.png")
+	player_crouch_walk[1] = love.graphics.newImage("resources/textures/player/crawl/1.png")
+		player_crouch_walk[2] = love.graphics.newImage("resources/textures/player/crawl/2.png")
+		player_crouch_walk[3] = love.graphics.newImage("resources/textures/player/crawl/3.png")
+		player_crouch_walk[4] = love.graphics.newImage("resources/textures/player/crawl/4.png")
+		player_crouch_walk[5] = love.graphics.newImage("resources/textures/player/crawl/5.png")
+		player_crouch_walk[6] = love.graphics.newImage("resources/textures/player/crawl/6.png")
+		player_crouch_walk[7] = love.graphics.newImage("resources/textures/player/crawl/7.png")
+		player_crouch_walk[8] = love.graphics.newImage("resources/textures/player/crawl/8.png")
 --SOUNDS
 	masterVolume = 1.0
 	soundsVolume = 1.0
-	jump_exert = love.audio.newSource("resources/sounds/jump/exert.ogg", "static")
-	jump_exert:setVolume(masterVolume * soundsVolume)
-	footstep_hard_floor = love.audio.newSource("resources/sounds/footsteps/hard_floor.ogg", "static")
-	footstep_hard_floor:setVolume(masterVolume * soundsVolume)
+	jump_exert_SND = love.audio.newSource("resources/sounds/jump/exert.ogg", "static")
+	footstep_hard_floor_SND = love.audio.newSource("resources/sounds/footsteps/hard_floor.ogg", "static")
+	place_block_SND = love.audio.newSource("resources/sounds/ui/pop.ogg", "static")
+	remove_block_SND = love.audio.newSource("resources/sounds/ui/erase_pop.ogg", "static")
+	
+	jump_exert_SND:setVolume(masterVolume * soundsVolume)
+	footstep_hard_floor_SND:setVolume(masterVolume * soundsVolume)
+	place_block_SND:setVolume(masterVolume * soundsVolume)
+	remove_block_SND:setVolume(masterVolume * soundsVolume)
 end

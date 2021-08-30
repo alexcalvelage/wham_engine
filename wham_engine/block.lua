@@ -12,6 +12,7 @@ function block.update(dt)
 	for i = 1, #block do
 		--Check to disable default block highlighitng behavior
 		--This allows the editor to display what blocks are selected
+		--The selection tool uses a different method of highlighting as well
 		if LET_EDITOR_TOOL ~= "editor_tool_select" then
 			block.highlight(block[i])
 			for a = 1, #button do
@@ -19,19 +20,16 @@ function block.update(dt)
 					block.unHighlight(block[i])
 				end
 			end
+			if LET_EDITOR_TOOL == "editor_tool_draw" then
+				if love.mouse.isDown(1) then
+					block.editor_paint(block[i])
+				elseif love.mouse.isDown(2) then
+					block.editor_paint(block[i], true)
+				end
+			end
 		end
 
-		--Draw tool
-		if love.mouse.isDown(1) then
-			if LET_EDITOR_TOOL == "editor_tool_draw" then
-				block.editor_paint(block[i])
-			end
-		--Draw tool Eraser
-		elseif love.mouse.isDown(2) then
-			if LET_EDITOR_TOOL == "editor_tool_draw" then
-				block.editor_paint(block[i], true)
-			end
-		end
+		block.clickActionUpdate(block[i])
 	end
 end
 
@@ -90,36 +88,40 @@ function block.clickAction(mButton)
 	end
 end
 
-function block.clickActionUpdate(user)
+function block.clickActionUpdate(me)
 	if LET_EDITOR_TOOL == "editor_tool_select" then
 		if love.mouse.isDown(1) then
 			select_width = worldMouseX - select_x
 			select_height = worldMouseY - select_y
 
-			for i = 1, #block do
-				if bump.rect.containsPoint(newX or select_x, newY or select_y, newW or select_width, newH or select_height, block[i].x + block[i].width / 2, block[i].y + block[i].height / 2) then
-					block[i].highlight = true
-					--sets block highlight texture
-					block[i].quad_overlay = highlight_block_QD
-				else
-					block.unHighlight(block[i])
-				end
+			if bump.rect.containsPoint(newX or select_x, newY or select_y, newW or select_width, newH or select_height, me.x + me.width / 2, me.y + me.height / 2) then
+				me.highlight = true
+				--sets block highlight texture
+				me.quad_overlay = highlight_block_QD
+			else
+				block.unHighlight(me)
 			end
 		elseif love.mouse.isDown(2) then
-			for i = 1, #block do
-				block.editor_paint(block[i])
-			end
+			block.editor_paint(me)
 		end
 	end
 end
 
 function block.typeChange(me, subtype)
-	--Changes block quad to corresponding block subtype
-	me.subtype = subtype
-	me.quad = tostring(me.subtype) .. "_QD"
-	--Checks to make sure collision on this doesn't already exist
-	if not world:hasItem(me) then
-		world:add(me, me.x, me.y, me.width, me.height)
+	if me.subtype ~= subtype then
+		--Changes block quad to corresponding block subtype
+		me.subtype = subtype
+		me.quad = tostring(me.subtype) .. "_QD"
+		--Checks to make sure collision on this doesn't already exist
+		if not world:hasItem(me) then
+			world:add(me, me.x, me.y, me.width, me.height)
+		end
+
+		if subtype == "air_block" then
+			playSound(remove_block_SND)
+		else
+			playSound(place_block_SND)
+		end
 	end
 end
 

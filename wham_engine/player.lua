@@ -1,9 +1,11 @@
+local defaultWidth, defaultHeight = 25, 64
+
 --initialize player data table
-player = {}
+player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = animationTable, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -73,16 +75,14 @@ function player.update(dt)
 		--testing for fixing drag selection bug
 		--print(player[i].editor.select_x, player[i].editor.select_y, player[i].editor.select_width, player[i].editor.select_height)
 
-		block.clickActionUpdate(player[i])
 	end
 end
 
 function player.draw()
-	local playerScaling = 1.66
 	for i,v in ipairs(player) do
 		local scaleX = v.dir
 		love.graphics.setColor(1, 1, 1)
-		love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * playerScaling, playerScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
+		love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * player.playerScaling, player.playerScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
 	end
 end
 
@@ -90,7 +90,7 @@ end
 --This tells the animation controller what to render
 function player.movementController(dt, plr)
 	--Checks if any movement keys are being held down
-	local keyDown = love.keyboard.isDown("d", "a", "space")
+	local keyDown = love.keyboard.isDown("d", "a", "space", "lctrl")
 
 	--Idle
 	if not keyDown and plr.isOnGround then
@@ -98,23 +98,32 @@ function player.movementController(dt, plr)
 		player.stateChange(plr, "idle")
 	end
 
-	--Right, Left
-	if love.keyboard.isDown("d") and plr.isOnGround then
+	--Running
+	if love.keyboard.isDown("d") and plr.height == defaultHeight and plr.isOnGround then
 		plr.xVel = plr.speed
 		plr.dir = 1
 		player.stateChange(plr, "run")
-		if math.floor(plr.current_frame) == 1 or math.floor(plr.current_frame) == 5 then
-			playSound(footstep_hard_floor)
-		end
-	elseif love.keyboard.isDown("a") and plr.isOnGround then
+	elseif love.keyboard.isDown("a") and plr.height == defaultHeight and plr.isOnGround then
 		plr.xVel = -plr.speed
 		plr.dir = -1
 		player.stateChange(plr, "run")
-		if math.floor(plr.current_frame) == 1 or math.floor(plr.current_frame) == 5 then
-			playSound(footstep_hard_floor)
-		end
 	end
 
+	--Crouching
+	if love.keyboard.isDown("lctrl") and plr.isOnGround then
+		plr.xVel = 0
+		player.stateChange(plr, "crouch")
+	end
+	--Crouch Walking
+	if love.keyboard.isDown("d") and plr.height == 32 and plr.isOnGround then
+		plr.xVel = plr.speed / 2
+		plr.dir = 1
+		player.stateChange(plr, "crouch_walk")
+	elseif love.keyboard.isDown("a") and plr.height == 32 and plr.isOnGround then
+		plr.xVel = -plr.speed / 2
+		plr.dir = -1
+		player.stateChange(plr, "crouch_walk")
+	end
 
 	--Jumping
 	if love.keyboard.isDown("space") and plr.isOnGround then
@@ -122,15 +131,13 @@ function player.movementController(dt, plr)
 		--Checks xVel to see if we're doing a vertical jump or a frontflip
 		if plr.xVel == 0 then
 			--Forces the current animation frame to reset to 1...check for state change to fix
-			plr.current_frame = 1
-			player.stateChange(plr, "jump")
-		else
+			player.stateChange(plr, "jump", 1)
+		elseif plr.xVel ~= 0 then
 			--starts on 4th frame to make jumping more immediate
 			player.stateChange(plr, "front_flip", 4)
 		end
 
-		--plays jump sound
-		playSound(jump_exert)
+		playSound(jump_exert_SND)
 
 		plr.isOnGround = false
 	end
@@ -138,7 +145,7 @@ function player.movementController(dt, plr)
 	--Falling
 	--Checks to make sure the player isn't doing certain anims as to not override the animation table
 	--Also make sure the player is not on the ground
-	if plr.state ~= "front_flip" and plr.state ~= "jump" and not plr.isOnGround then
+	if (plr.state ~= "front_flip" and plr.state ~= "jump" and plr.state ~= "crouch") and not plr.isOnGround then
 		player.stateChange(plr, "fall")
 	end
 end
@@ -148,28 +155,38 @@ function player.stateChange(plr, state, startFrame)
 	--Checks if the new incoming state is different from the current state
 	if plr.state ~= state then
 		--Checks if we need to change the starting animation frame..otherwise defaults to 1
-		startFrame = startFrame or 1
+		plr.current_frame = startFrame or 1
+
+		if state == "crouch" or state == "crouch_walk" then
+			--plr.yVel = 1500
+			plr.height = defaultHeight / 2
+		elseif state ~= "crouch" then
+			plr.height = defaultHeight
+		end
+		
+		status_text.create("WORLD UPDATE")
+		world:update(plr, plr.x, plr.y, plr.width, plr.height)
+
+		--ends conditional
 		plr.prevState = plr.state
 		plr.state = state
-		plr.current_frame = startFrame
 	end
 end
 
 --Takes player state data from the Movement Controller and sets the animations accordingly
 function player.animationStateController(dt, plr)
-	--Resets animation timing if it has been changed
+	--Resets animation timing
 	player.animationTimeScale(plr, 12)
+	--Change player's animation + timing based on his current state
+	player.animationChange(plr)
 	--Changes our animation tick rate based on timescale
 	plr.tick = plr.tick + dt * plr.animation_timescale
-
-	--Change player's animation based on his current state
-	player.animationChange(plr, plr.state, startFrame)
 
 	--Checks if the current anim tick is greater than .9(seems to prevent footstep sound dupe)
 	if plr.tick > 0.9 then
 		plr.current_frame = plr.current_frame + 1
 
-		if plr.current_frame > #plr.animationTable then
+		if plr.current_frame >= #plr.animationTable then
 			--Instead of just resetting our current animation frame we instead switch
 			--player states to falling so that the jump and flip anims don't loop
 			if plr.state == "jump" or plr.state == "front_flip" then
@@ -177,7 +194,7 @@ function player.animationStateController(dt, plr)
 				player.stateChange(plr, "fall")
 			end
 			--Once we reach the end of the animation data table, start back at the beginning
-			--Lua indices start at 1 instead of 0 :l
+			--Lua indices start at 1 instead of 0
 			plr.current_frame = 1
 		end
 		--reset our timing ticks when reaching end of frames
@@ -186,24 +203,25 @@ function player.animationStateController(dt, plr)
 end
 
 function player.soundStateController(dt, plr)
+	--Add support for different surfaces[]
 	if plr.state == "run" then
 		if plr.current_frame == 1 or plr.current_frame == 5 then
-			playSound(footstep_hard_floor)
+			playSound(footstep_hard_floor_SND)
 		end
 	end
 end
 
 --Allows ease of animation changes
-function player.animationChange(plr, state)
+function player.animationChange(plr)
 	--Checks for specific action states to determine action anim speed
 	if plr.state == "jump" then
-		player.animationTimeScale(plr, 4)
+		player.animationTimeScale(plr, 3)
 	elseif plr.state == "front_flip" then
 		player.animationTimeScale(plr, 16)
 	end
 
 	--
-	local player_state = ("player_" .. state)
+	local player_state = ("player_" .. plr.state)
 	--converts concatenated string back to name of Global table
 	--EG: "player_" .. "idle" == "player_idle" converted to player_idle
 	plr.animationTable = _G[player_state]
@@ -213,8 +231,6 @@ end
 function player.animationTimeScale(plr, time)
 	plr.animation_timescale = time
 end
-
-
 
 player.filter = function(item, other)
 	local playerX, playerY, playerW, playerH = world:getRect(item)

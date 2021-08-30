@@ -1,10 +1,14 @@
 --CHANGES
-*Added jump and footsteps sound effects
-*Changed variable name for storing FPS
-*Fixed being able to click through UI buttons and select blocks in editor mode
-*Modified animation state controller to use a tickrate + sound support
+*Added ability to crouch + crouch walk (anims unfinished for walking)
+*Added new sounds to placing blocks
+*Fixed footstep sound being played in two different spots
+*Fixed being able to change change a block type to the same type
+*Fixed player animation timing not being changed properly after adding ticks
+*Modified block.update code to speed up performance
+*Slowed down jump animation slightly(From 4 to 3)
 
-
---KNOWN BUGS
+--KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *Saving+Loading UI button elements incorrectly positioned in Quad
+*Enemies don't use the updated animation controllers
+*Crouching doesn't happen instantly. Fall off a ledge while crouch walking also causes an animation error

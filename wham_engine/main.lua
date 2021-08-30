@@ -147,7 +147,7 @@ function love.filedropped(file)
 end
 
 function love.update(dt)
-	--dt = .001 --slows down time
+	--dt = .002 --slows down time
 	--Grabs game FPS
 	LET_FPS = love.timer.getFPS()
 	mouseX, mouseY = love.mouse.getPosition()
@@ -204,15 +204,9 @@ function createGridWorld() --Called in block.lua
 			end
 		end
 
-		--Blocks that spawn underneath the player at spawn
-		block.typeChange(block[15], "ground_block")
-		block.typeChange(block[47], "ground_block")
-		block.typeChange(block[79], "ground_block")
-		block.typeChange(block[111], "ground_block")
-		block.typeChange(block[46], "player_spawn")
-		player.spawn(block[46].x + 4, block[46].y - 4)
+		loadLevel("pitv1")
 
-		status_text.create(" New world created!")
+		player.spawn(block[1].x + 4, block[1].y - 4)
 	end
 end
 
@@ -310,7 +304,7 @@ end
 function debugMenuDraw()
 	if CONST_DEBUG_M then
 		local CONST_DEBUG_W = 350
-		local CONST_DEBUG_H = 215
+		local CONST_DEBUG_H = 230
 		local CONST_DEBUG_X = gwidth - CONST_DEBUG_W
 		local CONST_DEBUG_Y = 12
 		love.graphics.setColor(0, 1, 0, .25)
@@ -327,6 +321,7 @@ function debugMenuDraw()
 		love.graphics.printf("Previous Game State: " .. LET_PREV_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 13.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("Current Editor Tool: " .. LET_EDITOR_TOOL, CONST_DEBUG_X, CONST_DEBUG_Y * 15, CONST_DEBUG_W, "left")
 		love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("xVel, yVel:" .. player[1].xVel .. ", " .. player[1].yVel, CONST_DEBUG_X, CONST_DEBUG_Y * 18, CONST_DEBUG_W, "left")
 	end
 end
 
