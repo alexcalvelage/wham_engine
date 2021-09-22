@@ -194,7 +194,7 @@ function love.draw()
 	status_text.draw()
 end
 
-function createGridWorld() --Called in block.lua
+function createGridWorld()--called in main
 	if not gridWorldCreated then
 		--Begins index at 0 so that the blocks spawn at the very edges of the screen
 		for i = 0, gridRowsX do
@@ -204,9 +204,7 @@ function createGridWorld() --Called in block.lua
 			end
 		end
 
-		loadLevel("pitv1")
-
-		player.spawn(block[1].x + 4, block[1].y - 4)
+		loadLevel("state_machine_testing")
 	end
 end
 
@@ -272,6 +270,9 @@ function loadLevel(name)
 			end
 		end
 
+		--Initialize level stuff
+		initializeLevel()
+
 		status_text.create("Level Loaded! ('" .. lower_name .. "')")
 	else
 		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
@@ -282,6 +283,18 @@ end
 function sterilizeLevel()
 	for i = 1, #enemy do
 		table.remove(enemy, i)
+	end
+	for i = 1, #player do
+		table.remove(player, i)
+	end
+end
+
+function initializeLevel()
+	--Spawns player on a spawn block
+	for a = 1, #block do
+		if block[a].subtype == "player_spawn" then
+			player.spawn(block[a].x + 4, block[a].y - 4)
+		end
 	end
 end
 
@@ -307,6 +320,7 @@ function debugMenuDraw()
 		local CONST_DEBUG_H = 230
 		local CONST_DEBUG_X = gwidth - CONST_DEBUG_W
 		local CONST_DEBUG_Y = 12
+		love.graphics.setFont(defaultFont)
 		love.graphics.setColor(0, 1, 0, .25)
 		love.graphics.rectangle("fill", CONST_DEBUG_X, CONST_DEBUG_Y, CONST_DEBUG_W, CONST_DEBUG_H)
 		love.graphics.setColor(1, 1, 1)

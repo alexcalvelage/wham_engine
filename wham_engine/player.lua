@@ -63,10 +63,8 @@ function player.update(dt)
 		cam:setPosition(v.x + v.width * 10, v.y)
 		
 		for a,coll in ipairs(collisions) do
-			--we are goin' up and thru!
-			if coll.touch.y >= goalY then
-				v.isOnGround = false
-			elseif coll.normal.y < 0 then --coming down onto block
+		--Checks if the player's feet are on a solid collision
+			if coll.normal.y < 0 then
 				v.isOnGround = true
 				v.yVel = 0
 			end
@@ -79,6 +77,7 @@ function player.draw()
 		local scaleX = v.dir
 		love.graphics.setColor(1, 1, 1)
 		love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * player.playerScaling, player.playerScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
+		love.graphics.rectangle("line", v.x, v.y-32, v.width, v.height)
 	end
 end
 
@@ -121,8 +120,18 @@ function player.movementController(dt, plr)
 		player.stateChange(plr, "crouch_walk")
 	end
 
+	--Ceiling check
+	local bumpItems, bumpLen = world:queryRect(plr.x, plr.y-32, plr.width, plr.height)
+	for j = 1, #bumpItems do
+		if bumpItems[j].subtype == "ground_block" then
+			if not plr.isCrouching then
+				player.stateChange(plr, "crouch") --player is JITTERY
+			end
+		end
+	end
+
 	--Jumping
-	if love.keyboard.isDown("space") and plr.isOnGround then
+	if love.keyboard.isDown("space") and plr.isOnGround and not plr.isCrouching then
 		plr.yVel = plr.jumpHeight
 		--Checks xVel to see if we're doing a vertical jump or a frontflip
 		if plr.xVel == 0 then
@@ -162,9 +171,9 @@ function player.stateChange(plr, state, startFrame)
 			plr.isCrouching = false
 		end
 		
-		status_text.create("WORLD UPDATE")
 		world:update(plr, plr.x, plr.y, plr.width, plr.height)
 
+		status_text.create("UPDATING")
 		--ends conditional
 		plr.prevState = plr.state
 		plr.state = state
@@ -236,16 +245,16 @@ player.filter = function(item, other)
 
 	local playerBottom, playerRight = playerY + playerH, playerX + playerW
 
---Checks which hitbox to check against
+--Checks which block/ent to check against
 	if other.subtype == "wooden_plat" then
 		if playerBottom <= otherY then
 			return 'slide'
 		end
-	elseif other.subtype == "item_block" or other.subtype == "ground_block" or other.subtype == "grass_block" or other.subtype == "grass_block_l" or other.subtype == "grass_block_r" then
-		if playerY >= otherY or playerBottom <= otherY then
+	elseif other.subtype == "item_block" or other.subtype == "ground_block" or other.subtype == "grass_block" then
+		if playerY <= otherY or playerBottom >= otherY then
 			return 'slide'
 		end
-		if playerX >= otherX or playerRight <= otherX then
+		if playerX <= otherX or playerRight >= otherX then
 			return 'slide'
 		end
 	end

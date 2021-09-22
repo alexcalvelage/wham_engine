@@ -1,5 +1,9 @@
 --CHANGES
-*Fixed crouching and walking not working at all
+*Added ability to spawn enemies facing different directions(m1=left,m2=right)
+*Changed default loaded level
+*Fixed initial player spawn not being on player_spawn block
+*Fixed collision detection failing when uncrouching with your hitbox hanging off the left side of a solid block
+*Removed some unneeded collision checks
 
 
 --KNOWN ISSUES
@@ -7,4 +11,4 @@
 *Saving+Loading UI button elements incorrectly positioned in Quad
 *Enemies don't use the updated animation controllers
 *Crouching and standing back up while on a platform makes you fall through
-*Collision fails when uncrouching and on the leftmost side of a block
+*Starting a crouch walk and letting go of CTRL will continue crouch walk

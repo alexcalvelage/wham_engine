@@ -77,12 +77,16 @@ function block.clickAction(mButton)
 			select_y = worldMouseY
 		end
 	elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
+		local dir = nil
 		if mButton == 1 then
-			--seems sloppy to reloop here..but this fixes placing enemies through UI buttons
-			for i = 1, #block do
-				if block[i].highlight then
-					enemy.spawn("goon", worldMouseX, worldMouseY, 1)
-				end
+			dir = -1
+		elseif mButton == 2 then
+			dir = 1
+		end
+		--seems sloppy to reloop here..but this fixes placing enemies through UI buttons
+		for i = 1, #block do
+			if block[i].highlight then
+				enemy.spawn("goon", worldMouseX, worldMouseY, dir)
 			end
 		end
 	end
