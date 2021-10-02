@@ -18,6 +18,7 @@ function love.load()
 	love.keyboard.setKeyRepeat(false)
 	--Load our textures, sounds, etc
 	resourceLoad()
+	love.graphics.setFont(defaultFont)
 	love.graphics.setBackgroundColor(0, 0, 0)
 	gwidth, gheight = 1280, 720
 	love.window.setMode(gwidth, gheight, {vsync = 0})
@@ -40,6 +41,7 @@ function love.load()
 	CONST_GRAVITY = 1800
 	LET_FPS = 0
 	LET_TIME_DILATION = 1
+	LET_SKY_COLOR = {61/255, 80/255, 98/255}
 	LET_CUR_GAME_STATE = "create_state"
 	LET_PREV_GAME_STATE = ""
 	LET_GAME_PAUSED = false
@@ -49,13 +51,14 @@ function love.load()
 	LET_BUTTON_SELECTED = nil
 
 	--Editor Vars
-	LET_EDITOR_TOOL = "editor_tool_select"
-	editor_change_mode("editor_tool_select", selection_cursor)
-	LET_EDITOR_BLOCKTYPE_SELECTED = "ground_block"
+	LET_EDITOR_TOOL = "" --initializes var, we set in next statement
+	editor_change_mode("editor_tool_draw", draw_cursor)
+	LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block"
 	LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
 
 	--begins game logic
 	createGridWorld()
+	love.graphics.setBackgroundColor(LET_SKY_COLOR)
 	--ents]]
 	--Panel
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
@@ -309,7 +312,9 @@ end
 
 function editorHUDDraw()
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.rectangle("fill", gwidth - 128, gheight / 2 - 320, 96, 96)
+	love.graphics.setFont(defaultFont)
+	--love.graphics.rectangle("fill", gwidth - 128, gheight / 2 - 240, 96, 96)
+	love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, gwidth - 157, gheight / 2 - 360, 150, "center")
 	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
 	--love.graphics.print("AD - Movement\nSPACE- Jump\nLMB - Select Blocks/Draw\nRMB - Fill Selected/Erase\nMouse Wheel - Change Block", 20, 20)
 end
@@ -318,7 +323,7 @@ function debugMenuDraw()
 	if CONST_DEBUG_M then
 		local CONST_DEBUG_W = 350
 		local CONST_DEBUG_H = 230
-		local CONST_DEBUG_X = gwidth - CONST_DEBUG_W
+		local CONST_DEBUG_X = 0
 		local CONST_DEBUG_Y = 12
 		love.graphics.setFont(defaultFont)
 		love.graphics.setColor(0, 1, 0, .25)
@@ -388,13 +393,3 @@ function item.draw()
 		love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
 	end
 end
-
---[[
-**WHATS NEXT**
--Custom grid-based map
-	--Includes---
-	--32x32 grid
-	--Placeable tiles/ents similar to Mario Maker level editor
-	--Allow saving/loading of grids
-	--CTRL+C and CTRL+V support
-]]

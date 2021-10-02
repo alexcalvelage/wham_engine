@@ -52,6 +52,7 @@ function block.draw()
 		end
 	end
 
+	--Our selection rectangle for the selection tool
 	love.graphics.setColor(0, 0, 1, .2)
 	love.graphics.rectangle("fill", select_x or 0, select_y or 0, select_width or 0, select_height or 0)
 end
@@ -84,6 +85,7 @@ function block.clickAction(mButton)
 			dir = 1
 		end
 		--seems sloppy to reloop here..but this fixes placing enemies through UI buttons
+		--Can only place enemies if a block is able to be highlighted
 		for i = 1, #block do
 			if block[i].highlight then
 				enemy.spawn("goon", worldMouseX, worldMouseY, dir)
@@ -138,12 +140,12 @@ function block.editor_paint(me, erase)
 		end
 	end
 end
-
+--air, grass, grass_r, grass_l, dirt, wooden_plat, spike, devblock, itemblock
 function block.cycleSelectedBlock(y)
-	local maxIndex = 6
-	if y > 0 then
+	local maxIndex = 10
+	if y < 0 then
 		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = LET_EDITOR_BLOCKTYPE_SELECTED_INDEX + 1
-	elseif y < 0 then
+	elseif y > 0 then
 		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = LET_EDITOR_BLOCKTYPE_SELECTED_INDEX - 1
 	end
 
@@ -154,17 +156,25 @@ function block.cycleSelectedBlock(y)
 	end
 
 	if LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 1 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "ground_block"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 2 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "item_block"
-	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 3 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "wooden_plat"
-	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 4 then
 		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 3 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_r"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 4 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_l"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 5 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "player_spawn"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "dirt_block"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 6 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "air_block"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "wooden_plat"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 7 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "spike_block_u"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 8 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "spike_block_d"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 9 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "item_block"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 10 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "player_spawn"
 	end
 end
 

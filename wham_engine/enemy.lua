@@ -1,8 +1,8 @@
 --initialize enemy data table
-enemy = {}
+enemy = {enemyScaling = 1.66}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
-	table.insert(enemy, {subtype = subtype, health = 1, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = player_fall, current_frame = 1, animation_timescale = 12})
+	table.insert(enemy, {subtype = subtype, health = 1, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = player_fall, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each enemy created
 	world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
 end
@@ -38,7 +38,7 @@ function enemy.update(dt)
 			end
 
 			--Handles animation state switching
-			enemy.animationStateController(dt, enemy[i])
+			animationStateController(dt, enemy[i])
 
 			--checks to see the enemy will collide with something using the goalX,Y
 			v.x, v.y, collisions, len = world:move(enemy[i], goalX, goalY, enemy.filter)
@@ -57,11 +57,10 @@ function enemy.update(dt)
 end
 
 function enemy.draw()
-	local enemyScaling = 1.66
 	for i,v in ipairs(enemy) do
 		local scaleX = v.dir
-		love.graphics.setColor(1, 0, 0)
-		love.graphics.draw(v.animationTable[math.floor(v.current_frame)], v.x + (v.width / 2), v.y, 0, scaleX * enemyScaling, enemyScaling, v.animationTable[math.floor(v.current_frame)]:getWidth() / 2, 0)
+		love.graphics.setColor(1, .15, .15)
+		love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * enemy.enemyScaling, enemy.enemyScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
 	end
 end
 
@@ -96,7 +95,7 @@ function enemy.movementController(dt, me)
 	--Idle
 	if not moveInProgress and me.isOnGround then
 		me.xVel = 0
-		enemy.stateChange(me, "idle")
+		stateChange(me, "idle")
 	end
 
 	if moveInProgress then
@@ -106,69 +105,13 @@ function enemy.movementController(dt, me)
 			me.xVel = -me.speed
 		end
 
-		enemy.stateChange(me, "run")
+		stateChange(me, "run")
 	end
 
 	--Falling
 	if me.state ~= "front_flip" and me.state ~= "jump" and not me.isOnGround then
-		enemy.stateChange(me, "fall")
+		stateChange(me, "fall")
 	end
-end
-
-function enemy.stateChange(me, state, startFrame)
-	--Changes enemy state only if a new action has occured.
-	--Checks if the new incoming state is different from the current state
-	if me.state ~= state then
-		--Checks if we need to change the starting animation frame..otherwise defaults to 1
-		startFrame = startFrame or 1
-		me.prevState = me.state
-		me.state = state
-		me.current_frame = startFrame
-	end
-end
-
---Takes enemy state data from the Movement Controller and sets the animations accordingly
-function enemy.animationStateController(dt, me)
-	--Resets animation timing if it has been changed
-	enemy.animationTimeScale(me, 12)
-
-	--Change enemy's animation based on his current state
-	enemy.animationChange(me, me.state, startFrame)
-
-	--Every game frame, move ahead an animation frame based on animation timing
-	me.current_frame = me.current_frame + me.animation_timescale * dt
-	if me.current_frame >= #me.animationTable then
-		--Instead of just resetting our current animation frame we instead switch
-		--enemy states to falling so that the jump and flip anims don't loop
-		if me.state == "jump" or me.state == "front_flip" then
-			--overrides any previous animation changes
-			enemy.stateChange(me, "fall")
-		end
-		--Once we reach the end of the animation data table, start back at the beginning
-		--Lua indices start at 1 instead of 0 :l
-		me.current_frame = 1
-	end
-end
-
---Allows ease of animation changes
-function enemy.animationChange(me, state)
-	--Checks for specific action states to determine action anim speed
-	if me.state == "jump" then
-		enemy.animationTimeScale(me, 4)
-	elseif me.state == "front_flip" then
-		enemy.animationTimeScale(me, 16)
-	end
-
-	--current enemies use the player animation data
-	local enemy_state = ("player_" .. state)
-	--converts concatenated string back to name of Global table
-	--EG: "enemy_" .. "idle" == "enemy_idle" converted to enemy_idle
-	me.animationTable = _G[enemy_state]
-end
-
---Changes timescale of animations(anim speed)
-function enemy.animationTimeScale(me, time)
-	me.animation_timescale = time
 end
 
 enemy.filter = function(item, other)
@@ -184,7 +127,7 @@ enemy.filter = function(item, other)
 		if enemyBottom <= y then
 			return 'slide'
 		end
-	elseif other.subtype == "item_block" or other.subtype == "ground_block" or other.subtype == "grass_block" or other.subtype == "grass_block_l" or other.subtype == "grass_block_r" then
+	elseif other.subtype == "item_block" or other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_l" or other.subtype == "grass_block_r" then
 		if py >= y or enemyBottom <= y then
 			return 'slide'
 		end

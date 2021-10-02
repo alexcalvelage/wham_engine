@@ -1,14 +1,22 @@
 --CHANGES
-*Added ability to spawn enemies facing different directions(m1=left,m2=right)
-*Changed default loaded level
-*Fixed initial player spawn not being on player_spawn block
-*Fixed collision detection failing when uncrouching with your hitbox hanging off the left side of a solid block
-*Removed some unneeded collision checks
-
+-Disabled crouch walking
+-Improved crouch mechanic logic
+-Fixed player continuing to crouch walk when key is released
+-Player controller now allows horizontal movement while jumping
+-Player and Enemies now share animation/sound/state functions
+-Reorganized layout of block sprite sheet
+-Added new Blocks
+	*Grass(Left,Right)
+	*Added Dirt
+	*Added Spikes(Up, Down)
+	*Changed Air block to be transparent(Sky color is tied to bg color)
+	*Changed Wooden Platform and Player Spawn to be transparent
+	*Added collisions to new blocks
+-Fixed texture bleeding(Issue with OpenGL where textures in a spritesheet bleed into eachother unless separated inside sheet)
+-Fixed Saving+Loading button's quads being misaligned
+-Quit Session button now closes out of app for time being
 
 --KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
-*Saving+Loading UI button elements incorrectly positioned in Quad
-*Enemies don't use the updated animation controllers
-*Crouching and standing back up while on a platform makes you fall through
-*Starting a crouch walk and letting go of CTRL will continue crouch walk
+*If player is crouched and somehow falls then they fall at gravity * 64
+*OpenGL issue is still present in certain cases(Walking to left)

@@ -95,7 +95,9 @@ function button.clickAction(mButton)
 					love.keyboard.setTextInput(true)
 					love.keyboard.setKeyRepeat(true)
 				elseif button[i].action == "exit_session_action" then
-					switchGameState("menu_state")
+					--gamestate switch disabled for now
+					love.event.quit()
+					--switchGameState("menu_state")
 					love.mouse.setCursor(default_cursor)
 				elseif button[i].action == "back_action" then
 					panel.typeChange("")
