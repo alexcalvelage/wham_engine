@@ -15,10 +15,12 @@ function resourceLoad()
 --TEXTURES
 	--Images
 	block_all_IMG = love.graphics.newImage("resources/textures/block/block_sheet.png")
+	objects_all_IMG = love.graphics.newImage("resources/textures/objects/objects_sheet.png")
 	ui_buttons_all_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
 	ui_panels_all_IMG = love.graphics.newImage("resources/textures/ui/panel_sheet.png")
 	--SpriteBatches
 	block_SB = love.graphics.newSpriteBatch(block_all_IMG)
+	objects_SB = love.graphics.newSpriteBatch(objects_all_IMG)
 	button_SB = love.graphics.newSpriteBatch(ui_buttons_all_IMG)
 	panel_SB = love.graphics.newSpriteBatch(ui_panels_all_IMG)
 	--Quads
@@ -71,8 +73,15 @@ function resourceLoad()
 	load_button_QD_2 = love.graphics.newQuad(194, 476, 74, 24, ui_panels_all_IMG:getDimensions())
 	back_button_QD = love.graphics.newQuad(269, 451, 74, 24, ui_panels_all_IMG:getDimensions())
 	back_button_QD_2 = love.graphics.newQuad(269, 476, 74, 24, ui_panels_all_IMG:getDimensions())
+	--*objectsQDS
+	--**Cogs
+	cog_object_QD = love.graphics.newQuad(0, 0, 32, 32, objects_all_IMG:getDimensions())
+	medkit_object_QD = love.graphics.newQuad(34, 0, 32, 32, objects_all_IMG:getDimensions())
+	object1_object_QD = love.graphics.newQuad(0, 34, 32, 32, objects_all_IMG:getDimensions())
+	object2_object_QD = love.graphics.newQuad(34, 34, 32, 32, objects_all_IMG:getDimensions())
 --ANIMATIONS
 	--must initialize each animation table before adding indices to it
+	--*Player/Enemy
 	player_idle = {}
 	player_run = {}
 	player_jump = {}
@@ -80,7 +89,11 @@ function resourceLoad()
 	player_fall = {}
 	player_crouch = {}
 	player_crouch_walk = {}
+	--*Objects
+	cog_idle = {}
+	cog_spin = {}
 	--Animation Tables
+	--*Player/Enemy
 	player_idle[1] = love.graphics.newImage("resources/textures/player/idle/1.png")
 		player_idle[2] = love.graphics.newImage("resources/textures/player/idle/2.png")
 		player_idle[3] = love.graphics.newImage("resources/textures/player/idle/3.png")
@@ -127,6 +140,18 @@ function resourceLoad()
 		player_crouch_walk[6] = love.graphics.newImage("resources/textures/player/crawl/6.png")
 		player_crouch_walk[7] = love.graphics.newImage("resources/textures/player/crawl/7.png")
 		player_crouch_walk[8] = love.graphics.newImage("resources/textures/player/crawl/8.png")
+	--*Objects
+	cog_idle[1] = love.graphics.newImage("resources/textures/objects/anims/cog/1.png")
+	cog_spin[1] = love.graphics.newImage("resources/textures/objects/anims/cog/1.png")
+		cog_spin[2] = love.graphics.newImage("resources/textures/objects/anims/cog/2.png")
+		cog_spin[3] = love.graphics.newImage("resources/textures/objects/anims/cog/3.png")
+		cog_spin[4] = love.graphics.newImage("resources/textures/objects/anims/cog/4.png")
+		cog_spin[5] = love.graphics.newImage("resources/textures/objects/anims/cog/5.png")
+		cog_spin[6] = love.graphics.newImage("resources/textures/objects/anims/cog/6.png")
+		cog_spin[7] = love.graphics.newImage("resources/textures/objects/anims/cog/7.png")
+		cog_spin[8] = love.graphics.newImage("resources/textures/objects/anims/cog/8.png")
+		cog_spin[9] = love.graphics.newImage("resources/textures/objects/anims/cog/9.png")
+		cog_spin[10] = love.graphics.newImage("resources/textures/objects/anims/cog/10.png")
 --SOUNDS
 	masterVolume = 1.0
 	soundsVolume = 1.0

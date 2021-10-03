@@ -9,6 +9,7 @@ require "panel"
 require "block"
 require "player"
 require "enemy"
+require "objects"
 
 local utf8 = require("utf8")
 
@@ -55,6 +56,8 @@ function love.load()
 	editor_change_mode("editor_tool_draw", draw_cursor)
 	LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block"
 	LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
+	LET_EDITOR_OBJECTTYPE_SELECTED = "cog"
+	LET_EDITOR_OBJECTTYPE_SELECTED_INDEX = 1
 
 	--begins game logic
 	createGridWorld()
@@ -97,17 +100,10 @@ function love.keypressed(key)
 		if LET_CUR_GAME_STATE ~= "menu_state" and not love.keyboard.hasTextInput() then
 			pauseGame()
 		end
-		--Backspacing functionality for level path input
 	elseif key == "backspace" then
-		if love.keyboard.hasTextInput() then
-			local byteoffset = utf8.offset(LET_BROWSE_PATH, -1)
-
-			if byteoffset then
-				LET_BROWSE_PATH = string.sub(LET_BROWSE_PATH, 1, byteoffset - 1)
-			end
-		end
-		--Enables 'enter' key functionality for level path input
+		deleteCharacterByte()
 	elseif key == "return" then
+		--Enables 'enter' key functionality for level path input
 		if love.keyboard.hasTextInput() then
 			if LET_PANEL_OPEN == "savePanel" then
 				saveLevel(tostring(LET_BROWSE_PATH), block, enemy)
@@ -164,7 +160,7 @@ function love.update(dt)
 		player.update(dt)
 		enemy.update(dt)
 		block.update(dt)
-		item.update(dt)
+		object.update(dt)
 	end
 end
 
@@ -175,7 +171,7 @@ function love.draw()
 		block.draw()
 		player.draw()
 		enemy.draw()
-		item.draw()
+		object.draw()
 		debugDraw()
 		end)
 		--Draws to screen
@@ -207,6 +203,7 @@ function createGridWorld()--called in main
 			end
 		end
 
+		--Remove for menu implementation
 		loadLevel("state_machine_testing")
 	end
 end
@@ -373,23 +370,5 @@ function debugDraw()
 				--love.graphics.printf("Found Target Range", v.x, v.y + 50, v.searchRange, "center")
 			end
 		end
-	end
-end
-
-item = {}
-function item.spawn(x, y)
-	table.insert(item, {type = "item", x = x, y = y, width = 24, height = 24})
-	world:add(item[#item], item[#item].x, item[#item].y, item[#item].width, item[#item].height)
-end
-
-function item.update(dt)
-	for i,v in ipairs(item) do
-	end
-end
-
-function item.draw()
-	for i,v in ipairs(item) do
-		love.graphics.setColor(1, 1, 0)
-		love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
 	end
 end

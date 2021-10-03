@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "Phil", health = 1, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = player, name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -56,7 +56,7 @@ function player.update(dt)
 			end
 
 			world:update(v, goalX, goalY, v.width, v.height)
-			v.health = 1
+			v.health = 2
 		end
 
 		--Handles animation state switching
@@ -70,11 +70,25 @@ function player.update(dt)
 		--update our cameras position
 		cam:setPosition(v.x + v.width * 10, v.y)
 		
+		--Hit detection
 		for a,coll in ipairs(collisions) do
-		--Checks if the player's feet are on a solid collision
-			if coll.normal.y < 0 then
+			--Checks if the player's feet are on a solid collision
+			if coll.normal.y < 0 and not coll.knockback and not coll.bounce then
 				v.isOnGround = true
 				v.yVel = 0
+			end
+			--Response for knockback damage
+			if coll.knockback then
+				v.isKnockback = true
+				v.health = v.health - 1
+				v.yVel = v.jumpHeight / 2
+				if v.dir == 1 then
+					v.xVel = v.jumpHeight / 2
+				elseif v.dir == -1 then
+					v.xVel = -v.jumpHeight / 2
+				end
+			else
+				v.isKnockback = false
 			end
 		end
 	end
@@ -107,17 +121,19 @@ function player.movementController(dt, plr)
 	end
 
 	--Running
-	if love.keyboard.isDown(moveRight) and not plr.isCrouching then
-		plr.xVel = plr.speed
-		plr.dir = 1
-		if plr.isOnGround then
-			stateChange(plr, "run")
-		end
-	elseif love.keyboard.isDown(moveLeft) and not plr.isCrouching then
-		plr.xVel = -plr.speed
-		plr.dir = -1
-		if plr.isOnGround then
-			stateChange(plr, "run")
+	if not plr.isKnockback then
+		if love.keyboard.isDown(moveRight) and not plr.isCrouching then
+			plr.xVel = plr.speed
+			plr.dir = 1
+			if plr.isOnGround then
+				stateChange(plr, "run")
+			end
+		elseif love.keyboard.isDown(moveLeft) and not plr.isCrouching then
+			plr.xVel = -plr.speed
+			plr.dir = -1
+			if plr.isOnGround then
+				stateChange(plr, "run")
+			end
 		end
 	end
 
@@ -197,7 +213,7 @@ player.filter = function(item, other)
 		end
 	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
 		if playerBottom <= otherY then
-			return 'bounce'
+			return 'knockback'
 		end
 	end
 end

@@ -1,22 +1,15 @@
 --CHANGES
--Disabled crouch walking
--Improved crouch mechanic logic
--Fixed player continuing to crouch walk when key is released
--Player controller now allows horizontal movement while jumping
--Player and Enemies now share animation/sound/state functions
--Reorganized layout of block sprite sheet
--Added new Blocks
-	*Grass(Left,Right)
-	*Added Dirt
-	*Added Spikes(Up, Down)
-	*Changed Air block to be transparent(Sky color is tied to bg color)
-	*Changed Wooden Platform and Player Spawn to be transparent
-	*Added collisions to new blocks
--Fixed texture bleeding(Issue with OpenGL where textures in a spritesheet bleed into eachother unless separated inside sheet)
--Fixed Saving+Loading button's quads being misaligned
--Quit Session button now closes out of app for time being
+-Added new collision response type, "knockback"
+-Added new knockback check+response for players
+-Updated 'state_machine_testing' for new mechanics
+-Added Objects 'class'
+	*Added Cog object
+	*Added Medkit object
+	*Same setup as player/enemy
 
 --KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *If player is crouched and somehow falls then they fall at gravity * 64
 *OpenGL issue is still present in certain cases(Walking to left)
+*User cannot remove placed objects in scene
+*Objects currently don't utilize spritebatches

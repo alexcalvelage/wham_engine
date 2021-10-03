@@ -318,6 +318,29 @@ local bounce = function(world, col, x,y,w,h, goalX, goalY, filter)
   return goalX, goalY, cols, len
 end
 
+local knockback = function(world, col, x,y,w,h, goalX, goalY, filter)
+  goalX = goalX or x
+  goalY = goalY or y
+
+  local tch, move = col.touch, col.move
+  local tx, ty = tch.x, tch.y
+
+  local bx, by = tx, ty
+
+  if move.x ~= 0 or move.y ~= 0 then
+    local bnx, bny = goalX - tx, goalY - ty
+    if col.normal.x == 0 then bny = -bny else bnx = -bnx end
+    bx, by = tx + bnx, ty + bny
+  end
+
+  col.knockback   = {x = bx,  y = by}
+  x,y          = tch.x, tch.y
+  goalX, goalY = bx, by
+
+  local cols, len    = world:project(col.item, x,y,w,h, goalX, goalY, filter)
+  return goalX, goalY, cols, len
+end
+
 ------------------------------------------
 -- World
 ------------------------------------------
@@ -749,6 +772,7 @@ bump.newWorld = function(cellSize)
   world:addResponse('cross', cross)
   world:addResponse('slide', slide)
   world:addResponse('bounce', bounce)
+  world:addResponse('knockback', knockback)
 
   return world
 end
@@ -767,7 +791,8 @@ bump.responses = {
   touch  = touch,
   cross  = cross,
   slide  = slide,
-  bounce = bounce
+  bounce = bounce,
+  knockback = knockback
 }
 
 return bump

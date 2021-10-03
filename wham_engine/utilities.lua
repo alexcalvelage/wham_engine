@@ -1,3 +1,5 @@
+local utf8 = require("utf8")
+
 function math.dist(x1,y1, x2,y2)
 	return ((x2-x1)^2+(y2-y1)^2)^0.5
 end
@@ -45,6 +47,17 @@ function Contains(list, x)
 		if v == x then return true end
 	end
 	return false
+end
+
+function deleteCharacterByte()
+	--Backspacing functionality for level path input
+	if love.keyboard.hasTextInput() then
+		local byteoffset = utf8.offset(LET_BROWSE_PATH, -1)
+
+		if byteoffset then
+			LET_BROWSE_PATH = string.sub(LET_BROWSE_PATH, 1, byteoffset - 1)
+		end
+	end
 end
 
 function stateChange(ent, state, startFrame)
@@ -99,6 +112,29 @@ function animationStateController(dt, ent)
 	end
 end
 
+--Used only for object related animations
+function animationStateController_Objects(dt, ent)
+	--Resets animation timing
+	animationTimeScale(ent, 12)
+	--Change player's animation + timing based on his current state
+	animationChange_Objects(ent)
+	--Changes our animation tick rate based on timescale
+	ent.tick = ent.tick + dt * ent.animation_timescale
+
+	--Checks if the current anim tick is greater than .9(seems to prevent footstep sound dupe)
+	if ent.tick > 0.9 then
+		ent.current_frame = ent.current_frame + 1
+
+		if ent.current_frame >= #ent.animationTable then
+			--Once we reach the end of the animation data table, start back at the beginning
+			--Lua indices start at 1 instead of 0
+			ent.current_frame = 1
+		end
+		--reset our timing ticks when reaching end of frames
+		ent.tick = 0
+	end
+end
+
 function soundStateController(dt, ent)
 	--Add support for different surfaces[]
 	if ent.state == "run" then
@@ -122,6 +158,18 @@ function animationChange(ent)
 	--converts concatenated string back to name of Global table
 	--EG: "player_" .. "idle" == "player_idle" converted to player_idle
 	ent.animationTable = _G[player_state]
+end
+
+--Allows ease of animation changes for OBJECTS
+function animationChange_Objects(ent)
+	if ent.subtype == "cog" then
+		animationTimeScale(ent, 12)
+	end
+
+	local object_anim = (ent.subtype .. "_" .. ent.state)
+	--converts concatenated string back to name of Global table
+	--EG: "cog_" .. "spin" == "cog_spin" converted to cog_spin
+	ent.animationTable = _G[object_anim]
 end
 
 --Changes timescale of animations(anim speed)

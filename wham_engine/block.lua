@@ -3,7 +3,7 @@ local select_x, select_y, select_width, select_height
 block = {}
 --block_collision = {}
 function block.spawn(subtype, x, y, w, h)
-	table.insert(block, {id = #block + 1, type = "block", subtype = subtype, quad = subtype, quad_overlay = nil, x = x, y = y, width = w or 32, height = h or 32, highlight = false})
+	table.insert(block, {id = #block + 1, type = "block", subtype = subtype, quad = subtype, quad_overlay = nil, itemInside = false, x = x, y = y, width = w or 32, height = h or 32, highlight = false})
 	--Concatenate quad extension
 	block[#block].quad = tostring(block[#block].quad) .. "_QD"
 end
@@ -25,6 +25,12 @@ function block.update(dt)
 					block.editor_paint(block[i])
 				elseif love.mouse.isDown(2) then
 					block.editor_paint(block[i], true)
+				end
+			elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
+				if love.mouse.isDown(1) then
+					block.editor_dropper_paint(block[i], LET_EDITOR_OBJECTTYPE_SELECTED)
+				elseif love.mouse.isDown(2) then
+					block.editor_dropper_paint(block[i], LET_EDITOR_OBJECTTYPE_SELECTED, true)
 				end
 			end
 		end
@@ -77,20 +83,6 @@ function block.clickAction(mButton)
 			select_x = worldMouseX
 			select_y = worldMouseY
 		end
-	elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
-		local dir = nil
-		if mButton == 1 then
-			dir = -1
-		elseif mButton == 2 then
-			dir = 1
-		end
-		--seems sloppy to reloop here..but this fixes placing enemies through UI buttons
-		--Can only place enemies if a block is able to be highlighted
-		for i = 1, #block do
-			if block[i].highlight then
-				enemy.spawn("goon", worldMouseX, worldMouseY, dir)
-			end
-		end
 	end
 end
 
@@ -140,6 +132,43 @@ function block.editor_paint(me, erase)
 		end
 	end
 end
+
+--DEPRECATED
+function block.editor_dropper_erase(me, obj)
+	if bump.rect.containsPoint(obj.x, obj.y, obj.width, obj.height, mouseX, mouseY) then
+		if world:hasItem(obj) then
+			world:remove(obj)
+			--obj = nil
+		end
+	end
+
+	playSound(remove_block_SND)
+end
+
+--Finish adding in removal of objects from scene!!
+function block.editor_dropper_paint(me, obj, erase)
+	if me.highlight then
+		if erase then
+			if me.itemInside then
+				if world:hasItem(obj) then
+					world:remove(obj)
+					table.remove(objects, #objects)
+				end
+
+				me.itemInside = false
+				playSound(remove_block_SND)
+			end
+		elseif not erase then
+			if not me.itemInside then
+				object.spawn(obj, me.x, me.y)
+
+				me.itemInside = true
+				playSound(place_block_SND)
+			end
+		end
+	end
+end
+
 --air, grass, grass_r, grass_l, dirt, wooden_plat, spike, devblock, itemblock
 function block.cycleSelectedBlock(y)
 	local maxIndex = 10
