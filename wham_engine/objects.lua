@@ -1,16 +1,21 @@
 --initialize object data table
 object = {objectScaling = 1}
 function object.spawn(subtype, x, y)
-	table.insert(object, {type = "object", subtype = subtype, x = x, y = y, width = 32, height = 32, cleanup = false, state = "", animationTable = nil, current_frame = 1, animation_timescale = 1, tick = 0})
+	table.insert(object, {id = #object + 1, type = "object", subtype = subtype, x = x, y = y, width = 32, height = 32, cleanup = false, state = "", animationTable = nil, current_frame = 1, animation_timescale = 1, tick = 0})
 	world:add(object[#object], object[#object].x, object[#object].y, object[#object].width, object[#object].height)
 end
 
 function object.update(dt)
 	for i,v in ipairs(object) do
+		if v.cleanup then
+			table.remove(object, i)
+			world:remove(v)
+		end
+
 		if not v.cleanup then
-			object.checkValidAnimationTable(object[i])
+			object.checkValidAnimationTable(v)
 			--Handles animation state switching
-			animationStateController_Objects(dt, object[i])
+			animationStateController(dt, v)
 		end
 	end
 end
@@ -34,7 +39,7 @@ function object.checkValidAnimationTable(obj)
 			obj.state = "idle"
 		end
 
-		animationChange_Objects(obj)
+		object_animation_change(obj)
 	end
 end
 

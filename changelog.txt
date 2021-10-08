@@ -6,10 +6,20 @@
 	*Added Cog object
 	*Added Medkit object
 	*Same setup as player/enemy
+-Removed 'Escape' key to quit game
+-Player is now drawn on top of objects
+-Added Main Menu
+-Added Options panel
+-Fixed panel button quad image dimensions being incorrect
+-Added ability to spawn/delete cogs + enemies using Dropper tool
+-Added object support to Saving/Loading
+-Added enemy spawnpoint support for Saving/Loading
 
 --KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *If player is crouched and somehow falls then they fall at gravity * 64
 *OpenGL issue is still present in certain cases(Walking to left)
-*User cannot remove placed objects in scene
 *Objects currently don't utilize spritebatches
+*Possible bump world issue when deleting objects(Objects currently aren't flagged as deleteable after new level load)
+	*Thinking that block[i].itemInside isn't grabbing the correct block/item when loading
+	*It 'kinda' works. Not all indices can be removed

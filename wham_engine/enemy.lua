@@ -2,14 +2,19 @@
 enemy = {enemyScaling = 1.66}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
-	table.insert(enemy, {subtype = subtype, health = 1, x = x, y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, dir = dir, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "fall", prevState = "", animationTable = player_fall, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(enemy, {id = #enemy + 1, type = "enemy", subtype = subtype, health = 1, x = x, y = y, spawn_x = x, spawn_y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isKnockback = false, dir = dir, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "idle", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	--Centers our enemy inside a block
+	enemy[#enemy].x, enemy[#enemy].y = enemy[#enemy].x + 4, enemy[#enemy].y - (enemy[#enemy].height / 2)
 	--adds collisions to each enemy created
 	world:add(enemy[#enemy], enemy[#enemy].x, enemy[#enemy].y, enemy[#enemy].width, enemy[#enemy].height)
 end
 
 function enemy.update(dt)
 	for i,v in ipairs(enemy) do
-		if not v.cleanup then
+		if LET_CUR_GAME_STATE == "create_state" then
+			v.xVel, v.yVel = 0, 0
+			v.isOnGround = true
+		elseif LET_CUR_GAME_STATE == "play_state" and not v.cleanup then
 			--Cue gravity
 			v.yVel = v.yVel + (CONST_GRAVITY * dt)
 
@@ -43,13 +48,25 @@ function enemy.update(dt)
 			--checks to see the enemy will collide with something using the goalX,Y
 			v.x, v.y, collisions, len = world:move(enemy[i], goalX, goalY, enemy.filter)
 			
+			--Hit detection
 			for a,coll in ipairs(collisions) do
-				--we are goin' up and thru!
-				if coll.touch.y >= goalY then
-					v.isOnGround = false
-				elseif coll.normal.y < 0 then --coming down onto block
+				--Checks if the player's feet are on a solid collision
+				if coll.normal.y < 0 and not coll.knockback and not coll.bounce then
 					v.isOnGround = true
 					v.yVel = 0
+				end
+				--Response for knockback damage
+				if coll.knockback then
+					v.isKnockback = true
+					--v.health = v.health - 1
+					v.yVel = v.jumpHeight / 2
+					if v.dir == 1 then
+						v.xVel = v.jumpHeight / 2
+					elseif v.dir == -1 then
+						v.xVel = -v.jumpHeight / 2
+					end
+				else
+					v.isKnockback = false
 				end
 			end
 		end
@@ -58,9 +75,11 @@ end
 
 function enemy.draw()
 	for i,v in ipairs(enemy) do
-		local scaleX = v.dir
-		love.graphics.setColor(1, .15, .15)
-		love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * enemy.enemyScaling, enemy.enemyScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
+		if not v.cleanup then
+			local scaleX = v.dir
+			love.graphics.setColor(1, .15, .15)
+			love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, scaleX * enemy.enemyScaling, enemy.enemyScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
+		end
 	end
 end
 
@@ -109,7 +128,7 @@ function enemy.movementController(dt, me)
 	end
 
 	--Falling
-	if me.state ~= "front_flip" and me.state ~= "jump" and not me.isOnGround then
+	if (me.state ~= "front_flip" and me.state ~= "jump" and me.state ~= "crouch") and not me.isOnGround then
 		stateChange(me, "fall")
 	end
 end
@@ -138,6 +157,10 @@ enemy.filter = function(item, other)
 	elseif other.type == "enemy" then
 		if enemyLeft >= x or enemyRight <= x + w then
 			return 'slide'
+		end
+	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
+		if enemyBottom <= y then
+			return 'knockback'
 		end
 	end
 end

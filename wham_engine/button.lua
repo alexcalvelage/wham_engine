@@ -1,4 +1,3 @@
-local selectedButtons = {}
 
 button = {}
 function button.spawn(quad, action, activeState, x, y, w, h)
@@ -45,12 +44,12 @@ end
 
 function button.detectVisibility(me)
 	--Checks to make sure buttons are only usable/rendered when they need to be.
-	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN and LET_GAME_PAUSED) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED) then
+	--CHECKS: PAUSE MENU -> PANEL BUTTONS -> EDITOR BUTTONS + MENU BUTTONS
+	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED and not LET_OPTIONS_MENU) then
 		me.enabled = true
 	else
 		me.enabled = false
-		--if a button is selected and then it becomes disabled, this 
-		--ensures that it is unselected
+		--if a button is selected and then it becomes disabled, this ensures that it is unselected
 		me.highlight = false
 	end
 end
@@ -76,9 +75,13 @@ function button.clickAction(mButton)
 			if button[i].highlight then
 				--MAIN MENU ACTIONS
 				if button[i].action == "play_game_action" then
+					switchGameState("play_state")
 				elseif button[i].action == "load_game_action" then
 				elseif button[i].action == "create_level_action" then
+					switchGameState("create_state")
 				elseif button[i].action == "options_action" then
+					panel.typeChange("optionsPanel")
+					LET_OPTIONS_MENU = true
 				elseif button[i].action == "quit_action" then
 					love.event.quit()
 				--PAUSE MENU ACTIONS
@@ -95,19 +98,18 @@ function button.clickAction(mButton)
 					love.keyboard.setTextInput(true)
 					love.keyboard.setKeyRepeat(true)
 				elseif button[i].action == "exit_session_action" then
-					--gamestate switch disabled for now
-					love.event.quit()
-					--switchGameState("menu_state")
+					switchGameState("menu_state")
 					love.mouse.setCursor(default_cursor)
 				elseif button[i].action == "back_action" then
 					panel.typeChange("")
 					love.keyboard.setTextInput(false)
 					love.keyboard.setKeyRepeat(false)
 					LET_BROWSE_PATH = ""
+					LET_OPTIONS_MENU = false
 				elseif button[i].action == "browse_action" then
 					love.system.openURL("file://"..love.filesystem.getSaveDirectory())
 				elseif button[i].action == "save_action" then
-					saveLevel(tostring(LET_BROWSE_PATH), block, enemy)
+					saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
 				elseif button[i].action == "load_action" then
 					loadLevel(tostring(LET_BROWSE_PATH))
 				--EDITOR ACTIONS

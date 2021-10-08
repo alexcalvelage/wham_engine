@@ -31,7 +31,7 @@ function love.load()
 	--sets the collisions cell space to 32
 	--smaller values make collision more accurate
 	world = bump.newWorld(32)
-	gridWorldCreated = false
+	LET_GRIDWORLD_CREATED = false
 	gridRowsX = 158
 	gridColsY = 31
 
@@ -42,18 +42,23 @@ function love.load()
 	CONST_GRAVITY = 1800
 	LET_FPS = 0
 	LET_TIME_DILATION = 1
-	LET_SKY_COLOR = {61/255, 80/255, 98/255}
-	LET_CUR_GAME_STATE = "create_state"
+	LET_SKY_COLOR = {61/255, 80/255, 111/255}
+	LET_CUR_GAME_STATE = ""
 	LET_PREV_GAME_STATE = ""
 	LET_GAME_PAUSED = false
+	LET_OPTIONS_MENU = false
 	LET_BROWSE_PATH = ""
 	LET_PANEL_FOCUS = false
 	LET_PANEL_OPEN = ""
 	LET_BUTTON_SELECTED = nil
 
+	--switch to our menu state
+	switchGameState("menu_state")
+
 	--Editor Vars
 	LET_EDITOR_TOOL = "" --initializes var, we set in next statement
-	editor_change_mode("editor_tool_draw", draw_cursor)
+	--editor_change_mode("editor_tool_draw", draw_cursor)
+	editor_change_mode(LET_EDITOR_TOOL, default_cursor)
 	LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block"
 	LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
 	LET_EDITOR_OBJECTTYPE_SELECTED = "cog"
@@ -66,8 +71,12 @@ function love.load()
 	--Panel
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
+	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	--Main Menu buttons
-	button.spawn("resume_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5)
+	button.spawn("menu_play_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5)
+	button.spawn("menu_create_button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5)
+	button.spawn("options_button_QD", "options_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 4.5)
+	button.spawn("menu_quit_button_QD", "quit_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 6.5)
 	--Pause Menu buttons
 	button.spawn("resume_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5)
 	button.spawn("save_level_button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5)
@@ -78,35 +87,37 @@ function love.load()
 	button.spawn("select_button_QD", "tool_selection_action", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
 	button.spawn("dropper_button_QD", "tool_dropper_action", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
-	--Save Load buttons
-	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
-	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
-	button.spawn("browse_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 74.5, 24.5)
-	button.spawn("browse_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 74.5, 24.5)
-	button.spawn("load_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
-	button.spawn("save_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 74.5, 24.5)
+	--Save/Load buttons
+	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
+	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
+	button.spawn("browse_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 75, 25)
+	button.spawn("browse_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 75, 25)
+	button.spawn("load_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
+	button.spawn("save_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
+	--Options buttons
+	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
 end
 
 function love.keypressed(key)
-	if key == "escape" then
-		love.event.quit()
-	elseif key == "`" then
+	if key == "`" then
 		if CONST_DEBUG_M then
 			CONST_DEBUG_M = false
 		else
 			CONST_DEBUG_M = true
 		end
-	elseif key == "f" then
+	elseif key == "f" or key == "escape" then
 		if LET_CUR_GAME_STATE ~= "menu_state" and not love.keyboard.hasTextInput() then
 			pauseGame()
 		end
+	elseif key == "g" then
+		status_text.create(tostring(#enemy .. ", " .. #object))
 	elseif key == "backspace" then
 		deleteCharacterByte()
 	elseif key == "return" then
 		--Enables 'enter' key functionality for level path input
 		if love.keyboard.hasTextInput() then
 			if LET_PANEL_OPEN == "savePanel" then
-				saveLevel(tostring(LET_BROWSE_PATH), block, enemy)
+				saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
 			elseif LET_PANEL_OPEN == "loadPanel" then
 				loadLevel(tostring(LET_BROWSE_PATH))
 			end
@@ -127,6 +138,7 @@ end
 function love.wheelmoved(x, y)
 	if not LET_GAME_PAUSED then
 		block.cycleSelectedBlock(y)
+		block.cycleSelectedObject(y)
 	end
 end
 
@@ -153,8 +165,8 @@ function love.update(dt)
 	worldMouseX, worldMouseY = cam:toWorld(mouseX, mouseY)
 
 	status_text.update(dt)
-	button.update(dt)
 	panel.update(dt)
+	button.update(dt)
 
 	if LET_CUR_GAME_STATE ~= "menu_state" and not LET_GAME_PAUSED then
 		player.update(dt)
@@ -167,13 +179,15 @@ end
 function love.draw()
 	if LET_CUR_GAME_STATE ~= "menu_state" then
 		cam:draw(function()
+
 		--Draws to worldspace
 		block.draw()
+		object.draw()
 		player.draw()
 		enemy.draw()
-		object.draw()
 		debugDraw()
 		end)
+
 		--Draws to screen
 		editorHUDDraw()
 	end
@@ -194,17 +208,17 @@ function love.draw()
 end
 
 function createGridWorld()--called in main
-	if not gridWorldCreated then
+	if not LET_GRIDWORLD_CREATED then
 		--Begins index at 0 so that the blocks spawn at the very edges of the screen
 		for i = 0, gridRowsX do
 			for j = 0, gridColsY do
 				block.spawn("air_block", 32 * i, 32 * j)
-				gridWorldCreated = true
+				LET_GRIDWORLD_CREATED = true
 			end
 		end
 
 		--Remove for menu implementation
-		loadLevel("state_machine_testing")
+		loadLevel("default")
 	end
 end
 
@@ -219,20 +233,26 @@ function pauseGame()
 	end
 end
 
-function saveLevel(name, t1, t2)
+function saveLevel(name, t1, t2, t3)
 	local lower_name = string.lower(name)
 	local mainTable = {}
 	local blockTable = {}
 	local enemyTable = {}
+	local objectTable = {}
+
 	for i = 1, #t1 do
-		table.insert(blockTable, {subtype = t1[i].subtype, quad = t1[i].quad})
+		table.insert(blockTable, {subtype = t1[i].subtype, quad = t1[i].quad, itemInside = t1[i].itemInside})
 	end
 	for i = 1, #t2 do
-		table.insert(enemyTable, {subtype = t2[i].subtype, x = t2[i].x, y = t2[i].y, dir = t2[i].dir})
+		table.insert(enemyTable, {subtype = t2[i].subtype, x = t2[i].spawn_x, y = t2[i].spawn_y, dir = t2[i].dir})
+	end
+	for i = 1, #t3 do
+		table.insert(objectTable, {subtype = t3[i].subtype, x = t3[i].x, y = t3[i].y})
 	end
 
 	table.insert(mainTable, blockTable)
 	table.insert(mainTable, enemyTable)
+	table.insert(mainTable, objectTable)
 
 	local success, message = love.filesystem.write(lower_name  .. ".txt", TSerial.pack(mainTable, true))
 	if success then
@@ -252,21 +272,30 @@ function loadLevel(name)
 		--Unserialize string into table
 		data_string = TSerial.unpack(data_string, true)
 
-		--Delete any enemies in current level
+		--Delete everything in current level
 		sterilizeLevel()
-
-		--Load in block data from new save table
-		for i = 1, #block do
-			block[i].subtype = data_string[1][i].subtype
-			block[i].quad = data_string[1][i].quad
-
-			if not world:hasItem(block[i]) then
-				world:add(block[i], block[i].x, block[i].y, block[i].width, block[i].height)
+		--Recreate our blocks
+		--createGridWorld()
+	--BLOCK LOADING
+		if data_string[1] ~= nil then
+			for i = 1, #data_string[1] do
+				--Load in block data from new save table
+				block.typeChange(block[i], data_string[1][i].subtype)
+				block[i].itemInside = data_string[1][i].itemInside
 			end
 		end
-		for i = 1, #data_string[2] do
-			if data_string[2] ~= nil then
+	--ENEMY LOADING
+		--Checks length of second data string for how many enemies to spawn in
+		if data_string[2] ~= nil then
+			for i = 1, #data_string[2] do
 				enemy.spawn(data_string[2][i].subtype, data_string[2][i].x, data_string[2][i].y, data_string[2][i].dir)
+			end
+		end
+	--OBJECT LOADING
+		--Checks length of third data string for how many objects to spawn in
+		if data_string[3] ~= nil then
+			for i = 1, #data_string[3] do
+				object.spawn(data_string[3][i].subtype, data_string[3][i].x, data_string[3][i].y)
 			end
 		end
 
@@ -276,34 +305,6 @@ function loadLevel(name)
 		status_text.create("Level Loaded! ('" .. lower_name .. "')")
 	else
 		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
-	end
-end
-
---Function used to scrub memory of all level objects before loading a new stage
-function sterilizeLevel()
-	for i = 1, #enemy do
-		table.remove(enemy, i)
-	end
-	for i = 1, #player do
-		table.remove(player, i)
-	end
-end
-
-function initializeLevel()
-	--Spawns player on a spawn block
-	for a = 1, #block do
-		if block[a].subtype == "player_spawn" then
-			player.spawn(block[a].x + 4, block[a].y - 4)
-		end
-	end
-end
-
-function switchGameState(newState) --Used for button.lua actions
-	if LET_CUR_GAME_STATE ~= newState then
-		LET_PREV_GAME_STATE = LET_CUR_GAME_STATE
-		LET_CUR_GAME_STATE = newState
-		--force unpausing
-		LET_GAME_PAUSED = false
 	end
 end
 

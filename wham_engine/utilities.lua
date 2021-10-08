@@ -49,6 +49,33 @@ function Contains(list, x)
 	return false
 end
 
+--Function used to scrub memory of all level objects before loading a new stage
+function sterilizeLevel()
+	--LET_GRIDWORLD_CREATED = false
+	--while #block ~= 0 do rawset(block, #block, nil) end
+	while #enemy ~= 0 do rawset(enemy, #enemy, nil) end
+	while #player ~= 0 do rawset(player, #player, nil) end
+	while #object ~= 0 do rawset(object, #object, nil) end
+end
+
+function initializeLevel()
+	--Spawns player on a spawn block
+	for a = 1, #block do
+		if block[a].subtype == "player_spawn" then
+			player.spawn(block[a].x + 4, block[a].y - 4)
+		end
+	end
+end
+
+function switchGameState(newState) --Used for button.lua actions
+	if LET_CUR_GAME_STATE ~= newState then
+		LET_PREV_GAME_STATE = LET_CUR_GAME_STATE
+		LET_CUR_GAME_STATE = newState
+		--force unpausing
+		LET_GAME_PAUSED = false
+	end
+end
+
 function deleteCharacterByte()
 	--Backspacing functionality for level path input
 	if love.keyboard.hasTextInput() then
@@ -88,7 +115,12 @@ function animationStateController(dt, ent)
 	--Resets animation timing
 	animationTimeScale(ent, 12)
 	--Change player's animation + timing based on his current state
-	animationChange(ent)
+	--Checks if we're dealing with an actual character or an object
+	if ent.type == "player" or ent.type == "enemy" then
+		character_animation_change(ent)
+	else
+		object_animation_change(ent)
+	end
 	--Changes our animation tick rate based on timescale
 	ent.tick = ent.tick + dt * ent.animation_timescale
 
@@ -112,29 +144,6 @@ function animationStateController(dt, ent)
 	end
 end
 
---Used only for object related animations
-function animationStateController_Objects(dt, ent)
-	--Resets animation timing
-	animationTimeScale(ent, 12)
-	--Change player's animation + timing based on his current state
-	animationChange_Objects(ent)
-	--Changes our animation tick rate based on timescale
-	ent.tick = ent.tick + dt * ent.animation_timescale
-
-	--Checks if the current anim tick is greater than .9(seems to prevent footstep sound dupe)
-	if ent.tick > 0.9 then
-		ent.current_frame = ent.current_frame + 1
-
-		if ent.current_frame >= #ent.animationTable then
-			--Once we reach the end of the animation data table, start back at the beginning
-			--Lua indices start at 1 instead of 0
-			ent.current_frame = 1
-		end
-		--reset our timing ticks when reaching end of frames
-		ent.tick = 0
-	end
-end
-
 function soundStateController(dt, ent)
 	--Add support for different surfaces[]
 	if ent.state == "run" then
@@ -145,7 +154,7 @@ function soundStateController(dt, ent)
 end
 
 --Allows ease of animation changes
-function animationChange(ent)
+function character_animation_change(ent)
 	--Checks for specific action states to determine action anim speed
 	if ent.state == "jump" then
 		animationTimeScale(ent, 3)
@@ -161,7 +170,7 @@ function animationChange(ent)
 end
 
 --Allows ease of animation changes for OBJECTS
-function animationChange_Objects(ent)
+function object_animation_change(ent)
 	if ent.subtype == "cog" then
 		animationTimeScale(ent, 12)
 	end
@@ -175,4 +184,21 @@ end
 --Changes timescale of animations(anim speed)
 function animationTimeScale(ent, time)
 	ent.animation_timescale = time
+end
+
+function object_auto_bump(ent)
+	if not ent.cleanup then
+		if not world:hasItem(ent) then
+			world:add(ent, ent.x, ent.y, ent.width, ent.height)
+		end
+	end
+end
+
+function object_cleanup(ent)
+	if ent.cleanup then
+		table.remove(_G[ent.type], ent.id)
+		if world:hasItem(ent) then
+			world:remove(ent)
+		end
+	end
 end

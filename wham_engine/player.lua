@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = player, name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
