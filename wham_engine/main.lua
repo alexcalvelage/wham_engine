@@ -218,7 +218,8 @@ function createGridWorld()--called in main
 		end
 
 		--Remove for menu implementation
-		loadLevel("default")
+		--loadLevel("state_machine_testing")
+		loadLevel("state_machine_testing_v2")
 	end
 end
 
@@ -296,6 +297,18 @@ function loadLevel(name)
 		if data_string[3] ~= nil then
 			for i = 1, #data_string[3] do
 				object.spawn(data_string[3][i].subtype, data_string[3][i].x, data_string[3][i].y)
+			end
+		end
+
+		--**FIX for crash when deleting a loaded level's objects**
+		--Reassign our  block's child correctly after indices change(TABLE DATA)
+		for q,t in ipairs(block) do
+			if t.itemInside then
+				if t.itemInside.type == "object" then
+					t.itemInside = object[t.itemInside.id]
+				elseif t.itemInside.type == "enemy" then
+					t.itemInside = enemy[t.itemInside.id]
+				end
 			end
 		end
 

@@ -7,16 +7,17 @@ end
 
 function object.update(dt)
 	for i,v in ipairs(object) do
+		--matches ids to indices
+		v.id = i
+
 		if v.cleanup then
-			table.remove(object, i)
+			table.remove(object, v.id)
 			world:remove(v)
 		end
 
-		if not v.cleanup then
-			object.checkValidAnimationTable(v)
-			--Handles animation state switching
-			animationStateController(dt, v)
-		end
+		object.checkValidAnimationTable(v)
+		--Handles animation state switching
+		animationStateController(dt, v)
 	end
 end
 
@@ -26,6 +27,8 @@ function object.draw()
 		if v.animationTable then
 			love.graphics.setColor(1, 1, 1)
 			love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, object.objectScaling, object.objectScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
+			love.graphics.print(object[i].id, v.x, v.y)
+			love.graphics.print(tostring(v.cleanup), v.x, v.y+12)
 		end
 	end
 end

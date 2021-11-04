@@ -11,6 +11,14 @@ end
 
 function enemy.update(dt)
 	for i,v in ipairs(enemy) do
+		--matches ids to indices
+		v.id = i
+
+		if v.cleanup then
+			table.remove(enemy, v.id)
+			world:remove(v)
+		end
+
 		if LET_CUR_GAME_STATE == "create_state" then
 			v.xVel, v.yVel = 0, 0
 			v.isOnGround = true
@@ -146,7 +154,7 @@ enemy.filter = function(item, other)
 		if enemyBottom <= y then
 			return 'slide'
 		end
-	elseif other.subtype == "item_block" or other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_l" or other.subtype == "grass_block_r" then
+	elseif other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
 		if py >= y or enemyBottom <= y then
 			return 'slide'
 		end

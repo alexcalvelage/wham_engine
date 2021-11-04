@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = nil, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -80,15 +80,23 @@ function player.update(dt)
 			--Response for knockback damage
 			if coll.knockback then
 				v.isKnockback = true
-				v.health = v.health - 1
-				v.yVel = v.jumpHeight / 2
-				if v.dir == 1 then
-					v.xVel = v.jumpHeight / 2
-				elseif v.dir == -1 then
-					v.xVel = -v.jumpHeight / 2
+				--v.health = v.health - 1
+				--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
+				if v.damageDir == 4 then
+					v.yVel = -1 * (v.jumpHeight / 8)
+				elseif v.damageDir == 3 then
+					v.yVel = v.jumpHeight / 4
+				end
+				if v.damageDir == 2 then
+					v.xVel = v.jumpHeight / 3
+					--v.yVel = v.jumpHeight / 4
+				elseif v.damageDir == 1 then
+					v.xVel = -v.jumpHeight / 3
+					--v.yVel = v.jumpHeight / 4
 				end
 			else
 				v.isKnockback = false
+				v.damageDir = nil
 			end
 		end
 	end
@@ -158,7 +166,7 @@ function player.movementController(dt, plr)
 		end
 	end--]]
 
-	--Jumping
+	--Jumping update(item, x2,y2,w2,h2)
 	if love.keyboard.isDown(moveJump) and plr.isOnGround and not plr.isCrouching then
 		plr.yVel = plr.jumpHeight
 		--Checks xVel to see if we're doing a vertical jump or a frontflip
@@ -212,8 +220,36 @@ player.filter = function(item, other)
 			return 'slide'
 		end
 	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
+		--Check which direction spikes are facing for knockback
 		if playerBottom <= otherY then
-			return 'knockback'
+			item.damageDir = 3
+		elseif playerY >= otherY + otherH then
+			item.damageDir = 4
 		end
+		if playerRight <= otherX then
+			item.damageDir = 1
+		elseif playerX >= otherX + otherW then
+			item.damageDir = 2
+		end
+
+		return 'knockback'
+	elseif other.subtype == "goon" then
+		--Orient player towards enemy that hit them
+		--Knock back player in relation(opposite of) to enemy's direction
+		if playerRight >= otherX then
+			if other.dir == 1 then
+				item.damageDir = 1
+			elseif other.dir == -1 then
+				item.damageDir = 2
+			end
+		elseif playerX <= otherX + otherW then
+			if other.dir == 1 then
+				item.damageDir = 1
+			elseif other.dir == -1 then
+				item.damageDir = 2
+			end
+		end
+
+		return 'knockback'
 	end
 end

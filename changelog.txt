@@ -12,14 +12,20 @@
 -Added Options panel
 -Fixed panel button quad image dimensions being incorrect
 -Added ability to spawn/delete cogs + enemies using Dropper tool
--Added object support to Saving/Loading
--Added enemy spawnpoint support for Saving/Loading
+-Added object support to Saving/Loading(Crashes upon removing objects from a loaded level)
+-Added enemy spawnpoint support for Saving/Loading(Crashes upon removing objects from a loaded level)
+--10/25/21--
+-Fixed object id's not being updated when another is deleted
+-Fixed downward facing spikes collision response being same as upward
+-Character height more accurately reflects current animation state
+--11/4/21
+-Fixed deletion of objects within a loaded level causing a crash
+-Fixed broken collision on some ground types for enemies
+-Reduced knockback force
+-Added collision response for player -> enemy
 
 --KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *If player is crouched and somehow falls then they fall at gravity * 64
 *OpenGL issue is still present in certain cases(Walking to left)
 *Objects currently don't utilize spritebatches
-*Possible bump world issue when deleting objects(Objects currently aren't flagged as deleteable after new level load)
-	*Thinking that block[i].itemInside isn't grabbing the correct block/item when loading
-	*It 'kinda' works. Not all indices can be removed

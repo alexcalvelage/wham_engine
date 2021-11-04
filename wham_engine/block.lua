@@ -31,6 +31,10 @@ function block.update(dt)
 					block.editor_dropper_paint(v)
 				elseif love.mouse.isDown(2) then
 					block.editor_dropper_paint(v, true)
+				elseif love.mouse.isDown(3) then
+					if v.itemInside then
+						print(v.id .. ", " .. v.itemInside.id)
+					end
 				end
 			end
 		end
@@ -146,23 +150,21 @@ function block.editor_dropper_paint(me, erase)
 	if me.highlight then
 		if erase then
 			if me.itemInside then
-				if world:hasItem(object[me.itemInside]) then
-					object[me.itemInside].cleanup = true
-					me.itemInside = nil
-
-					--table.remove(_G[me.itemInside.type], me.itemInside.id)
-					--world:remove(_G[me.itemInside.type][me.itemInside.id])
-					playSound(remove_block_SND)
-				end
+				--print(me.itemInside)
+				--object[me.itemInside].cleanup = true
+				me.itemInside.cleanup = true
+				me.itemInside = nil
+				--table.remove(_G[me.itemInside.type], me.itemInside.id)
+				--world:remove(_G[me.itemInside.type][me.itemInside.id])
+				playSound(remove_block_SND)
 			end
 		elseif not erase then
 			if not me.itemInside then
 				--Branch off for actual objects vs enemies
 				if LET_EDITOR_OBJECTTYPE_SELECTED == "cog" then
 					object.spawn(LET_EDITOR_OBJECTTYPE_SELECTED, me.x, me.y)
-					--Plugin the lastly spawned object as the item inside
-					me.itemInside = object[#object].id
-					print(me.itemInside)
+					--Plugin the lastly spawned object as the item inside(TABLE DATA)
+					me.itemInside = object[#object]
 				elseif LET_EDITOR_OBJECTTYPE_SELECTED == "enemy" then
 					enemy.spawn("goon", me.x, me.y, 1)
 					me.itemInside = enemy[#enemy]

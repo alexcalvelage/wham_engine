@@ -167,6 +167,8 @@ function character_animation_change(ent)
 	--converts concatenated string back to name of Global table
 	--EG: "player_" .. "idle" == "player_idle" converted to player_idle
 	ent.animationTable = _G[player_state]
+	--Changes player height based on animation frame height
+	ent.height = ent.animationTable[ent.current_frame]:getHeight() * player.playerScaling
 end
 
 --Allows ease of animation changes for OBJECTS
