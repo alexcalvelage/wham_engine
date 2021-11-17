@@ -27,8 +27,8 @@ function object.draw()
 		if v.animationTable then
 			love.graphics.setColor(1, 1, 1)
 			love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, object.objectScaling, object.objectScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
-			love.graphics.print(object[i].id, v.x, v.y)
-			love.graphics.print(tostring(v.cleanup), v.x, v.y+12)
+			--love.graphics.print(object[i].id, v.x, v.y)
+			--love.graphics.print(tostring(v.cleanup), v.x, v.y+12)
 		end
 	end
 end

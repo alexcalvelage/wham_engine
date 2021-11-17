@@ -1,31 +1,24 @@
 --CHANGES
--Added new collision response type, "knockback"
--Added new knockback check+response for players
--Updated 'state_machine_testing' for new mechanics
--Added Objects 'class'
-	*Added Cog object
-	*Added Medkit object
-	*Same setup as player/enemy
--Removed 'Escape' key to quit game
--Player is now drawn on top of objects
--Added Main Menu
--Added Options panel
--Fixed panel button quad image dimensions being incorrect
--Added ability to spawn/delete cogs + enemies using Dropper tool
--Added object support to Saving/Loading(Crashes upon removing objects from a loaded level)
--Added enemy spawnpoint support for Saving/Loading(Crashes upon removing objects from a loaded level)
---10/25/21--
--Fixed object id's not being updated when another is deleted
--Fixed downward facing spikes collision response being same as upward
--Character height more accurately reflects current animation state
---11/4/21
--Fixed deletion of objects within a loaded level causing a crash
--Fixed broken collision on some ground types for enemies
--Reduced knockback force
--Added collision response for player -> enemy
+-Removed no longer necessary debug code
+-Fixed crash if trying to open debug menu in main menu
+-Fixed collisions occasionally not being cleaned up
+-Reordered debug strings in debug menu
+-Added a toggle to display controls
+-Fixed incorrect cursor being shown when pausing/unpausing
+-Added 'Mario' style jumping system
+	-Holding jump will let you jump higher
+-Optimized block render code to only render blocks the player can see(+230 frames on GTX3070)
+	-Needs to be further optimized
+		*Stop checking for intersecting(SLOW)
+		*Stop looping through blocks twice for highlighting
+		*When editing a level, FPS goes from 650->330(Draw tool tanks frames)
+		*Slowdown when holding LMB with any tool selected
 
 --KNOWN ISSUES
 *Editor cannot select blocks when dragging right to left, or bottom to top
 *If player is crouched and somehow falls then they fall at gravity * 64
 *OpenGL issue is still present in certain cases(Walking to left)
 *Objects currently don't utilize spritebatches
+*Camera pans down slightly too low at bottom of screen
+	*Need to cap right-side of screen panning for end of level
+*Player->Enemy collision response causes strange bouncing behavior

@@ -31,25 +31,27 @@ function block.update(dt)
 					block.editor_dropper_paint(v)
 				elseif love.mouse.isDown(2) then
 					block.editor_dropper_paint(v, true)
-				elseif love.mouse.isDown(3) then
-					if v.itemInside then
-						print(v.id .. ", " .. v.itemInside.id)
-					end
 				end
 			end
+		elseif LET_EDITOR_TOOL == "editor_tool_select" then
+			block.clickActionUpdate(v)
 		end
-
-		block.clickActionUpdate(v)
 	end
 end
 
 function block.draw()
 	--Clears our spritebatch draw call
 	block_SB:clear()
+	local camPosX, camPosY, camPosW, camPosH = cam:getVisible()
+	local camSpacing = 32
 
 	for i = 1, #block do
-		--Turn string back into Global
-		block_SB:add(_G[block[i].quad], block[i].x, block[i].y)
+		--This isIntersecting func seems to cause major slow down..although headed in the right direction
+		if bump.rect.isIntersecting(camPosX, camPosY, camPosW, camPosH, block[i].x, block[i].y, block[i].width, block[i].height) then
+			--slower than isIntersecting()
+			--if block[i].x < camPosX + camPosW and block[i].x > camPosX - camSpacing and block[i].y < camPosY + camPosH and block[i].y > camPosY - camSpacing then
+			block_SB:add(_G[block[i].quad], block[i].x, block[i].y)
+		end
 	end
 
 	--Draws our spritebatch
@@ -150,12 +152,9 @@ function block.editor_dropper_paint(me, erase)
 	if me.highlight then
 		if erase then
 			if me.itemInside then
-				--print(me.itemInside)
-				--object[me.itemInside].cleanup = true
 				me.itemInside.cleanup = true
 				me.itemInside = nil
-				--table.remove(_G[me.itemInside.type], me.itemInside.id)
-				--world:remove(_G[me.itemInside.type][me.itemInside.id])
+				
 				playSound(remove_block_SND)
 			end
 		elseif not erase then

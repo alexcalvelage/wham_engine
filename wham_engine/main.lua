@@ -1,4 +1,4 @@
-local gamera = require "resources/libraries/gamera"
+gamera = require "resources/libraries/gamera"
 bump = require "resources/libraries/bump"
 require "resources/libraries/TSerial"
 require "utilities"
@@ -32,17 +32,20 @@ function love.load()
 	--smaller values make collision more accurate
 	world = bump.newWorld(32)
 	LET_GRIDWORLD_CREATED = false
+	--Can set this to start the game with a specific level loaded
+	LET_CURRENT_LEVEL = "boo"
 	gridRowsX = 158
-	gridColsY = 31
+	gridColsY = 30
 
 --BEGIN GAME
 	--initialize some 'constants' first
-	CONST_DEBUG_M = false
+	LET_DEBUG_M = false
+	LET_CONTROLS_M = true
 	CONST_WORLD_LIMIT = 1800
 	CONST_GRAVITY = 1800
 	LET_FPS = 0
 	LET_TIME_DILATION = 1
-	LET_SKY_COLOR = {61/255, 80/255, 111/255}
+	LET_SKY_COLOR = {40/255, 85/255, 130/255}
 	LET_CUR_GAME_STATE = ""
 	LET_PREV_GAME_STATE = ""
 	LET_GAME_PAUSED = false
@@ -100,17 +103,25 @@ end
 
 function love.keypressed(key)
 	if key == "`" then
-		if CONST_DEBUG_M then
-			CONST_DEBUG_M = false
-		else
-			CONST_DEBUG_M = true
+		if LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state" then
+			if LET_DEBUG_M then
+				LET_DEBUG_M = false
+			else
+				LET_DEBUG_M = true
+			end
+		end
+	elseif key == "c" then
+		if LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state" then
+			if LET_CONTROLS_M then
+				LET_CONTROLS_M = false
+			else
+				LET_CONTROLS_M = true
+			end
 		end
 	elseif key == "f" or key == "escape" then
 		if LET_CUR_GAME_STATE ~= "menu_state" and not love.keyboard.hasTextInput() then
 			pauseGame()
 		end
-	elseif key == "g" then
-		status_text.create(tostring(#enemy .. ", " .. #object))
 	elseif key == "backspace" then
 		deleteCharacterByte()
 	elseif key == "return" then
@@ -199,6 +210,7 @@ function love.draw()
 	debugMenuDraw()
 
 	if LET_GAME_PAUSED then
+		love.graphics.setColor(1, 1, 1)
 		love.graphics.setFont(defaultFontHuge)
 		love.graphics.printf("PAUSED", 0, (gheight / 2) - 200, gwidth, "center")
 		love.graphics.setFont(defaultFont)
@@ -216,21 +228,31 @@ function createGridWorld()--called in main
 				LET_GRIDWORLD_CREATED = true
 			end
 		end
-
-		--Remove for menu implementation
-		--loadLevel("state_machine_testing")
-		loadLevel("state_machine_testing_v2")
 	end
 end
 
 function pauseGame()
 	if LET_GAME_PAUSED then
-		--close out of any previously opened panels
+		changeCursor()
+		--close out of any previously opened panels for resume
 		LET_PANEL_FOCUS = false
 		LET_PANEL_OPEN = ""
 		LET_GAME_PAUSED = false
 	else
 		LET_GAME_PAUSED = true
+		--Set cursor back to default for menus
+		love.mouse.setCursor(default_cursor)
+	end
+end
+
+function changeCursor()
+	--Resets cursor based on which editor tool is selected
+	if LET_EDITOR_TOOL == "editor_tool_select" then
+		love.mouse.setCursor(selection_cursor)
+	elseif LET_EDITOR_TOOL == "editor_tool_draw" then
+		love.mouse.setCursor(draw_cursor)
+	elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
+		love.mouse.setCursor(dropper_cursor)
 	end
 end
 
@@ -268,16 +290,16 @@ function loadLevel(name)
 	local file = love.filesystem.getInfo(lower_name .. ".txt")
 
 	if file then
+		--Delete everything in current level
+		sterilizeLevel()
+
 		--Read save file text
 		local data_string = love.filesystem.read(lower_name .. ".txt")
+		LET_CURRENT_LEVEL = lower_name
 		--Unserialize string into table
 		data_string = TSerial.unpack(data_string, true)
 
-		--Delete everything in current level
-		sterilizeLevel()
-		--Recreate our blocks
-		--createGridWorld()
-	--BLOCK LOADING
+		--BLOCK LOADING
 		if data_string[1] ~= nil then
 			for i = 1, #data_string[1] do
 				--Load in block data from new save table
@@ -285,14 +307,14 @@ function loadLevel(name)
 				block[i].itemInside = data_string[1][i].itemInside
 			end
 		end
-	--ENEMY LOADING
+		--ENEMY LOADING
 		--Checks length of second data string for how many enemies to spawn in
 		if data_string[2] ~= nil then
 			for i = 1, #data_string[2] do
 				enemy.spawn(data_string[2][i].subtype, data_string[2][i].x, data_string[2][i].y, data_string[2][i].dir)
 			end
 		end
-	--OBJECT LOADING
+		--OBJECT LOADING
 		--Checks length of third data string for how many objects to spawn in
 		if data_string[3] ~= nil then
 			for i = 1, #data_string[3] do
@@ -322,18 +344,27 @@ function loadLevel(name)
 end
 
 function editorHUDDraw()
+	local CONST_HUD_W = 250
+	local CONST_HUD_H = 250
+	local CONST_HUD_X = gwidth / 2 - 125
+	local CONST_HUD_Y = 0
+	local CONST_CONTROL_TEXT = "A/D - Movement\nSPACE- Jump\nLMB - UI Confirm/Paint*\nRMB - Fill Selected*/Erase*\nMouse Wheel - Change Block/Object"
+	local CONST_CONTROL_TEXT_2 = "Toggle Controls Menu with 'C'"
 	love.graphics.setColor(1, 1, 1)
+	love.graphics.setFont(defaultFontSmol)
+	love.graphics.printf(CONST_CONTROL_TEXT_2, CONST_HUD_X, CONST_HUD_Y + CONST_HUD_H / 2 + 12, 300, "center")
 	love.graphics.setFont(defaultFont)
-	--love.graphics.rectangle("fill", gwidth - 128, gheight / 2 - 240, 96, 96)
 	love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, gwidth - 157, gheight / 2 - 360, 150, "center")
 	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
-	--love.graphics.print("AD - Movement\nSPACE- Jump\nLMB - Select Blocks/Draw\nRMB - Fill Selected/Erase\nMouse Wheel - Change Block", 20, 20)
+	if LET_CONTROLS_M then
+		love.graphics.printf(CONST_CONTROL_TEXT, CONST_HUD_X, CONST_HUD_Y, 300, "center")
+	end
 end
 
 function debugMenuDraw()
-	if CONST_DEBUG_M then
+	if LET_DEBUG_M then
 		local CONST_DEBUG_W = 350
-		local CONST_DEBUG_H = 230
+		local CONST_DEBUG_H = 250
 		local CONST_DEBUG_X = 0
 		local CONST_DEBUG_Y = 12
 		love.graphics.setFont(defaultFont)
@@ -343,20 +374,22 @@ function debugMenuDraw()
 		love.graphics.printf("DEBUG MENU", CONST_DEBUG_X, CONST_DEBUG_Y, CONST_DEBUG_W, "center")
 		--Displays FPS benchmark
 		love.graphics.printf("FPS: " .. LET_FPS, CONST_DEBUG_X, CONST_DEBUG_Y * 3, CONST_DEBUG_W, "left")
-		love.graphics.printf("Player State: " .. player[1].state, CONST_DEBUG_X, CONST_DEBUG_Y * 6, CONST_DEBUG_W, "left")
-		love.graphics.printf("Player Frame: " .. math.floor(player[1].current_frame), CONST_DEBUG_X, CONST_DEBUG_Y * 7.5, CONST_DEBUG_W, "left")
-		love.graphics.printf("#Blocks: " .. #block, CONST_DEBUG_X, CONST_DEBUG_Y * 9, CONST_DEBUG_W, "left")
-		love.graphics.printf("#Enemies: " .. #enemy, CONST_DEBUG_X, CONST_DEBUG_Y * 10.5, CONST_DEBUG_W, "left")
-		love.graphics.printf("Game State: " .. LET_CUR_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 12, CONST_DEBUG_W, "left")
-		love.graphics.printf("Previous Game State: " .. LET_PREV_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 13.5, CONST_DEBUG_W, "left")
-		love.graphics.printf("Current Editor Tool: " .. LET_EDITOR_TOOL, CONST_DEBUG_X, CONST_DEBUG_Y * 15, CONST_DEBUG_W, "left")
-		love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
-		love.graphics.printf("xVel, yVel:" .. player[1].xVel .. ", " .. player[1].yVel, CONST_DEBUG_X, CONST_DEBUG_Y * 18, CONST_DEBUG_W, "left")
+		love.graphics.printf("Game State: " .. LET_CUR_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 4.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("Previous Game State: " .. LET_PREV_GAME_STATE, CONST_DEBUG_X, CONST_DEBUG_Y * 6, CONST_DEBUG_W, "left")
+		love.graphics.printf("Current Level: " .. LET_CURRENT_LEVEL, CONST_DEBUG_X, CONST_DEBUG_Y * 7.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("Current Editor Tool: " .. LET_EDITOR_TOOL, CONST_DEBUG_X, CONST_DEBUG_Y * 9, CONST_DEBUG_W, "left")
+		love.graphics.printf("Selected Object: " .. LET_EDITOR_OBJECTTYPE_SELECTED, CONST_DEBUG_X, CONST_DEBUG_Y * 10.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("#Blocks: " .. #block, CONST_DEBUG_X, CONST_DEBUG_Y * 12, CONST_DEBUG_W, "left")
+		love.graphics.printf("#Objects: " .. #object, CONST_DEBUG_X, CONST_DEBUG_Y * 13.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("#Enemies: " .. #enemy, CONST_DEBUG_X, CONST_DEBUG_Y * 15, CONST_DEBUG_W, "left")
+		love.graphics.printf("Player State: " .. player[1].state, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("Player Frame: " .. math.floor(player[1].current_frame), CONST_DEBUG_X, CONST_DEBUG_Y * 18, CONST_DEBUG_W, "left")
+		love.graphics.printf("xVel, yVel: " .. player[1].xVel .. ", " .. player[1].yVel, CONST_DEBUG_X, CONST_DEBUG_Y * 19.5, CONST_DEBUG_W, "left")
 	end
 end
 
 function debugDraw()
-	if CONST_DEBUG_M then
+	if LET_DEBUG_M then
 		for i,v in ipairs(player) do
 			--Player Hitbox
 			love.graphics.setColor(1, 0, 1)
@@ -368,6 +401,7 @@ function debugDraw()
 			love.graphics.setColor(1, 0, 1)
 			love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
 
+			--Hide view distance
 			if (v.dir == -1) then
 				love.graphics.setColor(1, 0, 0)
 				love.graphics.line(v.x, v.y + 25, v.x - v.loseRange, v.y + 25)
@@ -383,6 +417,12 @@ function debugDraw()
 				love.graphics.line(v.x, v.y + 50, v.x + v.searchRange, v.y + 50)
 				--love.graphics.printf("Found Target Range", v.x, v.y + 50, v.searchRange, "center")
 			end
+		end
+
+		for i,v in ipairs(object) do
+			--Object Hitbox
+			love.graphics.setColor(1, 0, 1)
+			love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
 		end
 	end
 end

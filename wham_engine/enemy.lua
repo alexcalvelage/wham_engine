@@ -22,7 +22,7 @@ function enemy.update(dt)
 		if LET_CUR_GAME_STATE == "create_state" then
 			v.xVel, v.yVel = 0, 0
 			v.isOnGround = true
-		elseif LET_CUR_GAME_STATE == "play_state" and not v.cleanup then
+		elseif LET_CUR_GAME_STATE == "play_state" then
 			--Cue gravity
 			v.yVel = v.yVel + (CONST_GRAVITY * dt)
 

@@ -75,9 +75,13 @@ function button.clickAction(mButton)
 			if button[i].highlight then
 				--MAIN MENU ACTIONS
 				if button[i].action == "play_game_action" then
+					--Remove for menu implementation
+					loadLevel(LET_CURRENT_LEVEL or "default")
 					switchGameState("play_state")
 				elseif button[i].action == "load_game_action" then
 				elseif button[i].action == "create_level_action" then
+					--Remove for menu implementation
+					loadLevel(LET_CURRENT_LEVEL or "default")
 					switchGameState("create_state")
 				elseif button[i].action == "options_action" then
 					panel.typeChange("optionsPanel")
@@ -86,9 +90,7 @@ function button.clickAction(mButton)
 					love.event.quit()
 				--PAUSE MENU ACTIONS
 				elseif button[i].action == "resume_action" then
-					LET_PANEL_FOCUS = false
-					LET_PANEL_OPEN = ""
-					LET_GAME_PAUSED = false
+					pauseGame()
 				elseif button[i].action == "save_level_action" then
 					panel.typeChange("savePanel")
 					love.keyboard.setTextInput(true)
@@ -132,6 +134,3 @@ function editor_change_mode(mode, cursor)
 	love.mouse.setCursor(cursor)
 	LET_EDITOR_TOOL = mode
 end
-
---Check if create buttons are hovered over
---If these specific buttons are hovered then dont allow block highlight

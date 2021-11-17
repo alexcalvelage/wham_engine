@@ -51,18 +51,22 @@ end
 
 --Function used to scrub memory of all level objects before loading a new stage
 function sterilizeLevel()
-	--LET_GRIDWORLD_CREATED = false
-	--while #block ~= 0 do rawset(block, #block, nil) end
 	while #enemy ~= 0 do rawset(enemy, #enemy, nil) end
 	while #player ~= 0 do rawset(player, #player, nil) end
 	while #object ~= 0 do rawset(object, #object, nil) end
+	--Re-initialize our world to force-update collisions
+	world = bump.newWorld(32)
 end
 
 function initializeLevel()
-	--Spawns player on a spawn block
-	for a = 1, #block do
-		if block[a].subtype == "player_spawn" then
-			player.spawn(block[a].x + 4, block[a].y - 4)
+	for i,v in ipairs(block) do
+		--Checks to make sure collision on this doesn't already exist
+		if not world:hasItem(v) then
+			world:add(v, v.x, v.y, v.width, v.height)
+		end
+		--Spawns player on a spawn block
+		if v.subtype == "player_spawn" then
+			player.spawn(v.x + 4, v.y - 4)
 		end
 	end
 end

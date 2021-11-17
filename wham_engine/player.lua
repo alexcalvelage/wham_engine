@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = nil, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -600, jumpHeld = false, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = nil, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -22,6 +22,11 @@ function player.update(dt)
 		end
 		--Cue gravity
 		v.yVel = v.yVel + (CONST_GRAVITY * dt) * gravityX
+
+		--'Mario Jump' detection
+		if v.jumpHeld then
+			v.yVel = v.yVel + (v.jumpHeight * 1.5) * dt
+		end
 
 		--where we WANT to go provided no collisions
 		local goalX, goalY = v.x, v.y
@@ -126,6 +131,9 @@ function player.movementController(dt, plr)
 		stateChange(plr, "crouch")
 	elseif not love.keyboard.isDown(moveCrouch) and plr.isCrouching then
 		stateChange(plr, "idle")
+	elseif not love.keyboard.isDown(moveJump) and plr.jumpHeld then
+		--Flips our jumpHeld var back to false, cancelling high jump
+		plr.jumpHeld = false
 	end
 
 	--Running
@@ -169,6 +177,7 @@ function player.movementController(dt, plr)
 	--Jumping update(item, x2,y2,w2,h2)
 	if love.keyboard.isDown(moveJump) and plr.isOnGround and not plr.isCrouching then
 		plr.yVel = plr.jumpHeight
+		plr.jumpHeld = true
 		--Checks xVel to see if we're doing a vertical jump or a frontflip
 		if plr.xVel == 0 then
 			--Forces the current animation frame to reset to 1...check for state change to fix
@@ -212,13 +221,15 @@ player.filter = function(item, other)
 		if playerBottom <= otherY then
 			return 'slide'
 		end
-	elseif other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
+		
+	elseif other.subtype == "cog" or other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
 		if playerY <= otherY or playerBottom >= otherY then
 			return 'slide'
 		end
 		if playerX <= otherX or playerRight >= otherX then
 			return 'slide'
 		end
+
 	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
 		--Check which direction spikes are facing for knockback
 		if playerBottom <= otherY then
@@ -233,6 +244,7 @@ player.filter = function(item, other)
 		end
 
 		return 'knockback'
+
 	elseif other.subtype == "goon" then
 		--Orient player towards enemy that hit them
 		--Knock back player in relation(opposite of) to enemy's direction
