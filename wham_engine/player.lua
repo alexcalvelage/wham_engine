@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -600, jumpHeld = false, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = nil, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -600, jumpHeld = false, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = 0, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -15,11 +15,6 @@ function player.update(dt)
 	for i,v in ipairs(player) do
 		--Check if player is crouching..this lets player crouch instantly without 'falling'
 		local gravityX = 1
-		if v.isCrouching then
-			gravityX = defaultHeight
-		else
-			gravityX = 1
-		end
 		--Cue gravity
 		v.yVel = v.yVel + (CONST_GRAVITY * dt) * gravityX
 
@@ -36,7 +31,13 @@ function player.update(dt)
 
 		--Constantly is updating our player's x,y position
 		goalX = goalX + (v.xVel * dt)
-		goalY = goalY + (v.yVel * dt)
+
+		--Makes player instantly crouch instead of slowly falling
+		if v.isCrouching and not v.isOnGround then
+			goalY = goalY + 16
+		else
+			goalY = goalY + (v.yVel * dt)
+		end
 
 		--Left side of screen collision
 		if goalX <= 0 then
@@ -72,8 +73,13 @@ function player.update(dt)
 
 		--checks to see the player will collide with something using the goalX,Y
 		v.x, v.y, collisions, len = world:move(v, goalX, goalY, player.filter)
+
+		--stop camera from panning down when crouching
+		if not v.isCrouching then
+			cameraY = v.y
+		end
 		--update our cameras position
-		cam:setPosition(v.x + v.width * 10, v.y)
+		cam:setPosition(goalX + v.width * 10, cameraY)
 		
 		--Hit detection
 		for a,coll in ipairs(collisions) do
@@ -87,21 +93,21 @@ function player.update(dt)
 				v.isKnockback = true
 				--v.health = v.health - 1
 				--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
-				if v.damageDir == 4 then
-					v.yVel = -1 * (v.jumpHeight / 8)
+				if v.damageDir == 1 then
+					v.xVel = -v.jumpHeight / 3
+					v.yVel = v.jumpHeight / 4
+				elseif v.damageDir == 2 then
+					v.xVel = v.jumpHeight / 3
+					v.yVel = v.jumpHeight / 4
 				elseif v.damageDir == 3 then
 					v.yVel = v.jumpHeight / 4
-				end
-				if v.damageDir == 2 then
-					v.xVel = v.jumpHeight / 3
-					--v.yVel = v.jumpHeight / 4
-				elseif v.damageDir == 1 then
-					v.xVel = -v.jumpHeight / 3
-					--v.yVel = v.jumpHeight / 4
+				elseif v.damageDir == 4 then
+					v.yVel = -1 * (v.jumpHeight / 8)
 				end
 			else
+
 				v.isKnockback = false
-				v.damageDir = nil
+				v.damageDir = 0
 			end
 		end
 	end
@@ -232,15 +238,19 @@ player.filter = function(item, other)
 
 	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
 		--Check which direction spikes are facing for knockback
-		if playerBottom <= otherY then
-			item.damageDir = 3
-		elseif playerY >= otherY + otherH then
-			item.damageDir = 4
-		end
-		if playerRight <= otherX then
-			item.damageDir = 1
-		elseif playerX >= otherX + otherW then
-			item.damageDir = 2
+		--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
+		if playerRight >= otherX then
+			if item.dir == 1 then
+				item.damageDir = 2
+			elseif item.dir == -1 then
+				item.damageDir = 1
+			end
+		elseif playerX <= otherX + otherW then
+			if item.dir == 1 then
+				item.damageDir = 2
+			elseif item.dir == -1 then
+				item.damageDir = 1
+			end
 		end
 
 		return 'knockback'

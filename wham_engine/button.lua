@@ -73,7 +73,7 @@ function button.clickAction(mButton)
 	if mButton == 1 then
 		for i = 1, #button do
 			if button[i].highlight then
-				--MAIN MENU ACTIONS
+--MAIN MENU ACTIONS
 				if button[i].action == "play_game_action" then
 					--Remove for menu implementation
 					loadLevel(LET_CURRENT_LEVEL or "default")
@@ -88,7 +88,7 @@ function button.clickAction(mButton)
 					LET_OPTIONS_MENU = true
 				elseif button[i].action == "quit_action" then
 					love.event.quit()
-				--PAUSE MENU ACTIONS
+--PAUSE MENU ACTIONS
 				elseif button[i].action == "resume_action" then
 					pauseGame()
 				elseif button[i].action == "save_level_action" then
@@ -101,7 +101,7 @@ function button.clickAction(mButton)
 					love.keyboard.setKeyRepeat(true)
 				elseif button[i].action == "exit_session_action" then
 					switchGameState("menu_state")
-					love.mouse.setCursor(default_cursor)
+					editor_change_mode("", default_cursor)
 				elseif button[i].action == "back_action" then
 					panel.typeChange("")
 					love.keyboard.setTextInput(false)
@@ -114,7 +114,12 @@ function button.clickAction(mButton)
 					saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
 				elseif button[i].action == "load_action" then
 					loadLevel(tostring(LET_BROWSE_PATH))
-				--EDITOR ACTIONS
+--OPTIONS ACTIONS
+				elseif button[i].action == "options_keybinds_moveleft" then
+				elseif button[i].action == "options_keybinds_moveright" then
+				elseif button[i].action == "options_keybinds_jump" then
+				elseif button[i].action == "options_keybinds_crouch" then
+--EDITOR ACTIONS
 				elseif button[i].action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
 				elseif button[i].action == "tool_draw_action" then

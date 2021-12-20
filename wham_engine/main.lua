@@ -1,6 +1,8 @@
+--External Libaries
 gamera = require "resources/libraries/gamera"
 bump = require "resources/libraries/bump"
 require "resources/libraries/TSerial"
+--Load in necessary lua files
 require "utilities"
 require "resources"
 require "status_text"
@@ -11,6 +13,7 @@ require "player"
 require "enemy"
 require "objects"
 
+--Required to use certain character types
 local utf8 = require("utf8")
 
 function love.load()
@@ -23,19 +26,19 @@ function love.load()
 	love.graphics.setBackgroundColor(0, 0, 0)
 	gwidth, gheight = 1280, 720
 	love.window.setMode(gwidth, gheight, {vsync = 0})
---sets coordinates for camera
+	--creates our camera
 	cam = gamera.new(0, 0, 8000, 720)
-	cam:setScale(1.25)
-	cam:setWorld(0, 0, 8000, 1000)
-	cam:setWindow(0, 0, 1280, 720)
-	--sets the collisions cell space to 32
-	--smaller values make collision more accurate
+	--sets the collisions cell space to 32...smaller values make collision more accurate
 	world = bump.newWorld(32)
 	LET_GRIDWORLD_CREATED = false
 	--Can set this to start the game with a specific level loaded
-	LET_CURRENT_LEVEL = "boo"
-	gridRowsX = 158
-	gridColsY = 30
+	LET_CURRENT_LEVEL = "parkour_v1"
+	gridColsX = 200
+	gridRowsY = 30
+	--initialize our 
+	cam:setScale(1.25)
+	cam:setWindow(0, 0, 1280, 720)
+	cam:setWorld(0, 0, gridColsX * 32, 992)
 
 --BEGIN GAME
 	--initialize some 'constants' first
@@ -98,6 +101,8 @@ function love.load()
 	button.spawn("load_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("save_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
 	--Options buttons
+	button.spawn("back_button_QD", "options_keybinds_moveleft", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25, 75, 25)
+	button.spawn("back_button_QD", "options_keybinds_moveright", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 2, 75, 25)
 	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
 end
 
@@ -164,7 +169,7 @@ function love.filedropped(file)
 		local dropped_file = file:getFilename()
 		dropped_file, LET_BROWSE_PATH = getFileName(dropped_file)
 
-		status_text.create("Dropped file: " .. LET_BROWSE_PATH)
+		status_text.create("Dropped file: " .. LET_BROWSE_PATH .. ".lvl")
 	end
 end
 
@@ -222,8 +227,8 @@ end
 function createGridWorld()--called in main
 	if not LET_GRIDWORLD_CREATED then
 		--Begins index at 0 so that the blocks spawn at the very edges of the screen
-		for i = 0, gridRowsX do
-			for j = 0, gridColsY do
+		for i = 0, gridColsX do
+			for j = 0, gridRowsY do
 				block.spawn("air_block", 32 * i, 32 * j)
 				LET_GRIDWORLD_CREATED = true
 			end
@@ -277,9 +282,9 @@ function saveLevel(name, t1, t2, t3)
 	table.insert(mainTable, enemyTable)
 	table.insert(mainTable, objectTable)
 
-	local success, message = love.filesystem.write(lower_name  .. ".txt", TSerial.pack(mainTable, true))
+	local success, message = love.filesystem.write(lower_name  .. ".lvl", TSerial.pack(mainTable, true))
 	if success then
-		status_text.create("Level Saved! ('" .. lower_name .. "')")
+		status_text.create("Level Saved! ('" .. lower_name .. ".lvl')")
 	else
 		status_text.create("LEVEL SAVE FAILED (Unable to write to directory)")
 	end
@@ -287,14 +292,14 @@ end
 
 function loadLevel(name)
 	local lower_name = string.lower(name)
-	local file = love.filesystem.getInfo(lower_name .. ".txt")
+	local file = love.filesystem.getInfo(lower_name .. ".lvl")
 
 	if file then
 		--Delete everything in current level
 		sterilizeLevel()
 
 		--Read save file text
-		local data_string = love.filesystem.read(lower_name .. ".txt")
+		local data_string = love.filesystem.read(lower_name .. ".lvl")
 		LET_CURRENT_LEVEL = lower_name
 		--Unserialize string into table
 		data_string = TSerial.unpack(data_string, true)
@@ -337,7 +342,7 @@ function loadLevel(name)
 		--Initialize level stuff
 		initializeLevel()
 
-		status_text.create("Level Loaded! ('" .. lower_name .. "')")
+		status_text.create("Level Loaded! ('" .. lower_name .. ".lvl')")
 	else
 		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
 	end
@@ -364,7 +369,7 @@ end
 function debugMenuDraw()
 	if LET_DEBUG_M then
 		local CONST_DEBUG_W = 350
-		local CONST_DEBUG_H = 250
+		local CONST_DEBUG_H = 260
 		local CONST_DEBUG_X = 0
 		local CONST_DEBUG_Y = 12
 		love.graphics.setFont(defaultFont)
@@ -382,9 +387,10 @@ function debugMenuDraw()
 		love.graphics.printf("#Blocks: " .. #block, CONST_DEBUG_X, CONST_DEBUG_Y * 12, CONST_DEBUG_W, "left")
 		love.graphics.printf("#Objects: " .. #object, CONST_DEBUG_X, CONST_DEBUG_Y * 13.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("#Enemies: " .. #enemy, CONST_DEBUG_X, CONST_DEBUG_Y * 15, CONST_DEBUG_W, "left")
-		love.graphics.printf("Player State: " .. player[1].state, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("Player State: " .. player[1].state .. "/" .. player[1].prevState, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("Player Frame: " .. math.floor(player[1].current_frame), CONST_DEBUG_X, CONST_DEBUG_Y * 18, CONST_DEBUG_W, "left")
 		love.graphics.printf("xVel, yVel: " .. player[1].xVel .. ", " .. player[1].yVel, CONST_DEBUG_X, CONST_DEBUG_Y * 19.5, CONST_DEBUG_W, "left")
+		love.graphics.printf("DDV: " .. tostring(player[1].damageDir), CONST_DEBUG_X, CONST_DEBUG_Y * 21, CONST_DEBUG_W, "left")
 	end
 end
 

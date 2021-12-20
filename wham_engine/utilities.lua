@@ -92,21 +92,35 @@ function deleteCharacterByte()
 end
 
 function stateChange(ent, state, startFrame)
+	--Hardcoding values for now
 	local defaultHeight = 64
+	local crouchHeight = 39
 	--Changes player state only if a new action has occured.
 	--Checks if the new incoming state is different from the current state
 	if ent.state ~= state then
 		--Checks if we need to change the starting animation frame..otherwise defaults to 1
 		ent.current_frame = startFrame or 1
 
+--Checks to prevent character controller from specific wonky behavior
+	--Change character height when crouching
 		if state == "crouch" or state == "crouch_walk" then
-			ent.height = defaultHeight / 1.7
+			ent.height = crouchHeight
 			ent.isCrouching = true
+	--Prevents character from falling into floor and being teleported backwards
+		elseif state == "run" and ent.prevState == "crouch" then
+			ent.y = ent.y - 8
+			ent.isCrouching = false
+	--Fixes jumping directly after crouching causing character to phase through floor
+		elseif state == "jump" and ent.prevState == "crouch" or state == "front_flip" then
+			ent.height = crouchHeight
+			ent.isCrouching = false
+	--Last check to fully reset player's height and crouch toggle
 		else
 			ent.height = defaultHeight
 			ent.isCrouching = false
 		end
 		
+		--Does a world update to ensure character controller's vars are changed
 		world:update(ent, ent.x, ent.y, ent.width, ent.height)
 
 		ent.prevState = ent.state
@@ -125,6 +139,7 @@ function animationStateController(dt, ent)
 	else
 		object_animation_change(ent)
 	end
+
 	--Changes our animation tick rate based on timescale
 	ent.tick = ent.tick + dt * ent.animation_timescale
 
@@ -172,7 +187,8 @@ function character_animation_change(ent)
 	--EG: "player_" .. "idle" == "player_idle" converted to player_idle
 	ent.animationTable = _G[player_state]
 	--Changes player height based on animation frame height
-	ent.height = ent.animationTable[ent.current_frame]:getHeight() * player.playerScaling
+	--REMOVED.. causes issues elsewhere when crouching
+	--ent.height = ent.animationTable[ent.current_frame]:getHeight() * player.playerScaling
 end
 
 --Allows ease of animation changes for OBJECTS
