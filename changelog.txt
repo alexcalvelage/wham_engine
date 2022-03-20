@@ -1,23 +1,13 @@
 --CHANGES
--Removed no longer necessary debug code
--Reordered debug strings in debug menu
--Added a toggle to display controls
--Fixed incorrect cursor being shown when pausing/unpausing in Create mode
--Added 'Mario' style jumping system
-	-Holding jump will let you jump higher
--Optimized block render code to only render blocks the player can see(+230 frames on GTX3070)
--Increased length of world(158 columns of blocks->200 columns...4929->6231 blocks)
-	**Potential to allow level creators to define own world limits
--Camera now automatically stops panning at edge of world
+-Added key rebinding, can be found in Options menu
+-Removed 'F' key binding for pausing
+-Re-enabled spike damage for player
+-Added ability to collect objects
 
 --FIXES
--Fixed crash if trying to open debug menu in main menu
--Fixed collisions occasionally not being cleaned up
--Fixed incorrect collision responses on spike blocks facing upward
--Fixed jumping/front-flipping right after crouching causing player to fall out of bounds
--Fixed player crouching not being instantaneous, no longer tied to gravity
--Fixed camera panning below world
--Fixed crouching repeatedly teleporting player backwards
+-Fixed 'Esc' key completely closing out of the pause menu when a panel is opened
+-Fixed certain buttons having offset textures
+-Fixed downward facing spikes collision response
 
 
 --KNOWN ISSUES
@@ -25,9 +15,12 @@
 *OpenGL issue is still present in certain cases(Walking to left)
 *Objects currently don't utilize spritebatches
 *Enemy collisions can cause player to fall out of bounds..maybe try rearranging world:move and update
-*Certain buttons have cutoff textures
 *Block rendered needs to be further optimized
 	*Stop checking for intersecting(SLOW)
 	*Stop looping through blocks twice for highlighting
 	*When editing a level, FPS goes from 650->330(Draw tool tanks frames)
 	*Slowdown when holding LMB with any tool selected
+*Highlight selected keybind button
+*Reset back to default level in editor
+*Erase button for Selection tool
+*Sharing screen in Discord causes main menu buttons to turn black

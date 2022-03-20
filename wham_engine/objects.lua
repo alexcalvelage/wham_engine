@@ -10,6 +10,13 @@ function object.update(dt)
 		--matches ids to indices
 		v.id = i
 
+		if LET_CUR_GAME_STATE == "play_state" and v.subtype == "cog" then
+			if bump.rect.isIntersecting(player[1].x, player[1].y, player[1].width, player[1].height, v.x, v.y, v.width, v.height) then
+				player[1].score = player[1].score + 1
+				object.remove(v)
+			end
+		end
+
 		if v.cleanup then
 			table.remove(object, v.id)
 			world:remove(v)
@@ -44,6 +51,10 @@ function object.checkValidAnimationTable(obj)
 
 		object_animation_change(obj)
 	end
+end
+
+function object.remove(obj)
+	obj.cleanup = true
 end
 
 object.filter = function(item, other)

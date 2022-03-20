@@ -147,7 +147,6 @@ function block.editor_paint(me, erase)
 	end
 end
 
---Finish adding in removal of objects from scene!!
 function block.editor_dropper_paint(me, erase)
 	if me.highlight then
 		if erase then

@@ -5,7 +5,7 @@ player = {playerScaling = 1.66}
 --player_collision = {}
 function player.spawn(x, y)
 	--insert (1) player into the player table with included values
-	table.insert(player, {type = "player", name = "Phil", health = 2, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -600, jumpHeld = false, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = 0, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(player, {type = "player", name = "Phil", health = 2, score = 0, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -600, jumpHeld = false, isOnGround = false, isCrouching = false, isKnockback = false, dir = 1, damageDir = 0, state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
 end
@@ -91,7 +91,7 @@ function player.update(dt)
 			--Response for knockback damage
 			if coll.knockback then
 				v.isKnockback = true
-				--v.health = v.health - 1
+				v.health = v.health - 1
 				--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
 				if v.damageDir == 1 then
 					v.xVel = -v.jumpHeight / 3
@@ -100,12 +100,13 @@ function player.update(dt)
 					v.xVel = v.jumpHeight / 3
 					v.yVel = v.jumpHeight / 4
 				elseif v.damageDir == 3 then
-					v.yVel = v.jumpHeight / 4
+					v.xVel = -v.jumpHeight / 3
+					v.yVel = -1 * (v.jumpHeight / 8)
 				elseif v.damageDir == 4 then
+					v.xVel = v.jumpHeight / 3
 					v.yVel = -1 * (v.jumpHeight / 8)
 				end
 			else
-
 				v.isKnockback = false
 				v.damageDir = 0
 			end
@@ -125,8 +126,7 @@ end
 --This tells the animation controller what to render
 function player.movementController(dt, plr)
 	--Checks if any movement keys are being held down
-	local keyDown = love.keyboard.isDown("d", "a", "space", "lctrl")
-	local moveRight, moveLeft, moveJump, moveCrouch = "d", "a", "space", "lctrl"
+	local keyDown = love.keyboard.isDown(moveRight, moveLeft, moveJump, moveCrouch)
 
 	--Idle
 	if not keyDown and plr.isOnGround then
@@ -228,7 +228,7 @@ player.filter = function(item, other)
 			return 'slide'
 		end
 		
-	elseif other.subtype == "cog" or other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
+	elseif other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
 		if playerY <= otherY or playerBottom >= otherY then
 			return 'slide'
 		end
@@ -236,7 +236,7 @@ player.filter = function(item, other)
 			return 'slide'
 		end
 
-	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
+	elseif other.subtype == "spike_block_u" then
 		--Check which direction spikes are facing for knockback
 		--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
 		if playerRight >= otherX then
@@ -255,23 +255,34 @@ player.filter = function(item, other)
 
 		return 'knockback'
 
-	elseif other.subtype == "goon" then
-		--Orient player towards enemy that hit them
-		--Knock back player in relation(opposite of) to enemy's direction
+	elseif other.subtype == "spike_block_d" then
 		if playerRight >= otherX then
-			if other.dir == 1 then
-				item.damageDir = 1
-			elseif other.dir == -1 then
-				item.damageDir = 2
+			if item.dir == 1 then
+				item.damageDir = 4
+			elseif item.dir == -1 then
+				item.damageDir = 3
 			end
 		elseif playerX <= otherX + otherW then
-			if other.dir == 1 then
-				item.damageDir = 1
-			elseif other.dir == -1 then
-				item.damageDir = 2
+			if item.dir == 1 then
+				item.damageDir = 3
+			elseif item.dir == -1 then
+				item.damageDir = 4
 			end
 		end
 
 		return 'knockback'
+
+	elseif other.subtype == "goon" then
+		--Orient player towards enemy that hit them
+		--Knock back player in relation(opposite of) to enemy's direction
+		if playerRight >= otherX or playerX <= otherX + otherW then
+			if other.dir == 1 then
+				item.damageDir = 1
+			elseif other.dir == -1 then
+				item.damageDir = 2
+			end
+
+			return 'knockback'
+		end
 	end
 end

@@ -1,7 +1,7 @@
 
 button = {}
-function button.spawn(quad, action, activeState, x, y, w, h)
-	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 194, height = h or 49, highlight = false})
+function button.spawn(quad, action, activeState, x, y, w, h, text)
+	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, text = text or nil, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 194, height = h or 49, highlight = false})
 	--Center our button according to our width, height
 	button[#button].x, button[#button].y = button[#button].x - (button[#button].width / 2), button[#button].y - (button[#button].height / 2)
 	--Concatenate quad extension
@@ -19,24 +19,36 @@ function button.update(dt)
 end
 
 function button.draw()
-		--Clears our spritebatch draw call
-		button_SB:clear()
-		for i = 1, #button do
-			if button[i].enabled then
-				--Turn string back into Global		
-				button_SB:add(_G[button[i].quad], button[i].x, button[i].y)
-				love.graphics.setColor(1, 1, 1)
-			end
+	--Clears our spritebatch draw call
+	button_SB:clear()
+	for i = 1, #button do
+		if button[i].enabled then
+			--Turn string back into Global and add our button to the spritebatch
+			button_SB:add(_G[button[i].quad], button[i].x, button[i].y)
 		end
+	end
 
-		--Draws our spritebatch
-		love.graphics.draw(button_SB)
+	--Draws our spritebatch
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.draw(button_SB)
 
-		--Loop over table twice to render highlight visual effect
-		for i = 1, #button do
+	--Loop over table twice to render highlight visual effect*
+	for i = 1, #button do
 		if button[i].enabled then
 			if button[i].quad_overlay ~= nil then
+				love.graphics.setColor(1, 1, 1)
 				love.graphics.draw(ui_buttons_all_IMG, button[i].quad_overlay, button[i].x, button[i].y)
+			end
+
+			if button[i].text ~= nil then
+				if button[i].highlight then
+					love.graphics.setColor(1,1,1)
+				else
+					love.graphics.setColor(0,0,0)
+				end
+				love.graphics.setFont(defaultKeyBindFont)
+				--draws button text if available
+				love.graphics.printf(button[i].text, button[i].x, button[i].y + 2, 37, "center")
 			end
 		end
 	end
@@ -103,11 +115,7 @@ function button.clickAction(mButton)
 					switchGameState("menu_state")
 					editor_change_mode("", default_cursor)
 				elseif button[i].action == "back_action" then
-					panel.typeChange("")
-					love.keyboard.setTextInput(false)
-					love.keyboard.setKeyRepeat(false)
-					LET_BROWSE_PATH = ""
-					LET_OPTIONS_MENU = false
+					button.backButtonReset()
 				elseif button[i].action == "browse_action" then
 					love.system.openURL("file://"..love.filesystem.getSaveDirectory())
 				elseif button[i].action == "save_action" then
@@ -115,10 +123,14 @@ function button.clickAction(mButton)
 				elseif button[i].action == "load_action" then
 					loadLevel(tostring(LET_BROWSE_PATH))
 --OPTIONS ACTIONS
-				elseif button[i].action == "options_keybinds_moveleft" then
-				elseif button[i].action == "options_keybinds_moveright" then
-				elseif button[i].action == "options_keybinds_jump" then
-				elseif button[i].action == "options_keybinds_crouch" then
+				elseif button[i].action == "options_keybinds_moveLeft" then
+					start_keybind_change("moveLeft")
+				elseif button[i].action == "options_keybinds_moveRight" then
+					start_keybind_change("moveRight")
+				elseif button[i].action == "options_keybinds_moveJump" then
+					start_keybind_change("moveJump")
+				elseif button[i].action == "options_keybinds_moveCrouch" then
+					start_keybind_change("moveCrouch")
 --EDITOR ACTIONS
 				elseif button[i].action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
@@ -133,6 +145,14 @@ function button.clickAction(mButton)
 			end
 		end
 	end
+end
+
+function button.backButtonReset()
+	panel.typeChange("")
+	love.keyboard.setTextInput(false)
+	love.keyboard.setKeyRepeat(false)
+	LET_BROWSE_PATH = ""
+	LET_OPTIONS_MENU = false
 end
 
 function editor_change_mode(mode, cursor)

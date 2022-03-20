@@ -341,6 +341,11 @@ local knockback = function(world, col, x,y,w,h, goalX, goalY, filter)
   return goalX, goalY, cols, len
 end
 
+local cross_through = function(world, col, x,y,w,h, goalX, goalY, filter)
+  local cols, len    = world:project(col.item, x,y,w,h, goalX, goalY, filter)
+  return goalX, goalY, {}, 0
+end
+
 ------------------------------------------
 -- World
 ------------------------------------------
@@ -773,6 +778,7 @@ bump.newWorld = function(cellSize)
   world:addResponse('slide', slide)
   world:addResponse('bounce', bounce)
   world:addResponse('knockback', knockback)
+  world:addResponse('cross_through', cross_through)
 
   return world
 end
@@ -792,7 +798,8 @@ bump.responses = {
   cross  = cross,
   slide  = slide,
   bounce = bounce,
-  knockback = knockback
+  knockback = knockback,
+  cross_through = cross_through
 }
 
 return bump

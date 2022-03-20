@@ -32,7 +32,7 @@ function love.load()
 	world = bump.newWorld(32)
 	LET_GRIDWORLD_CREATED = false
 	--Can set this to start the game with a specific level loaded
-	LET_CURRENT_LEVEL = "parkour_v1"
+	LET_CURRENT_LEVEL = "dev_world"
 	gridColsX = 200
 	gridRowsY = 30
 	--initialize our 
@@ -57,6 +57,8 @@ function love.load()
 	LET_PANEL_FOCUS = false
 	LET_PANEL_OPEN = ""
 	LET_BUTTON_SELECTED = nil
+	LET_KEYBIND_CHANGE = false
+	LET_KEYBIND_BINDING = ""
 
 	--switch to our menu state
 	switchGameState("menu_state")
@@ -73,37 +75,45 @@ function love.load()
 	--begins game logic
 	createGridWorld()
 	love.graphics.setBackgroundColor(LET_SKY_COLOR)
-	--ents]]
-	--Panel
+
+	--Initialize player keybindings
+	moveLeft, moveRight, moveJump, moveCrouch = "a", "d", "space", "lctrl"
+	keys_pressed = {}
+
+	--[[Object Creation]]
+--Panels
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
-	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
-	--Main Menu buttons
+	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2) - 25, 298, 98)
+--Main Menu buttons
 	button.spawn("menu_play_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5)
 	button.spawn("menu_create_button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5)
 	button.spawn("options_button_QD", "options_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 4.5)
 	button.spawn("menu_quit_button_QD", "quit_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 6.5)
-	--Pause Menu buttons
+--Pause Menu buttons
 	button.spawn("resume_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5)
 	button.spawn("save_level_button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5)
 	button.spawn("load_level_button_QD", "load_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 4.5)
 	button.spawn("options_button_QD", "options_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 6.5)
 	button.spawn("quit_sesh_button_QD", "exit_session_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 8.5)
-	--Editor Mode buttons
+--Editor Mode buttons
 	button.spawn("select_button_QD", "tool_selection_action", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
 	button.spawn("dropper_button_QD", "tool_dropper_action", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
-	--Save/Load buttons
+--Save/Load buttons
 	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("browse_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("browse_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("load_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("save_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
-	--Options buttons
-	button.spawn("back_button_QD", "options_keybinds_moveleft", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25, 75, 25)
-	button.spawn("back_button_QD", "options_keybinds_moveright", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 2, 75, 25)
-	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
+--Options buttons
+	button.spawn("keybind_button_QD", "options_keybinds_moveLeft", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) - 17, 37, 25, moveLeft)
+	button.spawn("keybind_button_QD", "options_keybinds_moveRight", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 10, 37, 25, moveRight)
+	button.spawn("keybind_button_QD", "options_keybinds_moveJump", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 37, 37, 25, moveJump)
+	button.spawn("keybind_button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 64, 37, 25, moveCrouch)
+	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 57 * 2, 75, 25)
+	print(levelsDir)
 end
 
 function love.keypressed(key)
@@ -123,9 +133,13 @@ function love.keypressed(key)
 				LET_CONTROLS_M = true
 			end
 		end
-	elseif key == "f" or key == "escape" then
-		if LET_CUR_GAME_STATE ~= "menu_state" and not love.keyboard.hasTextInput() then
-			pauseGame()
+	elseif key == "escape" then
+		if LET_CUR_GAME_STATE ~= "menu_state" then
+			if love.keyboard.hasTextInput() then
+				button.backButtonReset()
+			else
+				pauseGame()
+			end
 		end
 	elseif key == "backspace" then
 		deleteCharacterByte()
@@ -139,6 +153,14 @@ function love.keypressed(key)
 			end
 		end
 	end
+
+	--Gathers any key pressed
+	keys_pressed[key] = true
+end
+
+function love.keyreleased(key)
+	--Resets keys pressed
+	keys_pressed[key] = nil
 end
 
 function love.mousepressed(x, y, mButton)
@@ -156,6 +178,13 @@ function love.wheelmoved(x, y)
 		block.cycleSelectedBlock(y)
 		block.cycleSelectedObject(y)
 	end
+end
+
+--Checks for mouse focus(lost or gained)
+function love.mousefocus(focus)
+	--Immediately sends all new/modified sprite data in batch to the GPU. Fixes Menu buttons turning black when sharing screen on Discord
+	button_SB:flush()
+	status_text.create("FLUSH")
 end
 
 function love.textinput(t)
@@ -183,6 +212,7 @@ function love.update(dt)
 	status_text.update(dt)
 	panel.update(dt)
 	button.update(dt)
+	update_keybind_change()
 
 	if LET_CUR_GAME_STATE ~= "menu_state" and not LET_GAME_PAUSED then
 		player.update(dt)
@@ -208,8 +238,6 @@ function love.draw()
 		editorHUDDraw()
 	end
 
---resets colors
-	love.graphics.setColor(1, 1, 1)
 	panel.draw()
 	button.draw()
 	debugMenuDraw()
@@ -293,7 +321,18 @@ end
 function loadLevel(name)
 	local lower_name = string.lower(name)
 	local file = love.filesystem.getInfo(lower_name .. ".lvl")
+	--local file = love.filesystem.getInfo(levelsDir .. lower_name .. ".lvl")
+	--local file = love.filesystem.getInfo(lower_name .. ".lvl")
 
+	--if file == nil then
+		--for k, files in ipairs(levels) do
+			--if files == lower_name .. ".lvl" then
+			--	print(files)
+			--	file = love.filesystem.getInfo(files)
+			--end
+		--end
+	--end
+	
 	if file then
 		--Delete everything in current level
 		sterilizeLevel()
@@ -353,16 +392,17 @@ function editorHUDDraw()
 	local CONST_HUD_H = 250
 	local CONST_HUD_X = gwidth / 2 - 125
 	local CONST_HUD_Y = 0
-	local CONST_CONTROL_TEXT = "A/D - Movement\nSPACE- Jump\nLMB - UI Confirm/Paint*\nRMB - Fill Selected*/Erase*\nMouse Wheel - Change Block/Object"
+	local CONST_CONTROL_TEXT = "LMB - UI Confirm/Paint*\nRMB - Fill Selected*/Erase*\nMouse Wheel - Change Block/Object"
 	local CONST_CONTROL_TEXT_2 = "Toggle Controls Menu with 'C'"
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.setFont(defaultFontSmol)
-	love.graphics.printf(CONST_CONTROL_TEXT_2, CONST_HUD_X, CONST_HUD_Y + CONST_HUD_H / 2 + 12, 300, "center")
+	love.graphics.printf(CONST_CONTROL_TEXT_2, CONST_HUD_X, CONST_HUD_Y, 300, "center")
 	love.graphics.setFont(defaultFont)
 	love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, gwidth - 157, gheight / 2 - 360, 150, "center")
 	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
+	love.graphics.print("Score: " .. player[1].score, (gwidth / 2) - 285, 25)
 	if LET_CONTROLS_M then
-		love.graphics.printf(CONST_CONTROL_TEXT, CONST_HUD_X, CONST_HUD_Y, 300, "center")
+		love.graphics.printf(CONST_CONTROL_TEXT, CONST_HUD_X, CONST_HUD_Y + 14, 300, "center")
 	end
 end
 

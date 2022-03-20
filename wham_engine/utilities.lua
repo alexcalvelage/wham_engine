@@ -26,6 +26,10 @@ end
 function decreaseVolume()
 end
 
+function resetGraphicsColor()
+	love.graphics.setColor(1,1,1)
+end
+
 function getFileName(path)
 	return path:match("^(.-)([^\\/]-)%.([^\\/%.]-)%.?$")
 end
@@ -91,6 +95,35 @@ function deleteCharacterByte()
 	end
 end
 
+function start_keybind_change(binding)
+	LET_KEYBIND_CHANGE = true
+	LET_KEYBIND_BINDING = binding
+end
+
+	--Only runs if start_keybind_change() is called
+function update_keybind_change()
+	if LET_KEYBIND_CHANGE then
+		for k,_ in pairs(keys_pressed) do
+			--Check for reserved keys..open this up to other letters!
+			if k ~= "escape" then
+				--Now we change our button text to match change
+				for i,v in ipairs(button) do
+					if v.action == "options_keybinds_" .. LET_KEYBIND_BINDING then
+						--Change our button text..
+						v.text = k
+						--..change our keybind
+						_G[LET_KEYBIND_BINDING] = k
+					end
+				end
+
+				--Reset binding to nothing and exit out of change mode
+				LET_KEYBIND_BINDING = nil
+				LET_KEYBIND_CHANGE = false
+			end
+		end
+	end
+end
+
 function stateChange(ent, state, startFrame)
 	--Hardcoding values for now
 	local defaultHeight = 64
@@ -112,7 +145,10 @@ function stateChange(ent, state, startFrame)
 			ent.isCrouching = false
 	--Fixes jumping directly after crouching causing character to phase through floor
 		elseif state == "jump" and ent.prevState == "crouch" or state == "front_flip" then
-			ent.height = crouchHeight
+			--This method causes weird character collision when height is changing
+			--ent.height = crouchHeight
+			--This method seems to alleviate the issue at the cost of not shrinking hitbox to match sprite
+			ent.y = ent.y - 16
 			ent.isCrouching = false
 	--Last check to fully reset player's height and crouch toggle
 		else

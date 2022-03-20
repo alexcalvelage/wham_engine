@@ -4,6 +4,7 @@ function resourceLoad()
 	defaultFontBold = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 16)
 	defaultFontHuge = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 96)
 	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 10)
+	defaultKeyBindFont = love.graphics.newFont("resources/fonts/Blockletter.otf", 14)
 	--sets our default font on game launch
 	love.graphics.setFont(defaultFont)
 --CURSORS
@@ -73,7 +74,7 @@ function resourceLoad()
 	--**Saving/Loading
 	saving_panel_QD = love.graphics.newQuad(0, 0, 298, 98, ui_panels_all_IMG:getDimensions())
 	loading_panel_QD = love.graphics.newQuad(0, 98, 298, 98, ui_panels_all_IMG:getDimensions())
-	options_panel_QD = love.graphics.newQuad(0, 196, 298, 98, ui_panels_all_IMG:getDimensions())
+	options_panel_QD = love.graphics.newQuad(0, 196, 298, 217, ui_panels_all_IMG:getDimensions())
 	--Panel Buttons
 	save_button_QD = love.graphics.newQuad(195, 400, 75, 25, ui_buttons_all_IMG:getDimensions())
 	save_button_QD_2 = love.graphics.newQuad(195, 425, 75, 25, ui_buttons_all_IMG:getDimensions())
@@ -83,6 +84,8 @@ function resourceLoad()
 	load_button_QD_2 = love.graphics.newQuad(195, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
 	back_button_QD = love.graphics.newQuad(270, 450, 75, 25, ui_buttons_all_IMG:getDimensions())
 	back_button_QD_2 = love.graphics.newQuad(270, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
+	keybind_button_QD = love.graphics.newQuad(195, 500, 37, 25, ui_buttons_all_IMG:getDimensions())
+	keybind_button_QD_2 = love.graphics.newQuad(195, 525, 37, 25, ui_buttons_all_IMG:getDimensions())
 	--*objectsQDS
 	--**Cogs
 	cog_object_QD = love.graphics.newQuad(0, 0, 32, 32, objects_all_IMG:getDimensions())
@@ -174,4 +177,7 @@ function resourceLoad()
 	footstep_hard_floor_SND:setVolume(masterVolume * soundsVolume)
 	place_block_SND:setVolume(masterVolume * soundsVolume)
 	remove_block_SND:setVolume(masterVolume * soundsVolume)
+--LEVELS
+	levelsDir = love.filesystem.getSourceBaseDirectory() .. "/resources/levels/"
+	levels = love.filesystem.getDirectoryItems("resources/levels")
 end

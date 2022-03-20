@@ -66,8 +66,8 @@ function enemy.update(dt)
 				--Response for knockback damage
 				if coll.knockback then
 					v.isKnockback = true
-					--v.health = v.health - 1
-					v.yVel = v.jumpHeight / 2
+					v.health = v.health - 1
+					--v.yVel = v.jumpHeight / 2
 					if v.dir == 1 then
 						v.xVel = v.jumpHeight / 2
 					elseif v.dir == -1 then
@@ -167,7 +167,7 @@ enemy.filter = function(item, other)
 			return 'slide'
 		end
 	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
-		if enemyBottom <= y then
+		if enemyBottom <= y or otherBottom >= py then
 			return 'knockback'
 		end
 	end
