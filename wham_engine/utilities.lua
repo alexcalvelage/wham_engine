@@ -95,14 +95,19 @@ function deleteCharacterByte()
 	end
 end
 
-function start_keybind_change(binding)
+function start_keybind_change(binding, buttonIndex)
 	LET_KEYBIND_CHANGE = true
+	love.mouse.setVisible(false)
+	love.mouse.setPosition(buttonIndex.x + (buttonIndex.width / 2), buttonIndex.y + (buttonIndex.height / 2))
+	LET_LOCKED_CURSOR_POSITION_X, LET_LOCKED_CURSOR_POSITION_Y = buttonIndex.x + (buttonIndex.width / 2), buttonIndex.y + (buttonIndex.height / 2)
 	LET_KEYBIND_BINDING = binding
 end
 
 	--Only runs if start_keybind_change() is called
 function update_keybind_change()
 	if LET_KEYBIND_CHANGE then
+		LET_CURSOR_LOCKED = true
+		love.mouse.setPosition(LET_LOCKED_CURSOR_POSITION_X, LET_LOCKED_CURSOR_POSITION_Y)
 		for k,_ in pairs(keys_pressed) do
 			--Check for reserved keys..open this up to other letters!
 			if k ~= "escape" then
@@ -119,9 +124,23 @@ function update_keybind_change()
 				--Reset binding to nothing and exit out of change mode
 				LET_KEYBIND_BINDING = nil
 				LET_KEYBIND_CHANGE = false
+				LET_CURSOR_LOCKED = false
+				love.mouse.setVisible(true)
+				LET_LOCKED_CURSOR_POSITION_X, LET_LOCKED_CURSOR_POSITION_Y = 0, 0
+			elseif k == "escape" then
+				--Reset binding to nothing and exit out of change mode
+				LET_KEYBIND_BINDING = nil
+				LET_KEYBIND_CHANGE = false
+				LET_CURSOR_LOCKED = false
+				love.mouse.setVisible(true)
+				LET_LOCKED_CURSOR_POSITION_X, LET_LOCKED_CURSOR_POSITION_Y = 0, 0
 			end
 		end
 	end
+end
+
+function dialogue_init()
+	
 end
 
 function stateChange(ent, state, startFrame)

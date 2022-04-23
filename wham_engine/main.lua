@@ -59,6 +59,8 @@ function love.load()
 	LET_BUTTON_SELECTED = nil
 	LET_KEYBIND_CHANGE = false
 	LET_KEYBIND_BINDING = ""
+	LET_CURSOR_LOCKED = false
+	LET_LOCKED_CURSOR_POSITION_X, LET_LOCKED_CURSOR_POSITION_Y = 0, 0
 
 	--switch to our menu state
 	switchGameState("menu_state")
@@ -85,6 +87,7 @@ function love.load()
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2) - 25, 298, 98)
+	panel.spawn("dialogue_panel_QD", "dialoguePanel", gwidth / 2, 150, 1024, 298)
 --Main Menu buttons
 	button.spawn("menu_play_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5)
 	button.spawn("menu_create_button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5)
@@ -133,6 +136,8 @@ function love.keypressed(key)
 				LET_CONTROLS_M = true
 			end
 		end
+	elseif key == "]" then
+		panel.typeChange("dialoguePanel")
 	elseif key == "escape" then
 		if LET_CUR_GAME_STATE ~= "menu_state" then
 			if love.keyboard.hasTextInput() then
@@ -180,11 +185,19 @@ function love.wheelmoved(x, y)
 	end
 end
 
+function love.mousemoved(x, y, dx, dy)
+	if LET_CURSOR_LOCKED then
+		x = LET_LOCKED_CURSOR_POSITION_X
+		y = LET_LOCKED_CURSOR_POSITION_Y
+		dx = LET_LOCKED_CURSOR_POSITION_X
+		dy = LET_LOCKED_CURSOR_POSITION_Y
+	end
+end
+
 --Checks for mouse focus(lost or gained)
 function love.mousefocus(focus)
 	--Immediately sends all new/modified sprite data in batch to the GPU. Fixes Menu buttons turning black when sharing screen on Discord
 	button_SB:flush()
-	status_text.create("FLUSH")
 end
 
 function love.textinput(t)

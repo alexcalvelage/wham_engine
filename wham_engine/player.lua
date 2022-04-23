@@ -1,4 +1,5 @@
 local defaultWidth, defaultHeight = 25, 64
+local cameraY, cameraYOffset = 0, 96
 
 --initialize player data table
 player = {playerScaling = 1.66}
@@ -45,7 +46,7 @@ function player.update(dt)
 		end
 
 		--Fall detection
-		if v.yVel ~= 0 then
+		if v.yVel <= 10 then
 			v.isOnGround = false
 		end
 
@@ -74,13 +75,6 @@ function player.update(dt)
 		--checks to see the player will collide with something using the goalX,Y
 		v.x, v.y, collisions, len = world:move(v, goalX, goalY, player.filter)
 
-		--stop camera from panning down when crouching
-		if not v.isCrouching then
-			cameraY = v.y
-		end
-		--update our cameras position
-		cam:setPosition(goalX + v.width * 10, cameraY)
-		
 		--Hit detection
 		for a,coll in ipairs(collisions) do
 			--Checks if the player's feet are on a solid collision
@@ -111,6 +105,12 @@ function player.update(dt)
 				v.damageDir = 0
 			end
 		end
+
+		--Sets camera height to player's height + offset
+		cameraY = v.y + -cameraYOffset
+		
+		--update our cameras position
+		cam:setPosition(goalX + v.width * 10, cameraY)
 	end
 end
 

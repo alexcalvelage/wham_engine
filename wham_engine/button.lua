@@ -124,13 +124,13 @@ function button.clickAction(mButton)
 					loadLevel(tostring(LET_BROWSE_PATH))
 --OPTIONS ACTIONS
 				elseif button[i].action == "options_keybinds_moveLeft" then
-					start_keybind_change("moveLeft")
+					start_keybind_change("moveLeft", button[i])
 				elseif button[i].action == "options_keybinds_moveRight" then
-					start_keybind_change("moveRight")
+					start_keybind_change("moveRight", button[i])
 				elseif button[i].action == "options_keybinds_moveJump" then
-					start_keybind_change("moveJump")
+					start_keybind_change("moveJump", button[i])
 				elseif button[i].action == "options_keybinds_moveCrouch" then
-					start_keybind_change("moveCrouch")
+					start_keybind_change("moveCrouch", button[i])
 --EDITOR ACTIONS
 				elseif button[i].action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)

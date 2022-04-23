@@ -1,13 +1,9 @@
 --CHANGES
--Added key rebinding, can be found in Options menu
--Removed 'F' key binding for pausing
--Re-enabled spike damage for player
--Added ability to collect objects
+-Added wip dialogue system
 
 --FIXES
--Fixed 'Esc' key completely closing out of the pause menu when a panel is opened
--Fixed certain buttons having offset textures
--Fixed downward facing spikes collision response
+-Fixed isOnGround check not working properly
+-Fixed button not staying selected when changing keybinds
 
 
 --KNOWN ISSUES
@@ -20,7 +16,6 @@
 	*Stop looping through blocks twice for highlighting
 	*When editing a level, FPS goes from 650->330(Draw tool tanks frames)
 	*Slowdown when holding LMB with any tool selected
-*Highlight selected keybind button
 *Reset back to default level in editor
 *Erase button for Selection tool
 *Sharing screen in Discord causes main menu buttons to turn black

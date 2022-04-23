@@ -75,6 +75,7 @@ function resourceLoad()
 	saving_panel_QD = love.graphics.newQuad(0, 0, 298, 98, ui_panels_all_IMG:getDimensions())
 	loading_panel_QD = love.graphics.newQuad(0, 98, 298, 98, ui_panels_all_IMG:getDimensions())
 	options_panel_QD = love.graphics.newQuad(0, 196, 298, 217, ui_panels_all_IMG:getDimensions())
+	dialogue_panel_QD = love.graphics.newQuad(0, 513, 1024, 298, ui_panels_all_IMG:getDimensions())
 	--Panel Buttons
 	save_button_QD = love.graphics.newQuad(195, 400, 75, 25, ui_buttons_all_IMG:getDimensions())
 	save_button_QD_2 = love.graphics.newQuad(195, 425, 75, 25, ui_buttons_all_IMG:getDimensions())
