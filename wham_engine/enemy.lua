@@ -2,7 +2,7 @@
 enemy = {enemyScaling = 1.66}
 function enemy.spawn(subtype, x, y, dir)
 	--insert (1) enemy into the enemy table with included values
-	table.insert(enemy, {id = #enemy + 1, type = "enemy", subtype = subtype, health = 1, x = x, y = y, spawn_x = x, spawn_y = y, width = 25, height = 64, speed = 50, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isKnockback = false, dir = dir, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "idle", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	table.insert(enemy, {id = #enemy + 1, type = "enemy", subtype = subtype, health = 1, x = x, y = y, spawn_x = x, spawn_y = y, width = 25, height = 64, speed = 75, xVel = 0, yVel = 0, jumpHeight = -800, isOnGround = false, isKnockback = false, dir = dir, damageDir = 0, target = nil, cleanup = false, searchRange = 250, loseRange = 500, state = "idle", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
 	--Centers our enemy inside a block
 	enemy[#enemy].x, enemy[#enemy].y = enemy[#enemy].x + 4, enemy[#enemy].y - (enemy[#enemy].height / 2)
 	--adds collisions to each enemy created
@@ -19,6 +19,7 @@ function enemy.update(dt)
 			world:remove(v)
 		end
 
+		--Change AI behaviors based on current game state
 		if LET_CUR_GAME_STATE == "create_state" then
 			v.xVel, v.yVel = 0, 0
 			v.isOnGround = true
@@ -36,8 +37,13 @@ function enemy.update(dt)
 			goalX = goalX + (v.xVel * dt)
 			goalY = goalY + (v.yVel * dt)
 
+			--Left side of screen collision
+			if goalX <= 0 then
+				goalX = 0
+			end
+
 			--Fall detection
-			if v.yVel ~= 0 then
+			if v.yVel <= 10 then
 				v.isOnGround = false
 			end
 
@@ -53,6 +59,9 @@ function enemy.update(dt)
 			--Handles animation state switching
 			animationStateController(dt, enemy[i])
 
+			-->>>>SOUND STATE CONTROLLER GOES HERE<<<<--
+			--[][]--
+
 			--checks to see the enemy will collide with something using the goalX,Y
 			v.x, v.y, collisions, len = world:move(enemy[i], goalX, goalY, enemy.filter)
 			
@@ -66,15 +75,24 @@ function enemy.update(dt)
 				--Response for knockback damage
 				if coll.knockback then
 					v.isKnockback = true
-					v.health = v.health - 1
-					--v.yVel = v.jumpHeight / 2
-					if v.dir == 1 then
-						v.xVel = v.jumpHeight / 2
-					elseif v.dir == -1 then
-						v.xVel = -v.jumpHeight / 2
+					--v.health = v.health - 1
+					--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
+					if v.damageDir == 1 then
+						v.xVel = -v.jumpHeight / 3
+						v.yVel = v.jumpHeight / 4
+					elseif v.damageDir == 2 then
+						v.xVel = v.jumpHeight / 3
+						v.yVel = v.jumpHeight / 4
+					elseif v.damageDir == 3 then
+						v.xVel = -v.jumpHeight / 3
+						v.yVel = -1 * (v.jumpHeight / 8)
+					elseif v.damageDir == 4 then
+						v.xVel = v.jumpHeight / 3
+						v.yVel = -1 * (v.jumpHeight / 8)
 					end
 				else
 					v.isKnockback = false
+					v.damageDir = 0
 				end
 			end
 		end
@@ -142,33 +160,54 @@ function enemy.movementController(dt, me)
 end
 
 enemy.filter = function(item, other)
-	local x, y, w, h = world:getRect(other)
-	local px, py, pw, ph = world:getRect(item)
-	local enemyBottom = py + ph
-	local enemyLeft, enemyRight = px, px + pw
-	local otherBottom = y + h
+	local enemyX, enemyY, enemyW, enemyH = world:getRect(item)
+	local otherX, otherY, otherW, otherH = world:getRect(other)
 
-	--Resolves colliding with the top of blocks
-	--Checks which hitbox to check against
+	local enemyBottom, enemyRight = enemyY + enemyH, enemyX + enemyW
+
+	--Checks which block/ent to check against
 	if other.subtype == "wooden_plat" then
-		if enemyBottom <= y then
+		if enemyBottom <= otherY then
 			return 'slide'
 		end
+		
 	elseif other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
-		if py >= y or enemyBottom <= y then
-			return 'slide'
+		return 'slide'
+
+	elseif other.subtype == "spike_block_u" then
+		--Check which direction spikes are facing for knockback
+		--4 = playerTop, 3 = playerBottom, 2 = playerRight, 1 = playerLeft
+		if enemyRight >= otherX then
+			if item.dir == 1 then
+				item.damageDir = 2
+			elseif item.dir == -1 then
+				item.damageDir = 1
+			end
+		elseif enemyX <= otherX + otherW then
+			if item.dir == 1 then
+				item.damageDir = 2
+			elseif item.dir == -1 then
+				item.damageDir = 1
+			end
 		end
-		if px <= x or enemyRight >= x then
-			return 'slide'
+
+		return 'knockback'
+
+	elseif other.subtype == "spike_block_d" then
+		if enemyRight >= otherX then
+			if item.dir == 1 then
+				item.damageDir = 4
+			elseif item.dir == -1 then
+				item.damageDir = 3
+			end
+		elseif enemyX <= otherX + otherW then
+			if item.dir == 1 then
+				item.damageDir = 3
+			elseif item.dir == -1 then
+				item.damageDir = 4
+			end
 		end
-	--Resolves enemy collision with other enemies
-	elseif other.type == "enemy" then
-		if enemyLeft >= x or enemyRight <= x + w then
-			return 'slide'
-		end
-	elseif other.subtype == "spike_block_u" or other.subtype == "spike_block_d" then
-		if enemyBottom <= y or otherBottom >= py then
-			return 'knockback'
-		end
+
+		return 'knockback'
 	end
 end

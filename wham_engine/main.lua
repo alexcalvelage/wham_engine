@@ -32,7 +32,8 @@ function love.load()
 	world = bump.newWorld(32)
 	LET_GRIDWORLD_CREATED = false
 	--Can set this to start the game with a specific level loaded
-	LET_CURRENT_LEVEL = "dev_world"
+	--LET_CURRENT_LEVEL = "dev_world"
+	LET_CURRENT_LEVEL = "environment_test1"
 	gridColsX = 200
 	gridRowsY = 30
 	--initialize our 
@@ -52,6 +53,7 @@ function love.load()
 	LET_CUR_GAME_STATE = ""
 	LET_PREV_GAME_STATE = ""
 	LET_GAME_PAUSED = false
+	LET_GAME_FOCUSED = true
 	LET_OPTIONS_MENU = false
 	LET_BROWSE_PATH = ""
 	LET_PANEL_FOCUS = false
@@ -87,6 +89,7 @@ function love.load()
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2) - 25, 298, 98)
+	panel.spawn("lvlwarn_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2) - 25, 298, 98)
 	panel.spawn("dialogue_panel_QD", "dialoguePanel", gwidth / 2, 150, 1024, 298)
 --Main Menu buttons
 	button.spawn("menu_play_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5)
@@ -103,6 +106,10 @@ function love.load()
 	button.spawn("select_button_QD", "tool_selection_action", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
 	button.spawn("dropper_button_QD", "tool_dropper_action", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
+	button.spawn("eraser_button_QD", "tool_nuke_action", "create_state", gwidth - 50, gheight / 2 + 60, 50, 50)
+--Editor Mode Warning buttons
+	button.spawn("delete_button_QD", "confirmwipe_action", "lvlwarnPanel", gwidth / 2 - (33/2) - 20, gheight / 2 + (33/2), 100, 33)
+	button.spawn("cancel_button_QD", "cancelwipe_action", "lvlwarnPanel", gwidth / 2 + (33*2) + 20, gheight / 2 + (33/2), 100, 33)
 --Save/Load buttons
 	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
@@ -186,6 +193,7 @@ function love.wheelmoved(x, y)
 end
 
 function love.mousemoved(x, y, dx, dy)
+	--Tries to lock cursor the spot LET_CURSOR_LOCKED is set to true at
 	if LET_CURSOR_LOCKED then
 		x = LET_LOCKED_CURSOR_POSITION_X
 		y = LET_LOCKED_CURSOR_POSITION_Y
@@ -198,6 +206,14 @@ end
 function love.mousefocus(focus)
 	--Immediately sends all new/modified sprite data in batch to the GPU. Fixes Menu buttons turning black when sharing screen on Discord
 	button_SB:flush()
+end
+
+function love.focus(focus)
+	if focus then
+		LET_GAME_FOCUSED = true
+	else
+		LET_GAME_FOCUSED = false
+	end
 end
 
 function love.textinput(t)
@@ -405,7 +421,14 @@ function editorHUDDraw()
 	local CONST_HUD_H = 250
 	local CONST_HUD_X = gwidth / 2 - 125
 	local CONST_HUD_Y = 0
-	local CONST_CONTROL_TEXT = "LMB - UI Confirm/Paint*\nRMB - Fill Selected*/Erase*\nMouse Wheel - Change Block/Object"
+	local CONST_CONTROL_TEXT = ""
+	if LET_EDITOR_TOOL == "editor_tool_select" then
+		CONST_CONTROL_TEXT = "LMB - Select\nRMB - Fill Selection\nMMB - Erase\nMouse Wheel - Change Block"
+	elseif LET_EDITOR_TOOL == "editor_tool_draw" then
+		CONST_CONTROL_TEXT = "LMB - Paint\nRMB - Erase\nMouse Wheel - Change Block"
+	elseif LET_EDITOR_TOOL == "editor_tool_dropper" then
+		CONST_CONTROL_TEXT = "LMB - Paint\nRMB - Erase\nMouse Wheel - Change Object"
+	end
 	local CONST_CONTROL_TEXT_2 = "Toggle Controls Menu with 'C'"
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.setFont(defaultFontSmol)
@@ -422,7 +445,7 @@ end
 function debugMenuDraw()
 	if LET_DEBUG_M then
 		local CONST_DEBUG_W = 350
-		local CONST_DEBUG_H = 260
+		local CONST_DEBUG_H = 280
 		local CONST_DEBUG_X = 0
 		local CONST_DEBUG_Y = 12
 		love.graphics.setFont(defaultFont)
@@ -443,7 +466,8 @@ function debugMenuDraw()
 		love.graphics.printf("Player State: " .. player[1].state .. "/" .. player[1].prevState, CONST_DEBUG_X, CONST_DEBUG_Y * 16.5, CONST_DEBUG_W, "left")
 		love.graphics.printf("Player Frame: " .. math.floor(player[1].current_frame), CONST_DEBUG_X, CONST_DEBUG_Y * 18, CONST_DEBUG_W, "left")
 		love.graphics.printf("xVel, yVel: " .. player[1].xVel .. ", " .. player[1].yVel, CONST_DEBUG_X, CONST_DEBUG_Y * 19.5, CONST_DEBUG_W, "left")
-		love.graphics.printf("DDV: " .. tostring(player[1].damageDir), CONST_DEBUG_X, CONST_DEBUG_Y * 21, CONST_DEBUG_W, "left")
+		love.graphics.printf("X, Y: " .. tostring(player[1].x) .. ", " .. tostring(player[1].y), CONST_DEBUG_X, CONST_DEBUG_Y * 21, CONST_DEBUG_W, "left")
+		love.graphics.printf("DDV: " .. tostring(player[1].damageDir), CONST_DEBUG_X, CONST_DEBUG_Y * 22.5, CONST_DEBUG_W, "left")
 	end
 end
 
@@ -451,8 +475,9 @@ function debugDraw()
 	if LET_DEBUG_M then
 		for i,v in ipairs(player) do
 			--Player Hitbox
+			local x,y,w,h = world:getRect(player[1])
 			love.graphics.setColor(1, 0, 1)
-			love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
+			love.graphics.rectangle("line", x, y, w, h)
 		end
 
 		for i,v in ipairs(enemy) do

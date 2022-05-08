@@ -1,21 +1,35 @@
 --CHANGES
--Added wip dialogue system
+*Added new comments
+*Added i-frame invincibility(Player is invulnerable to damage for a short time after being damaged)
+*Added 'Nuke' Tool to Editor Mode(Completely erases the current level)
+	-Warning dialog appears when clicking button
+*Added (2) new block types: Dev Block(Gray), Grass(Down), Water
+*Modified key binding process:
+	-Cursor now locks in place when changing a keybind
+	-Can press ESC key to cancel rebind
+*Modified Tool buttons to allow toggling a tool on/off
+*Modified Selection Tool to support Erasing
+*Modified camera panning to reveal more in front/underneath/above player
 
 --FIXES
--Fixed isOnGround check not working properly
--Fixed button not staying selected when changing keybinds
-
+*Fixed crouching and being damaged causing camera to snap suddenly
+*Fixed enemy update() function not using updated player update() code
+*Fixed a lot of weird resolution collision regarding knockback behavior
+*Fixed unnecessary checks in collision filter
+*Fixed jump not resetting properly when hitting bottom of a block
+*Fixed Editor selection tool not highlighting blocks behind the initial start of the selection
+*Fixed multiple respawn blocks spawning in duplicate players
+*Fixed player getting lost in the sky high above the top of the screen
 
 --KNOWN ISSUES
-*Editor cannot select blocks when dragging right to left, or bottom to top
 *OpenGL issue is still present in certain cases(Walking to left)
 *Objects currently don't utilize spritebatches
-*Enemy collisions can cause player to fall out of bounds..maybe try rearranging world:move and update
 *Block rendered needs to be further optimized
 	*Stop checking for intersecting(SLOW)
 	*Stop looping through blocks twice for highlighting
 	*When editing a level, FPS goes from 650->330(Draw tool tanks frames)
 	*Slowdown when holding LMB with any tool selected
-*Reset back to default level in editor
-*Erase button for Selection tool
-*Sharing screen in Discord causes main menu buttons to turn black
+*Recieving Knockback while crouching breaks system
+*Occasionally you lose more than 1 health stepping on a spike
+*Spritebatch render errors when sharing screen on Discord
+*Water collisions are currently broken

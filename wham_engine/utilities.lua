@@ -70,7 +70,9 @@ function initializeLevel()
 		end
 		--Spawns player on a spawn block
 		if v.subtype == "player_spawn" then
-			player.spawn(v.x + 4, v.y - 4)
+			if #player < 1 then
+				player.spawn(v.x + 4, v.y - 4)
+			end
 		end
 	end
 end
@@ -277,5 +279,17 @@ function object_cleanup(ent)
 		if world:hasItem(ent) then
 			world:remove(ent)
 		end
+	end
+end
+
+function object_damage(ent, dmg)
+	if not ent.isDamaged then
+		ent.isDamaged = true
+		ent.health = ent.health - dmg
+		--Held jump reset..disabling this on damage allows smoother transition state for player
+		if ent.jumpHeld then
+			ent.jumpHeld = false
+		end
+		print(ent.health)
 	end
 end

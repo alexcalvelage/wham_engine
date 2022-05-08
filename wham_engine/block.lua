@@ -1,4 +1,4 @@
-local select_x, select_y, select_width, select_height
+local select_x, select_y, select_width, select_height = 0, 0, 0, 0
 
 block = {}
 --block_collision = {}
@@ -74,6 +74,9 @@ function block.draw()
 	--Our selection rectangle for the selection tool
 	love.graphics.setColor(0, 0, 1, .2)
 	love.graphics.rectangle("fill", select_x or 0, select_y or 0, select_width or 0, select_height or 0)
+
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.print(tostring(select_x) .. " / " .. tostring(select_y) .. " / " .. tostring(select_width)  .. " / " .. tostring(select_height), worldMouseX + 32, worldMouseY - 16)
 end
 
 function block.highlight(me)
@@ -94,6 +97,7 @@ end
 function block.clickAction(mButton)
 	if LET_EDITOR_TOOL == "editor_tool_select" then
 		if mButton == 1 then
+			--Set x,y when mouse is initially clicked
 			select_x = worldMouseX
 			select_y = worldMouseY
 		end
@@ -103,18 +107,44 @@ end
 function block.clickActionUpdate(me)
 	if LET_EDITOR_TOOL == "editor_tool_select" then
 		if love.mouse.isDown(1) then
+			--Local vars for bounding box if width/height are negative values
+			local newX = nil
+			local newY = nil
+			local newW = nil
+			local newH = nil
+			--Select_* vars are local to this file..init at top
+			--Continously sets w,h while mouse1 is being held down to set bounding box size
 			select_width = worldMouseX - select_x
 			select_height = worldMouseY - select_y
 
+			--If w,h go negative, change newX->startingX - how far cursor is from origin
+			--newX becomes the bounding box Width
+			--newW becomes the bounding box X position
+			if select_width ~= math.abs(select_width) then
+				newX = select_x - math.abs(select_width)
+				newW = math.abs(select_width)
+				
+			end
+			if select_height ~= math.abs(select_height) then
+				newY = select_y - math.abs(select_height)
+				newH = math.abs(select_height)
+			end
+
+			--Start check to see if the supplied coordinates contain the center(x,y) point of any block
 			if bump.rect.containsPoint(newX or select_x, newY or select_y, newW or select_width, newH or select_height, me.x + me.width / 2, me.y + me.height / 2) then
+				--Center (x,y) point of block is inside the bounding box 
 				me.highlight = true
-				--sets block highlight texture
+				--Sets block highlight texture
 				me.quad_overlay = highlight_block_QD
 			else
+				--If any block is outside the bounding box, set to unhighlighted
 				block.unhighlight(me)
 			end
+
 		elseif love.mouse.isDown(2) then
 			block.editor_paint(me)
+		elseif love.mouse.isDown(3) then
+			block.editor_paint(me, true)
 		end
 	end
 end
@@ -176,7 +206,11 @@ end
 
 --air, grass, grass_r, grass_l, dirt, wooden_plat, spike, devblock, itemblock
 function block.cycleSelectedBlock(y)
-	local maxIndex = 10
+	local maxIndex = 13
+	--[[
+	Implement way to initialize blocks inside a table
+	then it's possible to automate the maxIndex
+	--]]
 	if y < 0 then
 		LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = LET_EDITOR_BLOCKTYPE_SELECTED_INDEX + 1
 	elseif y > 0 then
@@ -192,23 +226,29 @@ function block.cycleSelectedBlock(y)
 	if LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 1 then
 		LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 2 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block2"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 3 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_r"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 4 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_l"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_d"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 5 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "dirt_block"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_r"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 6 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "wooden_plat"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "grass_block_l"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 7 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "spike_block_u"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "dirt_block"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 8 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "spike_block_d"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "wooden_plat"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 9 then
-		LET_EDITOR_BLOCKTYPE_SELECTED = "item_block"
+		LET_EDITOR_BLOCKTYPE_SELECTED = "spike_block_u"
 	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 10 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "spike_block_d"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 11 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "item_block"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 12 then
 		LET_EDITOR_BLOCKTYPE_SELECTED = "player_spawn"
+	elseif LET_EDITOR_BLOCKTYPE_SELECTED_INDEX == 13 then
+		LET_EDITOR_BLOCKTYPE_SELECTED = "water_block"
 	end
 end
 

@@ -19,8 +19,12 @@ function button.update(dt)
 end
 
 function button.draw()
-	--Clears our spritebatch draw call
-	button_SB:clear()
+	--Fixes spritebatch force clearing itself when sharing screen on Discord
+	if LET_GAME_FOCUSED then
+		--Clears our spritebatch draw call
+		button_SB:clear()
+	end
+	
 	for i = 1, #button do
 		if button[i].enabled then
 			--Turn string back into Global and add our button to the spritebatch
@@ -85,62 +89,70 @@ function button.clickAction(mButton)
 	if mButton == 1 then
 		for i = 1, #button do
 			if button[i].highlight then
+				local action = button[i].action
 --MAIN MENU ACTIONS
-				if button[i].action == "play_game_action" then
+				if action == "play_game_action" then
 					--Remove for menu implementation
 					loadLevel(LET_CURRENT_LEVEL or "default")
 					switchGameState("play_state")
-				elseif button[i].action == "load_game_action" then
-				elseif button[i].action == "create_level_action" then
+				elseif action == "load_game_action" then
+				elseif action == "create_level_action" then
 					--Remove for menu implementation
 					loadLevel(LET_CURRENT_LEVEL or "default")
 					switchGameState("create_state")
-				elseif button[i].action == "options_action" then
+				elseif action == "options_action" then
 					panel.typeChange("optionsPanel")
 					LET_OPTIONS_MENU = true
-				elseif button[i].action == "quit_action" then
+				elseif action == "quit_action" then
 					love.event.quit()
 --PAUSE MENU ACTIONS
-				elseif button[i].action == "resume_action" then
+				elseif action == "resume_action" then
 					pauseGame()
-				elseif button[i].action == "save_level_action" then
+				elseif action == "save_level_action" then
 					panel.typeChange("savePanel")
 					love.keyboard.setTextInput(true)
 					love.keyboard.setKeyRepeat(true)
-				elseif button[i].action == "load_level_action" then
+				elseif action == "load_level_action" then
 					panel.typeChange("loadPanel")
 					love.keyboard.setTextInput(true)
 					love.keyboard.setKeyRepeat(true)
-				elseif button[i].action == "exit_session_action" then
+				elseif action == "exit_session_action" then
 					switchGameState("menu_state")
 					editor_change_mode("", default_cursor)
-				elseif button[i].action == "back_action" then
+				elseif action == "back_action" then
 					button.backButtonReset()
-				elseif button[i].action == "browse_action" then
+				elseif action == "browse_action" then
 					love.system.openURL("file://"..love.filesystem.getSaveDirectory())
-				elseif button[i].action == "save_action" then
+				elseif action == "save_action" then
 					saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
-				elseif button[i].action == "load_action" then
+				elseif action == "load_action" then
 					loadLevel(tostring(LET_BROWSE_PATH))
 --OPTIONS ACTIONS
-				elseif button[i].action == "options_keybinds_moveLeft" then
+				elseif action == "options_keybinds_moveLeft" then
 					start_keybind_change("moveLeft", button[i])
-				elseif button[i].action == "options_keybinds_moveRight" then
+				elseif action == "options_keybinds_moveRight" then
 					start_keybind_change("moveRight", button[i])
-				elseif button[i].action == "options_keybinds_moveJump" then
+				elseif action == "options_keybinds_moveJump" then
 					start_keybind_change("moveJump", button[i])
-				elseif button[i].action == "options_keybinds_moveCrouch" then
+				elseif action == "options_keybinds_moveCrouch" then
 					start_keybind_change("moveCrouch", button[i])
 --EDITOR ACTIONS
-				elseif button[i].action == "tool_selection_action" then
+				elseif action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
-				elseif button[i].action == "tool_draw_action" then
+				elseif action == "tool_draw_action" then
 					editor_change_mode("editor_tool_draw", draw_cursor)
-				elseif button[i].action == "tool_eraser_action" then
+				elseif action == "tool_eraser_action" then
 					editor_change_mode("editor_tool_eraser", eraser_cursor)
-				elseif button[i].action == "tool_fill_action" then
-				elseif button[i].action == "tool_dropper_action" then
+				elseif action == "tool_fill_action" then
+				elseif action == "tool_dropper_action" then
 					editor_change_mode("editor_tool_dropper", dropper_cursor)
+				elseif action == "tool_nuke_action" then
+					editor_change_mode("editor_tool_nuke", eraser_cursor)
+					panel.typeChange("lvlwarnPanel")
+				elseif action == "confirmwipe_action" then
+					button.confirmWipe()
+				elseif action == "cancelwipe_action" then
+					button.cancelWipe()
 				end
 			end
 		end
@@ -155,7 +167,31 @@ function button.backButtonReset()
 	LET_OPTIONS_MENU = false
 end
 
+function button.cancelWipe()
+	panel.typeChange("")
+	editor_change_mode("")
+end
+
+function button.confirmWipe()
+	for i = 1, #block do
+		block.typeChange(block[i], "air_block")
+	end
+
+
+	block.typeChange(block[gridRowsY-1], "player_spawn")
+	block.typeChange(block[gridRowsY], "dev_block")
+	status_text.create("LEVEL WIPED")
+end
+
 function editor_change_mode(mode, cursor)
-	love.mouse.setCursor(cursor)
-	LET_EDITOR_TOOL = mode
+	--If current tool is the same as the supplied tool
+	--then just toggle off tool to default
+	if LET_EDITOR_TOOL == mode then
+		LET_EDITOR_TOOL = ""
+		cursor = default_cursor
+	else
+		LET_EDITOR_TOOL = mode
+	end
+
+	love.mouse.setCursor(cursor or default_cursor)
 end

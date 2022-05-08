@@ -306,7 +306,12 @@ local bounce = function(world, col, x,y,w,h, goalX, goalY, filter)
 
   if move.x ~= 0 or move.y ~= 0 then
     local bnx, bny = goalX - tx, goalY - ty
-    if col.normal.x == 0 then bny = -bny else bnx = -bnx end
+    if col.normal.x == 0 then
+      bny = -bny
+    else
+      bnx = -bnx
+    end
+
     bx, by = tx + bnx, ty + bny
   end
 
@@ -329,7 +334,13 @@ local knockback = function(world, col, x,y,w,h, goalX, goalY, filter)
 
   if move.x ~= 0 or move.y ~= 0 then
     local bnx, bny = goalX - tx, goalY - ty
-    if col.normal.x == 0 then bny = -bny else bnx = -bnx end
+    --if col.normal.x == 0 then
+      if col.item.damageDir == 1 or col.item.damageDir == 2 then
+        bny = -bny - 32
+      elseif col.item.damageDir == 3 or col.item.damageDir == 4 then
+        bny = -bny + 32
+      end
+
     bx, by = tx + bnx, ty + bny
   end
 
@@ -344,6 +355,12 @@ end
 local cross_through = function(world, col, x,y,w,h, goalX, goalY, filter)
   local cols, len    = world:project(col.item, x,y,w,h, goalX, goalY, filter)
   return goalX, goalY, {}, 0
+end
+
+local submerge = function(world, col, x,y,w,h, goalX, goalY, filter)
+  col.submerge   = {x = goalX,  y = goalY}
+  --local cols, len    = world:project(col.item, goalX,goalY,w,h, goalX, goalY, filter)
+  return x, y, {}, 0
 end
 
 ------------------------------------------
@@ -779,6 +796,7 @@ bump.newWorld = function(cellSize)
   world:addResponse('bounce', bounce)
   world:addResponse('knockback', knockback)
   world:addResponse('cross_through', cross_through)
+  world:addResponse('submerge', submerge)
 
   return world
 end
@@ -799,7 +817,8 @@ bump.responses = {
   slide  = slide,
   bounce = bounce,
   knockback = knockback,
-  cross_through = cross_through
+  cross_through = cross_through,
+  submerge = submerge
 }
 
 return bump
