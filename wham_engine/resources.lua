@@ -80,6 +80,7 @@ function resourceLoad()
 	options_panel_QD = love.graphics.newQuad(0, 196, 298, 217, ui_panels_all_IMG:getDimensions())
 	dialogue_panel_QD = love.graphics.newQuad(0, 513, 1024, 298, ui_panels_all_IMG:getDimensions())
 	lvlwarn_panel_QD = love.graphics.newQuad(300, 0, 350, 135, ui_panels_all_IMG:getDimensions())
+	lvlselection_panel_QD = love.graphics.newQuad(300, 137, 600, 300, ui_panels_all_IMG:getDimensions())
 	--Panel Buttons
 	save_button_QD = love.graphics.newQuad(195, 400, 75, 25, ui_buttons_all_IMG:getDimensions())
 	save_button_QD_2 = love.graphics.newQuad(195, 425, 75, 25, ui_buttons_all_IMG:getDimensions())
@@ -189,6 +190,13 @@ function resourceLoad()
 	place_block_SND:setVolume(masterVolume * soundsVolume)
 	remove_block_SND:setVolume(masterVolume * soundsVolume)
 --LEVELS
-	levelsDir = love.filesystem.getSourceBaseDirectory() .. "/resources/levels/"
-	levels = love.filesystem.getDirectoryItems("resources/levels")
+--[[
+******ADD LEVELS******
+1.Insert  entry into game_level_data here
+2.Move level into resources/level
+--]]
+	game_level_data = {}
+	game_level_data[1] = {title = "default", path = "resources/levels/default.lvl"}
+	game_level_data[2] = {title = "testes", path = "resources/levels/testes.lvl"}
+	game_level_data[3] = {title = "level01", path = "resources/levels/level01.lvl"}
 end

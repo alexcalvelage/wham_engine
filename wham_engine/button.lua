@@ -61,7 +61,7 @@ end
 function button.detectVisibility(me)
 	--Checks to make sure buttons are only usable/rendered when they need to be.
 	--CHECKS: PAUSE MENU -> PANEL BUTTONS -> EDITOR BUTTONS + MENU BUTTONS
-	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED and not LET_OPTIONS_MENU) then
+	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED and not LET_OPTIONS_MENU and not LET_LVLSELECTION_MENU) then
 		me.enabled = true
 	else
 		me.enabled = false
@@ -93,12 +93,20 @@ function button.clickAction(mButton)
 --MAIN MENU ACTIONS
 				if action == "play_game_action" then
 					--Remove for menu implementation
-					loadLevel(LET_CURRENT_LEVEL or "default")
-					switchGameState("play_state")
+					panel.typeChange("lvlselectionPanel")
+					LET_LVLSELECTION_MENU = true
+					--loadOfficialLevel(LET_CURRENT_LEVEL)
+					--switchGameState("play_state")
 				elseif action == "load_game_action" then
 				elseif action == "create_level_action" then
 					--Remove for menu implementation
-					loadLevel(LET_CURRENT_LEVEL or "default")
+					if LET_CURRENT_LEVEL ~= "" then
+						loadEditorLevel(LET_CURRENT_LEVEL)
+					else
+						status_text.create("global: LET_CURRENT_LEVEL NOT SET")
+						button.levelSelect("default")
+					end
+
 					switchGameState("create_state")
 				elseif action == "options_action" then
 					panel.typeChange("optionsPanel")
@@ -118,6 +126,7 @@ function button.clickAction(mButton)
 					love.keyboard.setKeyRepeat(true)
 				elseif action == "exit_session_action" then
 					switchGameState("menu_state")
+					deloadLevel()
 					editor_change_mode("", default_cursor)
 				elseif action == "back_action" then
 					button.backButtonReset()
@@ -126,7 +135,7 @@ function button.clickAction(mButton)
 				elseif action == "save_action" then
 					saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
 				elseif action == "load_action" then
-					loadLevel(tostring(LET_BROWSE_PATH))
+					loadEditorLevel(tostring(LET_BROWSE_PATH))
 --OPTIONS ACTIONS
 				elseif action == "options_keybinds_moveLeft" then
 					start_keybind_change("moveLeft", button[i])
@@ -136,6 +145,11 @@ function button.clickAction(mButton)
 					start_keybind_change("moveJump", button[i])
 				elseif action == "options_keybinds_moveCrouch" then
 					start_keybind_change("moveCrouch", button[i])
+--LEVEL SELECTION ACTIONS
+				elseif action == "lvl01_action" then
+					button.levelSelect("default")
+				elseif action == "lvl02_action" then
+					button.levelSelect("testes")
 --EDITOR ACTIONS
 				elseif action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
@@ -164,22 +178,29 @@ function button.backButtonReset()
 	love.keyboard.setTextInput(false)
 	love.keyboard.setKeyRepeat(false)
 	LET_BROWSE_PATH = ""
+	editor_change_mode("")
 	LET_OPTIONS_MENU = false
+	LET_LVLSELECTION_MENU = false
+end
+
+function button.levelSelect(level_name)
+	button.backButtonReset()
+	loadOfficialLevel(level_name)
+	switchGameState("play_state")
 end
 
 function button.cancelWipe()
-	panel.typeChange("")
-	editor_change_mode("")
+	button.backButtonReset()
 end
 
 function button.confirmWipe()
+	button.backButtonReset()
 	for i = 1, #block do
 		block.typeChange(block[i], "air_block")
 	end
 
-
-	block.typeChange(block[gridRowsY-1], "player_spawn")
-	block.typeChange(block[gridRowsY], "dev_block")
+	block.typeChange(block[gridRowsY/2], "player_spawn")
+	block.typeChange(block[gridRowsY/2+1], "dev_block")
 	status_text.create("LEVEL WIPED")
 end
 

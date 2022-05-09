@@ -33,7 +33,7 @@ function love.load()
 	LET_GRIDWORLD_CREATED = false
 	--Can set this to start the game with a specific level loaded
 	--LET_CURRENT_LEVEL = "dev_world"
-	LET_CURRENT_LEVEL = "environment_test1"
+	LET_CURRENT_LEVEL = ""
 	gridColsX = 200
 	gridRowsY = 30
 	--initialize our 
@@ -88,8 +88,9 @@ function love.load()
 --Panels
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
-	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2) - 25, 298, 98)
-	panel.spawn("lvlwarn_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2) - 25, 298, 98)
+	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2), 298, 217)
+	panel.spawn("lvlwarn_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2), 350, 135)
+	panel.spawn("lvlselection_panel_QD", "lvlselectionPanel", gwidth / 2, (gheight / 2), 600, 300)
 	panel.spawn("dialogue_panel_QD", "dialoguePanel", gwidth / 2, 150, 1024, 298)
 --Main Menu buttons
 	button.spawn("menu_play_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5)
@@ -123,7 +124,11 @@ function love.load()
 	button.spawn("keybind_button_QD", "options_keybinds_moveJump", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 37, 37, 25, moveJump)
 	button.spawn("keybind_button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 64, 37, 25, moveCrouch)
 	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 57 * 2, 75, 25)
-	print(levelsDir)
+--Level Selection buttons
+	button.spawn("select_button_QD", "lvl01_action", "lvlselectionPanel", (gwidth / 2) - 250, (gheight / 2) - 60, 50, 50)
+	button.spawn("select_button_QD", "lvl02_action", "lvlselectionPanel", (gwidth / 2) - 190, (gheight / 2) - 60, 50, 50)
+	button.spawn("back_button_QD", "back_action", "lvlselectionPanel", (gwidth / 2), (gheight / 2) + 105, 75, 25)
+
 end
 
 function love.keypressed(key)
@@ -161,7 +166,7 @@ function love.keypressed(key)
 			if LET_PANEL_OPEN == "savePanel" then
 				saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
 			elseif LET_PANEL_OPEN == "loadPanel" then
-				loadLevel(tostring(LET_BROWSE_PATH))
+				loadEditorLevel(tostring(LET_BROWSE_PATH))
 			end
 		end
 	end
@@ -339,7 +344,7 @@ function saveLevel(name, t1, t2, t3)
 	table.insert(mainTable, enemyTable)
 	table.insert(mainTable, objectTable)
 
-	local success, message = love.filesystem.write(lower_name  .. ".lvl", TSerial.pack(mainTable, true))
+	local success, message = love.filesystem.write(lower_name  .. ".lvl", TSerial.pack(mainTable, true, true))
 	if success then
 		status_text.create("Level Saved! ('" .. lower_name .. ".lvl')")
 	else
@@ -347,31 +352,56 @@ function saveLevel(name, t1, t2, t3)
 	end
 end
 
-function loadLevel(name)
+function loadOfficialLevel(name)
+	local lower_name = string.lower(name)
+	for i = 1, #game_level_data do
+		if game_level_data[i].title == lower_name then
+			file = game_level_data[i].path
+			LET_CURRENT_LEVEL = file
+			--print(file .. "<- Selected")
+			if file then
+				--Delete everything in current level
+				sterilizeLevel()
+
+				local data = love.filesystem.read(file)
+				--Unserialize string into table
+				data = TSerial.unpack(data, true)
+				generateData(file, data)
+
+				status_text.create("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
+			else
+				file = nil
+				status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
+				LET_CURRENT_LEVEL = ""
+				--print(game_level_data[i].path .. "-> Not Selected")
+			end
+		end
+	end
+end
+
+function loadEditorLevel(name)
 	local lower_name = string.lower(name)
 	local file = love.filesystem.getInfo(lower_name .. ".lvl")
-	--local file = love.filesystem.getInfo(levelsDir .. lower_name .. ".lvl")
-	--local file = love.filesystem.getInfo(lower_name .. ".lvl")
-
-	--if file == nil then
-		--for k, files in ipairs(levels) do
-			--if files == lower_name .. ".lvl" then
-			--	print(files)
-			--	file = love.filesystem.getInfo(files)
-			--end
-		--end
-	--end
 	
 	if file then
 		--Delete everything in current level
 		sterilizeLevel()
 
 		--Read save file text
-		local data_string = love.filesystem.read(lower_name .. ".lvl")
-		LET_CURRENT_LEVEL = lower_name
+		local data = love.filesystem.read(lower_name .. ".lvl")
 		--Unserialize string into table
-		data_string = TSerial.unpack(data_string, true)
+		data = TSerial.unpack(data, true)
+		generateData(lower_name, data)
 
+		status_text.create("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
+	else
+		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
+		LET_CURRENT_LEVEL = ""
+	end
+end
+
+function generateData(name, data_string)
+	if data_string ~= nil then
 		--BLOCK LOADING
 		if data_string[1] ~= nil then
 			for i = 1, #data_string[1] do
@@ -410,10 +440,13 @@ function loadLevel(name)
 		--Initialize level stuff
 		initializeLevel()
 
-		status_text.create("Level Loaded! ('" .. lower_name .. ".lvl')")
-	else
-		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
+		LET_CURRENT_LEVEL = name
 	end
+end
+
+function deloadLevel()
+	sterilizeLevel()
+	LET_CURRENT_LEVEL = ""
 end
 
 function editorHUDDraw()
@@ -436,7 +469,7 @@ function editorHUDDraw()
 	love.graphics.setFont(defaultFont)
 	love.graphics.printf("Selected Block: " .. LET_EDITOR_BLOCKTYPE_SELECTED, gwidth - 157, gheight / 2 - 360, 150, "center")
 	love.graphics.draw(block_all_IMG, _G[LET_EDITOR_BLOCKTYPE_SELECTED .. "_QD"], gwidth - 48, gheight / 2 - 240, 0, 2, 2, 32, 32)
-	love.graphics.print("Score: " .. player[1].score, (gwidth / 2) - 285, 25)
+	--love.graphics.print("Score: " .. player[1].score, (gwidth / 2) - 285, 25)
 	if LET_CONTROLS_M then
 		love.graphics.printf(CONST_CONTROL_TEXT, CONST_HUD_X, CONST_HUD_Y + 14, 300, "center")
 	end

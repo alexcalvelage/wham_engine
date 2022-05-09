@@ -3,6 +3,6 @@
 io.stdout:setvbuf("no")
 function love.conf(t)
 	--t.console = true
-	t.window.title = "WHAM Engine [5/8/2022] | Alex Calvelage | Love2D [11.3] "
+	t.window.title = "WHAM Engine [5/9/2022] | Alex Calvelage | Love2D [11.3] "
 	t.identity = "WHAM"
 end

@@ -1,25 +1,12 @@
 --CHANGES
-*Added new comments
-*Added i-frame invincibility(Player is invulnerable to damage for a short time after being damaged)
-*Added 'Nuke' Tool to Editor Mode(Completely erases the current level)
-	-Warning dialog appears when clicking button
-*Added (2) new block types: Dev Block(Gray), Grass(Down), Water
-*Modified key binding process:
-	-Cursor now locks in place when changing a keybind
-	-Can press ESC key to cancel rebind
-*Modified Tool buttons to allow toggling a tool on/off
-*Modified Selection Tool to support Erasing
-*Modified camera panning to reveal more in front/underneath/above player
+*Added Level Selection Panel to Main Menu
+*Reworked level loading to support official & custom maps
+*Improved StatusText to better display multiple messages
+
 
 --FIXES
-*Fixed crouching and being damaged causing camera to snap suddenly
-*Fixed enemy update() function not using updated player update() code
-*Fixed a lot of weird resolution collision regarding knockback behavior
-*Fixed unnecessary checks in collision filter
-*Fixed jump not resetting properly when hitting bottom of a block
-*Fixed Editor selection tool not highlighting blocks behind the initial start of the selection
-*Fixed multiple respawn blocks spawning in duplicate players
-*Fixed player getting lost in the sky high above the top of the screen
+*Fixed various UI elements' positioning(Options, Level Selection)
+*Fixed Nuke Tool's Panel not closing after deletion
 
 --KNOWN ISSUES
 *OpenGL issue is still present in certain cases(Walking to left)
@@ -33,3 +20,4 @@
 *Occasionally you lose more than 1 health stepping on a spike
 *Spritebatch render errors when sharing screen on Discord
 *Water collisions are currently broken
+*Camera panning sometimes breaks and doesnt go below a certain threshold
