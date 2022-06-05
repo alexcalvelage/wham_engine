@@ -1,24 +1,32 @@
-function resourceLoad()
---FONTS
+function fontLoad()
+	--UI Fonts
 	defaultFont = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 16)
-	defaultFontBold = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 16)
 	defaultFontHuge = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 96)
-	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 10)
-	defaultKeyBindFont = love.graphics.newFont("resources/fonts/Blockletter.otf", 14)
-	--sets our default font on game launch
+	--MENU Fonts
+	defaultFontBold = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 22)
+	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 18)
+	--KEYBIND BUTTON Font
+	defaultKeyBindFont = love.graphics.newFont("resources/fonts/Blockletter.otf", 20)
 	love.graphics.setFont(defaultFont)
---CURSORS
+end
+
+function cursorLoad()
 	default_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_default.png", 0, 0)
 	selection_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_selection.png", 0, 0)
 	draw_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_draw.png", 0, 0)
 	eraser_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_eraser.png", 0, 0)
 	dropper_cursor = love.mouse.newCursor("resources/textures/ui/cursors/cursor_dropper.png", 0, 0)
+end
+
+function resourceLoad()
+	fontLoad()
+	cursorLoad()
 --TEXTURES
 	--Images
 	block_all_IMG = love.graphics.newImage("resources/textures/block/block_sheet.png")
 	objects_all_IMG = love.graphics.newImage("resources/textures/objects/objects_sheet.png")
 	ui_buttons_all_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
-	ui_panels_all_IMG = love.graphics.newImage("resources/textures/ui/panel_sheet.png")
+	ui_panels_all_IMG = love.graphics.newImage("resources/textures/ui/panel_sheet_redux.png")
 	--SpriteBatches
 	block_SB = love.graphics.newSpriteBatch(block_all_IMG)
 	objects_SB = love.graphics.newSpriteBatch(objects_all_IMG)
@@ -46,6 +54,15 @@ function resourceLoad()
 	water_block_QD = love.graphics.newQuad(102, 68, 32, 32, block_all_IMG:getDimensions())
 	--*buttonQDS
 	--**Long buttons
+	long_button_QD = love.graphics.newQuad(764, 0, 193, 49, ui_buttons_all_IMG:getDimensions())
+	long_button_QD_2 = love.graphics.newQuad(764, 50, 193, 49, ui_buttons_all_IMG:getDimensions())
+	small_button_QD = love.graphics.newQuad(806, 99, 110, 28, ui_buttons_all_IMG:getDimensions())
+	small_button_QD_2 = love.graphics.newQuad(806, 127, 110, 28, ui_buttons_all_IMG:getDimensions())
+	back_button_QD = love.graphics.newQuad(958, 0, 67, 38, ui_buttons_all_IMG:getDimensions())
+	back_button_QD_2 = love.graphics.newQuad(958, 39, 67, 38, ui_buttons_all_IMG:getDimensions())
+	keybind_button_QD = love.graphics.newQuad(958, 78, 67, 36, ui_buttons_all_IMG:getDimensions())
+	keybind_button_QD_2 = love.graphics.newQuad(958, 115, 67, 36, ui_buttons_all_IMG:getDimensions())
+
 	resume_button_QD = love.graphics.newQuad(0, 0, 194, 49, ui_buttons_all_IMG:getDimensions())
 	resume_button_QD_2 = love.graphics.newQuad(0, 49, 194, 49, ui_buttons_all_IMG:getDimensions())
 	save_level_button_QD = love.graphics.newQuad(0, 98, 194, 49, ui_buttons_all_IMG:getDimensions())
@@ -77,7 +94,7 @@ function resourceLoad()
 	--**Saving/Loading
 	saving_panel_QD = love.graphics.newQuad(0, 0, 298, 98, ui_panels_all_IMG:getDimensions())
 	loading_panel_QD = love.graphics.newQuad(0, 98, 298, 98, ui_panels_all_IMG:getDimensions())
-	options_panel_QD = love.graphics.newQuad(0, 196, 298, 217, ui_panels_all_IMG:getDimensions())
+	options_panel_QD = love.graphics.newQuad(0, 0, 709, 509, ui_panels_all_IMG:getDimensions())
 	dialogue_panel_QD = love.graphics.newQuad(0, 513, 1024, 298, ui_panels_all_IMG:getDimensions())
 	lvlwarn_panel_QD = love.graphics.newQuad(300, 0, 350, 135, ui_panels_all_IMG:getDimensions())
 	lvlselection_panel_QD = love.graphics.newQuad(300, 137, 600, 300, ui_panels_all_IMG:getDimensions())
@@ -88,16 +105,16 @@ function resourceLoad()
 	browse_button_QD_2 = love.graphics.newQuad(270, 425, 75, 25, ui_buttons_all_IMG:getDimensions())
 	load_button_QD = love.graphics.newQuad(195, 450, 75, 25, ui_buttons_all_IMG:getDimensions())
 	load_button_QD_2 = love.graphics.newQuad(195, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
-	back_button_QD = love.graphics.newQuad(270, 450, 75, 25, ui_buttons_all_IMG:getDimensions())
-	back_button_QD_2 = love.graphics.newQuad(270, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
+	--back_button_QD = love.graphics.newQuad(270, 450, 75, 25, ui_buttons_all_IMG:getDimensions())
+	--back_button_QD_2 = love.graphics.newQuad(270, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
 	delete_button_QD = love.graphics.newQuad(346, 400, 100, 33, ui_buttons_all_IMG:getDimensions())
 	delete_button_QD_2 = love.graphics.newQuad(346, 433, 100, 33, ui_buttons_all_IMG:getDimensions())
 	cancel_button_QD = love.graphics.newQuad(446, 400, 100, 33, ui_buttons_all_IMG:getDimensions())
 	cancel_button_QD_2 = love.graphics.newQuad(446, 433, 100, 33, ui_buttons_all_IMG:getDimensions())
 
 
-	keybind_button_QD = love.graphics.newQuad(195, 500, 37, 25, ui_buttons_all_IMG:getDimensions())
-	keybind_button_QD_2 = love.graphics.newQuad(195, 525, 37, 25, ui_buttons_all_IMG:getDimensions())
+	--keybind_button_QD = love.graphics.newQuad(195, 500, 37, 25, ui_buttons_all_IMG:getDimensions())
+	--keybind_button_QD_2 = love.graphics.newQuad(195, 525, 37, 25, ui_buttons_all_IMG:getDimensions())
 	--*objectsQDS
 	--**Cogs
 	cog_object_QD = love.graphics.newQuad(0, 0, 32, 32, objects_all_IMG:getDimensions())
@@ -196,7 +213,6 @@ function resourceLoad()
 2.Move level into resources/level
 --]]
 	game_level_data = {}
-	game_level_data[1] = {title = "default", path = "resources/levels/default.lvl"}
-	game_level_data[2] = {title = "testes", path = "resources/levels/testes.lvl"}
-	game_level_data[3] = {title = "level01", path = "resources/levels/level01.lvl"}
+	game_level_data[1] = {title = "garden", path = "resources/levels/garden.lvl"}
+	game_level_data[2] = {title = "level_01", path = "resources/levels/level_01.lvl"}
 end

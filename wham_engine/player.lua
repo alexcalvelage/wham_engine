@@ -12,6 +12,8 @@ function player.spawn(x, y)
 	
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
+	--sets our cameraY position to the newly spawned player
+	cameraY = player[#player].y
 end
 
 function player.update(dt)
@@ -120,8 +122,19 @@ function player.update(dt)
 		player.resetDmgBuffer(dt, player[i])
 		--print("Jump Held: " .. tostring(v.jumpHeld) .. ", isOnGround: " .. tostring(v.isOnGround))
 
-		--Sets camera height to player's height + offset
-		if not v.isCrouching then
+		--Sets camera height to player's y + height offset --BOKNE
+		local playerHeight = math.abs(v.y - v.height)
+		if playerHeight > cameraY then
+			cameraY = math.abs(cameraY + 500 * dt)
+		elseif playerHeight < cameraY then
+			cameraY = math.abs(cameraY - 500 * dt)
+		end
+
+
+		print(cameraY, v.y - v.height)
+
+		--Deprecated camera repositioning
+		--[[if not v.isCrouching then
 			if cameraY <= v.y - v.height then
 				cameraY = cameraY + (v.y + cameraYOffset) * dt
 				if cameraY >= 600 then
@@ -144,7 +157,7 @@ function player.update(dt)
 				end
 				--print("Camera Too High: " .. cameraY .. "\ny: " .. v.y)
 			end
-		end
+		end--]]
 
 		--update our cameras position
 		cam:setPosition(goalX + v.width * 10, cameraY)

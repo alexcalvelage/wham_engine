@@ -120,6 +120,7 @@ function update_keybind_change()
 						v.text = k
 						--..change our keybind
 						_G[LET_KEYBIND_BINDING] = k
+						status.print(LET_KEYBIND_BINDING .. " has been rebound to: " .. string.upper(_G[LET_KEYBIND_BINDING]))
 					end
 				end
 
@@ -290,6 +291,5 @@ function object_damage(ent, dmg)
 		if ent.jumpHeld then
 			ent.jumpHeld = false
 		end
-		print(ent.health)
 	end
 end

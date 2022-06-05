@@ -1,7 +1,7 @@
 
 button = {}
 function button.spawn(quad, action, activeState, x, y, w, h, text)
-	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, text = text or nil, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 194, height = h or 49, highlight = false})
+	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, text = text or nil, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 193, height = h or 49, highlight = false})
 	--Center our button according to our width, height
 	button[#button].x, button[#button].y = button[#button].x - (button[#button].width / 2), button[#button].y - (button[#button].height / 2)
 	--Concatenate quad extension
@@ -27,8 +27,9 @@ function button.draw()
 	
 	for i = 1, #button do
 		if button[i].enabled then
+			local sx, sy, sw, sh = _G[button[i].quad]:getViewport() --getViewport() grabs the Quad's dimensions
 			--Turn string back into Global and add our button to the spritebatch
-			button_SB:add(_G[button[i].quad], button[i].x, button[i].y)
+			button_SB:add(_G[button[i].quad], button[i].x, button[i].y, 0, button[i].width / sw, button[i].height / sh)
 		end
 	end
 
@@ -40,19 +41,30 @@ function button.draw()
 	for i = 1, #button do
 		if button[i].enabled then
 			if button[i].quad_overlay ~= nil then
+				local sx, sy, sw, sh = _G[button[i].quad]:getViewport()
 				love.graphics.setColor(1, 1, 1)
-				love.graphics.draw(ui_buttons_all_IMG, button[i].quad_overlay, button[i].x, button[i].y)
+				love.graphics.draw(ui_buttons_all_IMG, button[i].quad_overlay, button[i].x, button[i].y, 0, button[i].width / sw, button[i].height / sh)
 			end
 
 			if button[i].text ~= nil then
+				local yoffset = 0
 				if button[i].highlight then
 					love.graphics.setColor(1,1,1)
 				else
 					love.graphics.setColor(0,0,0)
 				end
-				love.graphics.setFont(defaultKeyBindFont)
+				--Change Button Text Font on Keybind buttons
+				if string.sub(button[i].quad, 1, 7) == "keybind" then
+					love.graphics.setFont(defaultKeyBindFont)
+				elseif button[i].height <= 48 then --Change font size on smaller buttons
+					love.graphics.setFont(defaultFontSmol)
+				else --Change yoffset with all other buttons
+					love.graphics.setFont(defaultFontBold)
+					yoffset = 7
+				end
+				
 				--draws button text if available
-				love.graphics.printf(button[i].text, button[i].x, button[i].y + 2, 37, "center")
+				love.graphics.printf(button[i].text, button[i].x, button[i].y + yoffset, button[i].width, "center")
 			end
 		end
 	end
@@ -92,22 +104,17 @@ function button.clickAction(mButton)
 				local action = button[i].action
 --MAIN MENU ACTIONS
 				if action == "play_game_action" then
-					--Remove for menu implementation
 					panel.typeChange("lvlselectionPanel")
 					LET_LVLSELECTION_MENU = true
-					--loadOfficialLevel(LET_CURRENT_LEVEL)
-					--switchGameState("play_state")
 				elseif action == "load_game_action" then
 				elseif action == "create_level_action" then
 					--Remove for menu implementation
 					if LET_CURRENT_LEVEL ~= "" then
 						loadEditorLevel(LET_CURRENT_LEVEL)
 					else
-						status_text.create("global: LET_CURRENT_LEVEL NOT SET")
-						button.levelSelect("default")
+						status.print("global: LET_CURRENT_LEVEL NOT SET")
+						button.levelSelect("garden", true)
 					end
-
-					switchGameState("create_state")
 				elseif action == "options_action" then
 					panel.typeChange("optionsPanel")
 					LET_OPTIONS_MENU = true
@@ -147,9 +154,9 @@ function button.clickAction(mButton)
 					start_keybind_change("moveCrouch", button[i])
 --LEVEL SELECTION ACTIONS
 				elseif action == "lvl01_action" then
-					button.levelSelect("default")
+					button.levelSelect("garden")
 				elseif action == "lvl02_action" then
-					button.levelSelect("testes")
+					button.levelSelect("level_01")
 --EDITOR ACTIONS
 				elseif action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
@@ -179,14 +186,19 @@ function button.backButtonReset()
 	love.keyboard.setKeyRepeat(false)
 	LET_BROWSE_PATH = ""
 	editor_change_mode("")
+	LET_PANEL_FOCUS = false
 	LET_OPTIONS_MENU = false
 	LET_LVLSELECTION_MENU = false
 end
 
-function button.levelSelect(level_name)
+function button.levelSelect(level_name, editor_bool)
 	button.backButtonReset()
 	loadOfficialLevel(level_name)
-	switchGameState("play_state")
+	if editor_bool == nil then
+		switchGameState("play_state")
+	elseif editor_bool == true then
+		switchGameState("create_state")
+	end
 end
 
 function button.cancelWipe()
@@ -201,7 +213,7 @@ function button.confirmWipe()
 
 	block.typeChange(block[gridRowsY/2], "player_spawn")
 	block.typeChange(block[gridRowsY/2+1], "dev_block")
-	status_text.create("LEVEL WIPED")
+	status.print("LEVEL WIPED")
 end
 
 function editor_change_mode(mode, cursor)

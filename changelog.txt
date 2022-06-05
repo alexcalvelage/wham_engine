@@ -1,12 +1,19 @@
 --CHANGES
-*Added Level Selection Panel to Main Menu
-*Reworked level loading to support official & custom maps
-*Improved StatusText to better display multiple messages
+*Gave the UI elements a fresh coat of paint (IN PROGRESS)
+	-Main Menu[X]	
+	-Pause Menu[X]
+	-Options[X]
+	-Editor UI[]
+*Modified button elements to scale automatically with set size
+*Modified status_text() messaging functionality:
+	-Called with 'status.print()'; renamed from 'status_text.create()'
+	-Pushes new messages to bottom of stack
+	-Fades and moves smoother
+*Fixed menu buttons disappearing when going into Options menu and then pressing Escape and Quitting Session
 
 
 --FIXES
-*Fixed various UI elements' positioning(Options, Level Selection)
-*Fixed Nuke Tool's Panel not closing after deletion
+*Fixed Pause Menu buttons not appearing correctly when pausing in Editor Mode
 
 --KNOWN ISSUES
 *OpenGL issue is still present in certain cases(Walking to left)
@@ -21,3 +28,4 @@
 *Spritebatch render errors when sharing screen on Discord
 *Water collisions are currently broken
 *Camera panning sometimes breaks and doesnt go below a certain threshold
+*Player is able to jump through blocks if a block is directly above their head

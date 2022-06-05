@@ -2,10 +2,11 @@
 gamera = require "resources/libraries/gamera"
 bump = require "resources/libraries/bump"
 require "resources/libraries/TSerial"
+--My Libaries
+status = require "status_text"
 --Load in necessary lua files
 require "utilities"
 require "resources"
-require "status_text"
 require "button"
 require "panel"
 require "block"
@@ -36,6 +37,7 @@ function love.load()
 	LET_CURRENT_LEVEL = ""
 	gridColsX = 200
 	gridRowsY = 30
+
 	--initialize our 
 	cam:setScale(1.25)
 	cam:setWindow(0, 0, 1280, 720)
@@ -88,21 +90,23 @@ function love.load()
 --Panels
 	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
 	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
-	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2), 298, 217)
+	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2), 709, 509)
 	panel.spawn("lvlwarn_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2), 350, 135)
 	panel.spawn("lvlselection_panel_QD", "lvlselectionPanel", gwidth / 2, (gheight / 2), 600, 300)
 	panel.spawn("dialogue_panel_QD", "dialoguePanel", gwidth / 2, 150, 1024, 298)
 --Main Menu buttons
-	button.spawn("menu_play_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5)
-	button.spawn("menu_create_button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5)
-	button.spawn("options_button_QD", "options_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 4.5)
-	button.spawn("menu_quit_button_QD", "quit_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 6.5)
+--[QUAD, ACTION, ACTIVE STATE, X, Y, WIDTH, HEIGHT, TEXT(optional)]
+	button.spawn("long_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5, 193, 49, "Level Selection")
+	button.spawn("long_button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5, 193, 49, "Level Editor")
+	button.spawn("long_button_QD", "options_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 4.5, 193, 49, "Options")
+	button.spawn("long_button_QD", "quit_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 6.5, 193, 49, "Quit")
+	button.spawn("long_button_QD", "quit_action", "menu_state", 193, 49, GLOBAL_W, GLOBAL_H, "TESTING")
 --Pause Menu buttons
-	button.spawn("resume_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5)
-	button.spawn("save_level_button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5)
-	button.spawn("load_level_button_QD", "load_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 4.5)
-	button.spawn("options_button_QD", "options_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 6.5)
-	button.spawn("quit_sesh_button_QD", "exit_session_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 8.5)
+	button.spawn("long_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5, 193, 49, "Resume")
+	button.spawn("long_button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5, 193, 49, "Save Level")
+	button.spawn("long_button_QD", "load_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 4.5, 193, 49, "Load Level")
+	button.spawn("long_button_QD", "options_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 6.5, 193, 49, "Options")
+	button.spawn("long_button_QD", "exit_session_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 8.5, 193, 49, "Exit Session")
 --Editor Mode buttons
 	button.spawn("select_button_QD", "tool_selection_action", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
@@ -114,16 +118,16 @@ function love.load()
 --Save/Load buttons
 	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
 	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
-	button.spawn("browse_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 75, 25)
-	button.spawn("browse_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 75, 25)
-	button.spawn("load_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
-	button.spawn("save_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 75, 25)
+	button.spawn("small_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 110, 28, "Browse")
+	button.spawn("small_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 110, 28, "Browse")
+	button.spawn("small_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 110, 28, "Load")
+	button.spawn("small_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 110, 28, "Save")
 --Options buttons
-	button.spawn("keybind_button_QD", "options_keybinds_moveLeft", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) - 17, 37, 25, moveLeft)
-	button.spawn("keybind_button_QD", "options_keybinds_moveRight", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 10, 37, 25, moveRight)
-	button.spawn("keybind_button_QD", "options_keybinds_moveJump", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 37, 37, 25, moveJump)
-	button.spawn("keybind_button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 47, (gheight / 2) + 64, 37, 25, moveCrouch)
-	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) + 100, (gheight / 2) + 57 * 2, 75, 25)
+	button.spawn("keybind_button_QD", "options_keybinds_moveRight", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) - 65, 67, 36, moveRight)
+	button.spawn("keybind_button_QD", "options_keybinds_moveLeft", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) - 20, 67, 36, moveLeft)
+	button.spawn("keybind_button_QD", "options_keybinds_moveJump", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 27, 67, 36, moveJump)
+	button.spawn("keybind_button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 72, 67, 36, moveCrouch)
+	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) - 67 *  4, (gheight / 2) + 204, 67, 38)
 --Level Selection buttons
 	button.spawn("select_button_QD", "lvl01_action", "lvlselectionPanel", (gwidth / 2) - 250, (gheight / 2) - 60, 50, 50)
 	button.spawn("select_button_QD", "lvl02_action", "lvlselectionPanel", (gwidth / 2) - 190, (gheight / 2) - 60, 50, 50)
@@ -152,7 +156,7 @@ function love.keypressed(key)
 		panel.typeChange("dialoguePanel")
 	elseif key == "escape" then
 		if LET_CUR_GAME_STATE ~= "menu_state" then
-			if love.keyboard.hasTextInput() then
+			if love.keyboard.hasTextInput() or LET_OPTIONS_MENU == true then
 				button.backButtonReset()
 			else
 				pauseGame()
@@ -232,7 +236,7 @@ function love.filedropped(file)
 		local dropped_file = file:getFilename()
 		dropped_file, LET_BROWSE_PATH = getFileName(dropped_file)
 
-		status_text.create("Dropped file: " .. LET_BROWSE_PATH .. ".lvl")
+		status.print("Dropped file: " .. LET_BROWSE_PATH .. ".lvl")
 	end
 end
 
@@ -243,7 +247,7 @@ function love.update(dt)
 	mouseX, mouseY = love.mouse.getPosition()
 	worldMouseX, worldMouseY = cam:toWorld(mouseX, mouseY)
 
-	status_text.update(dt)
+	status.update(dt)
 	panel.update(dt)
 	button.update(dt)
 	update_keybind_change()
@@ -283,7 +287,7 @@ function love.draw()
 		love.graphics.setFont(defaultFont)
 	end
 
-	status_text.draw()
+	status.draw()
 end
 
 function createGridWorld()--called in main
@@ -346,18 +350,20 @@ function saveLevel(name, t1, t2, t3)
 
 	local success, message = love.filesystem.write(lower_name  .. ".lvl", TSerial.pack(mainTable, true, true))
 	if success then
-		status_text.create("Level Saved! ('" .. lower_name .. ".lvl')")
+		status.print("Level Saved! ('" .. lower_name .. ".lvl')")
 	else
-		status_text.create("LEVEL SAVE FAILED (Unable to write to directory)")
+		status.print("LEVEL SAVE FAILED (Unable to write to directory)")
 	end
 end
 
 function loadOfficialLevel(name)
 	local lower_name = string.lower(name)
+	--check through all level names
 	for i = 1, #game_level_data do
+		--if the provided level name exists, set it as the file and load the data
 		if game_level_data[i].title == lower_name then
 			file = game_level_data[i].path
-			LET_CURRENT_LEVEL = file
+			--LET_CURRENT_LEVEL = file
 			--print(file .. "<- Selected")
 			if file then
 				--Delete everything in current level
@@ -368,10 +374,10 @@ function loadOfficialLevel(name)
 				data = TSerial.unpack(data, true)
 				generateData(file, data)
 
-				status_text.create("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
+				status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
 			else
 				file = nil
-				status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
+				status.print("LEVEL LOAD FAILED (Level name does not exist)")
 				LET_CURRENT_LEVEL = ""
 				--print(game_level_data[i].path .. "-> Not Selected")
 			end
@@ -393,9 +399,9 @@ function loadEditorLevel(name)
 		data = TSerial.unpack(data, true)
 		generateData(lower_name, data)
 
-		status_text.create("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
+		status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
 	else
-		status_text.create("LEVEL LOAD FAILED (Level file does not exist)")
+		status.print("LEVEL LOAD FAILED (Level name does not exist)")
 		LET_CURRENT_LEVEL = ""
 	end
 end
