@@ -358,7 +358,7 @@ end
 
 function loadOfficialLevel(name)
 	local lower_name = string.lower(name)
-	--check through all level names
+	--check through all level names(resources.lua)
 	for i = 1, #game_level_data do
 		--if the provided level name exists, set it as the file and load the data
 		if game_level_data[i].title == lower_name then

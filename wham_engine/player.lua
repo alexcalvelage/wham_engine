@@ -1,5 +1,5 @@
 local defaultWidth, defaultHeight = 25, 64
-local cameraY, cameraYOffset = 0, 96
+local cameraY, cameraYTransitionSpeed = 0, 488
 
 --initialize player data table
 player = {playerScaling = 1.66}
@@ -122,42 +122,25 @@ function player.update(dt)
 		player.resetDmgBuffer(dt, player[i])
 		--print("Jump Held: " .. tostring(v.jumpHeld) .. ", isOnGround: " .. tostring(v.isOnGround))
 
-		--Sets camera height to player's y + height offset --BOKNE
+		--Sets camera height to player's y + height offset
+		--Subraction here to raise camera pos higher
 		local playerHeight = math.abs(v.y - v.height)
-		if playerHeight > cameraY then
-			cameraY = math.abs(cameraY + 500 * dt)
-		elseif playerHeight < cameraY then
-			cameraY = math.abs(cameraY - 500 * dt)
+
+		--Check if camera's y pos is lower than the player
+		if cameraY <= playerHeight then
+			cameraY = cameraY + cameraYTransitionSpeed * dt	
+			if cameraY >= playerHeight then
+				--When camera position equals player's STOP
+				cameraY = playerHeight
+			end
+		--Check if camera's y pos is higher than player
+		elseif cameraY >= playerHeight then
+			cameraY = cameraY - cameraYTransitionSpeed * dt
+			if cameraY <= playerHeight then
+				--When camera position equals player's STOP
+				cameraY = playerHeight
+			end
 		end
-
-
-		print(cameraY, v.y - v.height)
-
-		--Deprecated camera repositioning
-		--[[if not v.isCrouching then
-			if cameraY <= v.y - v.height then
-				cameraY = cameraY + (v.y + cameraYOffset) * dt
-				if cameraY >= 600 then
-					cameraY = 600
-				end
-				--print("Camera Too High: " .. cameraY .. "\ny: " .. v.y)
-			elseif cameraY >= v.y or cameraY >= 600 then
-				cameraY = cameraY - (v.y + cameraYOffset) * dt
-				if cameraY >= 700 then
-					cameraY = 700
-				end
-				--print("Camera Too Low: " .. cameraY .. "\ny: " .. v.y)
-			end
-		elseif v.isCrouching then
-			--Slowly pan camera down when crouched
-			if cameraY <= v.y + v.height then
-				cameraY = cameraY + (v.y + cameraYOffset) * dt
-				if cameraY >= 700 then
-					cameraY = 700
-				end
-				--print("Camera Too High: " .. cameraY .. "\ny: " .. v.y)
-			end
-		end--]]
 
 		--update our cameras position
 		cam:setPosition(goalX + v.width * 10, cameraY)
@@ -303,10 +286,12 @@ player.filter = function(item, other)
 		--Check if player has hit head on a block to push them towards ground
 		--Last 2 checks are checking if player is inside a wall to the right and left
 		if (playerY >= otherY + otherH) and (playerRight ~= otherX) and (playerX ~= otherRight) then
+			stateChange(item, "fall")
 			item.jumpHeld = false
 			item.yVel = 0
+			return 'touch'
 		end
-
+		
 		return 'slide'
 
 	elseif other.subtype == "spike_block_u" then

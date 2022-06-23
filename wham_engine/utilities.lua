@@ -157,23 +157,23 @@ function stateChange(ent, state, startFrame)
 		ent.current_frame = startFrame or 1
 
 --Checks to prevent character controller from specific wonky behavior
-	--Change character height when crouching
+		--Change character height when crouching
 		if state == "crouch" or state == "crouch_walk" then
 			ent.height = crouchHeight
 			ent.isCrouching = true
-	--Prevents character from falling into floor and being teleported backwards
-		elseif state == "run" and ent.prevState == "crouch" then
+		--Prevents character from falling into floor and being teleported backwards
+		elseif (state == "run" and ent.prevState == "crouch") then
 			ent.y = ent.y - 8
 			ent.isCrouching = false
-	--Fixes jumping directly after crouching causing character to phase through floor
-		elseif state == "jump" and ent.prevState == "crouch" or state == "front_flip" then
+		--Fixes jumping directly after crouching causing character to phase through floor
+		elseif (state == "jump" and ent.prevState == "crouch") or (state == "front_flip" and ent.prevState == "crouch") then
 			--This method causes weird character collision when height is changing
 			--ent.height = crouchHeight
+
 			--This method seems to alleviate the issue at the cost of not shrinking hitbox to match sprite
 			ent.y = ent.y - 16
 			ent.isCrouching = false
-	--Last check to fully reset player's height and crouch toggle
-		else
+		else --Last check to fully reset player's height and crouch toggle
 			ent.height = defaultHeight
 			ent.isCrouching = false
 		end
@@ -183,6 +183,7 @@ function stateChange(ent, state, startFrame)
 
 		ent.prevState = ent.state
 		ent.state = state
+		
 	end
 end
 

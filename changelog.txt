@@ -9,16 +9,16 @@
 	-Called with 'status.print()'; renamed from 'status_text.create()'
 	-Pushes new messages to bottom of stack
 	-Fades and moves smoother
-*Fixed menu buttons disappearing when going into Options menu and then pressing Escape and Quitting Session
-
-
 --FIXES
 *Fixed Pause Menu buttons not appearing correctly when pausing in Editor Mode
+*Fixed menu buttons disappearing when going into Options menu and then pressing Escape and Quitting Session
+*Fixed camera panning (i think for good this time)
+*Fixed player being able to jump through the bottom of blocks that are directly above them
 
 --KNOWN ISSUES
 *OpenGL issue is still present in certain cases(Walking to left)
 *Objects currently don't utilize spritebatches
-*Block rendered needs to be further optimized
+*Block renderer needs to be further optimized
 	*Stop checking for intersecting(SLOW)
 	*Stop looping through blocks twice for highlighting
 	*When editing a level, FPS goes from 650->330(Draw tool tanks frames)
@@ -27,5 +27,5 @@
 *Occasionally you lose more than 1 health stepping on a spike
 *Spritebatch render errors when sharing screen on Discord
 *Water collisions are currently broken
-*Camera panning sometimes breaks and doesnt go below a certain threshold
-*Player is able to jump through blocks if a block is directly above their head
+*Crouching next to a wall, holding the opposite movement direction, and letting go of crouch causes
+player to phase through the wall on the side they were facingc
