@@ -83,6 +83,8 @@ function switchGameState(newState) --Used for button.lua actions
 		LET_CUR_GAME_STATE = newState
 		--force unpausing
 		LET_GAME_PAUSED = false
+
+		LET_DEBUG_M = false
 	end
 end
 
@@ -161,10 +163,12 @@ function stateChange(ent, state, startFrame)
 		if state == "crouch" or state == "crouch_walk" then
 			ent.height = crouchHeight
 			ent.isCrouching = true
+
 		--Prevents character from falling into floor and being teleported backwards
 		elseif (state == "run" and ent.prevState == "crouch") then
 			ent.y = ent.y - 8
 			ent.isCrouching = false
+
 		--Fixes jumping directly after crouching causing character to phase through floor
 		elseif (state == "jump" and ent.prevState == "crouch") or (state == "front_flip" and ent.prevState == "crouch") then
 			--This method causes weird character collision when height is changing
@@ -173,6 +177,7 @@ function stateChange(ent, state, startFrame)
 			--This method seems to alleviate the issue at the cost of not shrinking hitbox to match sprite
 			ent.y = ent.y - 16
 			ent.isCrouching = false
+
 		else --Last check to fully reset player's height and crouch toggle
 			ent.height = defaultHeight
 			ent.isCrouching = false
@@ -180,6 +185,7 @@ function stateChange(ent, state, startFrame)
 		
 		--Does a world update to ensure character controller's vars are changed
 		world:update(ent, ent.x, ent.y, ent.width, ent.height)
+		--local actualX, actualY, cols, len = world:move(ent, ent.x, ent.y)
 
 		ent.prevState = ent.state
 		ent.state = state
@@ -291,6 +297,70 @@ function object_damage(ent, dmg)
 		--Held jump reset..disabling this on damage allows smoother transition state for player
 		if ent.jumpHeld then
 			ent.jumpHeld = false
+		end
+	end
+end
+
+function pauseGame()
+	if LET_GAME_PAUSED then
+		changeCursor()
+		--close out of any previously opened panels for resume
+		LET_PANEL_FOCUS = false
+		LET_PANEL_OPEN = ""
+		LET_GAME_PAUSED = false
+	else
+		--button.backButtonReset()
+		LET_GAME_PAUSED = true
+		--Set cursor back to default for menus
+		love.mouse.setCursor(default_cursor)
+	end
+end
+
+function console_toggle()
+	if LET_PANEL_OPEN == "" or LET_PANEL_OPEN == "consolePanel" then
+		if LET_CONSOLE_OPEN then
+			panel.typeChange("")
+			LET_CONSOLE_OPEN = false
+			love.keyboard.setTextInput(false)
+			love.keyboard.setKeyRepeat(false)
+		else
+			panel.typeChange("consolePanel")
+			LET_CONSOLE_OPEN = true
+			love.keyboard.setTextInput(true)
+			love.keyboard.setKeyRepeat(true)
+			if LET_CUR_GAME_STATE ~= "menu_state" and not LET_GAME_PAUSED then
+				pauseGame()
+			end
+		end
+	end
+end
+
+--Input is currently case-sensitive
+function console_exec(input)
+	local command = ""
+	local arg1 = ""
+	if string.sub(input, 1, 9) == "loadlevel" then
+		command = "loadlevel"
+		arg1 = string.sub(input, 11, LET_TEXTBOX_MAXCHAR)
+		for i = 1, #game_level_data do
+			if arg1 == game_level_data[i].title then
+				button.levelSelect(arg1)
+				table.insert(LET_CONSOLE_HISTORY, input)
+				status.print("Exec command: " .. input)
+			end
+		end
+	end
+end
+
+function textbox_ticker_alpha_update(dt)
+	--Alpha modifier for textbox ticker |
+	LET_TEXTBOX_TICKER_TIME = LET_TEXTBOX_TICKER_TIME + 1 * dt
+	if LET_TEXTBOX_TICKER_TIME > LET_TEXTBOX_TICKER_TIME_MAX then
+		LET_TEXTBOX_TICKER_TIME = 0
+		if LET_TEXTBOX_TICKER_ALPHA == 1 then
+			LET_TEXTBOX_TICKER_ALPHA = 0
+		else
+			LET_TEXTBOX_TICKER_ALPHA = 1
 		end
 	end
 end

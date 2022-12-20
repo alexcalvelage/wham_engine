@@ -44,9 +44,16 @@ function love.load()
 	cam:setWorld(0, 0, gridColsX * 32, 992)
 
 --BEGIN GAME
-	--initialize some 'constants' first
+	--initialize engine vars
 	LET_DEBUG_M = false
 	LET_CONTROLS_M = true
+	LET_CONSOLE_OPEN = false
+	LET_CONSOLE_TEXT = ""
+	LET_CONSOLE_HISTORY = {}
+	LET_TEXTBOX_MAXCHAR = 32
+	LET_TEXTBOX_TICKER_ALPHA = 1
+	LET_TEXTBOX_TICKER_TIME = 0
+	LET_TEXTBOX_TICKER_TIME_MAX = .5
 	CONST_WORLD_LIMIT = 1800
 	CONST_GRAVITY = 1800
 	LET_FPS = 0
@@ -60,6 +67,7 @@ function love.load()
 	LET_BROWSE_PATH = ""
 	LET_PANEL_FOCUS = false
 	LET_PANEL_OPEN = ""
+	LET_PANEL_PREV = ""
 	LET_BUTTON_SELECTED = nil
 	LET_KEYBIND_CHANGE = false
 	LET_KEYBIND_BINDING = ""
@@ -71,7 +79,6 @@ function love.load()
 
 	--Editor Vars
 	LET_EDITOR_TOOL = "" --initializes var, we set in next statement
-	--editor_change_mode("editor_tool_draw", draw_cursor)
 	editor_change_mode(LET_EDITOR_TOOL, default_cursor)
 	LET_EDITOR_BLOCKTYPE_SELECTED = "dev_block"
 	LET_EDITOR_BLOCKTYPE_SELECTED_INDEX = 1
@@ -88,55 +95,57 @@ function love.load()
 
 	--[[Object Creation]]
 --Panels
-	panel.spawn("saving_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
-	panel.spawn("loading_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 25 * 2, 298, 98)
+	panel.spawn("generic_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 50, 506, 307)
+	panel.spawn("generic_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 50, 506, 307)
 	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2), 709, 509)
-	panel.spawn("lvlwarn_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2), 350, 135)
-	panel.spawn("lvlselection_panel_QD", "lvlselectionPanel", gwidth / 2, (gheight / 2), 600, 300)
+	panel.spawn("generic_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2) + 50, 350, 135)
+	panel.spawn("generic_panel_QD", "lvlselectionPanel", gwidth / 2, (gheight / 2) + 50, 600, 300)
+	panel.spawn("generic_panel_QD", "consolePanel", 300, 400, 600, 800)
 	panel.spawn("dialogue_panel_QD", "dialoguePanel", gwidth / 2, 150, 1024, 298)
 --Main Menu buttons
 --[QUAD, ACTION, ACTIVE STATE, X, Y, WIDTH, HEIGHT, TEXT(optional)]
-	button.spawn("long_button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5, 193, 49, "Level Selection")
-	button.spawn("long_button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5, 193, 49, "Level Editor")
-	button.spawn("long_button_QD", "options_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 4.5, 193, 49, "Options")
-	button.spawn("long_button_QD", "quit_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 6.5, 193, 49, "Quit")
-	button.spawn("long_button_QD", "quit_action", "menu_state", 193, 49, GLOBAL_W, GLOBAL_H, "TESTING")
+	button.spawn("button_QD", "play_game_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * .5, 193, 49, "Level Selection")
+	button.spawn("button_QD", "create_level_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 2.5, 193, 49, "Level Editor")
+	button.spawn("button_QD", "options_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 4.5, 193, 49, "Options")
+	button.spawn("button_QD", "quit_action", "menu_state", gwidth / 2, (gheight / 2) + 25 * 6.5, 193, 49, "Quit")
+	--button.spawn("button_QD", "quit_action", "menu_state", 193, 49, GLOBAL_W, GLOBAL_H, "TESTING")
 --Pause Menu buttons
-	button.spawn("long_button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5, 193, 49, "Resume")
-	button.spawn("long_button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5, 193, 49, "Save Level")
-	button.spawn("long_button_QD", "load_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 4.5, 193, 49, "Load Level")
-	button.spawn("long_button_QD", "options_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 6.5, 193, 49, "Options")
-	button.spawn("long_button_QD", "exit_session_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 8.5, 193, 49, "Exit Session")
+	button.spawn("button_QD", "resume_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * .5, 193, 49, "Resume")
+	button.spawn("button_QD", "save_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 2.5, 193, 49, "Save Level")
+	button.spawn("button_QD", "load_level_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 4.5, 193, 49, "Load Level")
+	button.spawn("button_QD", "options_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 6.5, 193, 49, "Options")
+	button.spawn("button_QD", "exit_session_action", "pauseButton", gwidth / 2, (gheight / 2) + 25 * 8.5, 193, 49, "Exit Session")
 --Editor Mode buttons
 	button.spawn("select_button_QD", "tool_selection_action", "create_state", gwidth - 50, gheight / 2 -  105, 50, 50)
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
 	button.spawn("dropper_button_QD", "tool_dropper_action", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
 	button.spawn("eraser_button_QD", "tool_nuke_action", "create_state", gwidth - 50, gheight / 2 + 60, 50, 50)
 --Editor Mode Warning buttons
-	button.spawn("delete_button_QD", "confirmwipe_action", "lvlwarnPanel", gwidth / 2 - (33/2) - 20, gheight / 2 + (33/2), 100, 33)
-	button.spawn("cancel_button_QD", "cancelwipe_action", "lvlwarnPanel", gwidth / 2 + (33*2) + 20, gheight / 2 + (33/2), 100, 33)
+	button.spawn("button_QD", "confirmwipe_action", "lvlwarnPanel", gwidth / 2 - (33/2) - 20, gheight / 2 + (33/2), 100, 33, "Confirm")
+	button.spawn("button_QD", "cancelwipe_action", "lvlwarnPanel", gwidth / 2 + (33*2) + 20, gheight / 2 + (33/2), 100, 33, "Cancel")
 --Save/Load buttons
-	button.spawn("back_button_QD", "back_action", "loadPanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
-	button.spawn("back_button_QD", "back_action", "savePanel", (gwidth / 2) + 100, (gheight / 2) + 25 * 3, 75, 25)
-	button.spawn("small_button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 25 * 3, 110, 28, "Browse")
-	button.spawn("small_button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 25 * 3, 110, 28, "Browse")
-	button.spawn("small_button_QD", "load_action", "loadPanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 110, 28, "Load")
-	button.spawn("small_button_QD", "save_action", "savePanel", (gwidth / 2) - 100, (gheight / 2) + 25 * 3, 110, 28, "Save")
+	button.spawn("button_QD", "back_action", "loadPanel", (gwidth / 2) - 180, (gheight / 2) + 160, 80, 35, "Back")
+	button.spawn("button_QD", "back_action", "savePanel", (gwidth / 2) - 180, (gheight / 2) + 160, 80, 35, "Back")
+	button.spawn("button_QD", "browse_action", "loadPanel", (gwidth / 2), (gheight / 2) + 120, 80, 35, "Browse")
+	--button.spawn("button_QD", "browse_action", "savePanel", (gwidth / 2), (gheight / 2) + 160, 80, 35, "Browse")
+	button.spawn("button_QD", "load_action", "loadPanel", (gwidth / 2), (gheight / 2) + 160, 80, 35, "Load")
+	button.spawn("button_QD", "save_action", "savePanel", (gwidth / 2), (gheight / 2) + 160, 80, 35, "Save")
 --Options buttons
-	button.spawn("keybind_button_QD", "options_keybinds_moveRight", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) - 65, 67, 36, moveRight)
-	button.spawn("keybind_button_QD", "options_keybinds_moveLeft", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) - 20, 67, 36, moveLeft)
-	button.spawn("keybind_button_QD", "options_keybinds_moveJump", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 27, 67, 36, moveJump)
-	button.spawn("keybind_button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 72, 67, 36, moveCrouch)
-	button.spawn("back_button_QD", "back_action", "optionsPanel", (gwidth / 2) - 67 *  4, (gheight / 2) + 204, 67, 38)
+	button.spawn("button_QD", "options_keybinds_moveRight", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) - 65, 67, 36, moveRight)
+	button.spawn("button_QD", "options_keybinds_moveLeft", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) - 20, 67, 36, moveLeft)
+	button.spawn("button_QD", "options_keybinds_moveJump", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 27, 67, 36, moveJump)
+	button.spawn("button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 72, 67, 36, moveCrouch)
+	button.spawn("button_QD", "back_action", "optionsPanel", (gwidth / 2) - 67 *  4, (gheight / 2) + 204, 67, 38, "Back")
 --Level Selection buttons
-	button.spawn("select_button_QD", "lvl01_action", "lvlselectionPanel", (gwidth / 2) - 250, (gheight / 2) - 60, 50, 50)
-	button.spawn("select_button_QD", "lvl02_action", "lvlselectionPanel", (gwidth / 2) - 190, (gheight / 2) - 60, 50, 50)
-	button.spawn("back_button_QD", "back_action", "lvlselectionPanel", (gwidth / 2), (gheight / 2) + 105, 75, 25)
+	button.spawn("button_QD", "lvl00_action", "lvlselectionPanel", (gwidth / 2) - 250, (gheight / 2) - 60, 50, 50, "00")
+	button.spawn("button_QD", "lvl01_action", "lvlselectionPanel", (gwidth / 2) - 190, (gheight / 2) - 60, 50, 50, "01")
+	button.spawn("button_QD", "lvl02_action", "lvlselectionPanel", (gwidth / 2) - 130, (gheight / 2) - 60, 50, 50, "02")
+	button.spawn("button_QD", "back_action", "lvlselectionPanel", (gwidth / 2) - 180, (gheight / 2) + 160, 80, 35, "Back")
 
 end
 
 function love.keypressed(key)
-	if key == "`" then
+	if key == "1" then
 		if LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state" then
 			if LET_DEBUG_M then
 				LET_DEBUG_M = false
@@ -156,6 +165,7 @@ function love.keypressed(key)
 		panel.typeChange("dialoguePanel")
 	elseif key == "escape" then
 		if LET_CUR_GAME_STATE ~= "menu_state" then
+			--Allows use of ESC key to back out of current menu into previous
 			if love.keyboard.hasTextInput() or LET_OPTIONS_MENU == true then
 				button.backButtonReset()
 			else
@@ -171,8 +181,13 @@ function love.keypressed(key)
 				saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
 			elseif LET_PANEL_OPEN == "loadPanel" then
 				loadEditorLevel(tostring(LET_BROWSE_PATH))
+			elseif LET_PANEL_OPEN == "consolePanel" then
+				--Activate console command based on textbox input
+				console_exec(LET_BROWSE_PATH)
 			end
 		end
+	elseif key == "`" then
+		console_toggle()
 	end
 
 	--Gathers any key pressed
@@ -214,7 +229,7 @@ end
 --Checks for mouse focus(lost or gained)
 function love.mousefocus(focus)
 	--Immediately sends all new/modified sprite data in batch to the GPU. Fixes Menu buttons turning black when sharing screen on Discord
-	button_SB:flush()
+	--button_SB:flush()
 end
 
 function love.focus(focus)
@@ -226,8 +241,11 @@ function love.focus(focus)
 end
 
 function love.textinput(t)
-	if LET_GAME_PAUSED then
-		LET_BROWSE_PATH = LET_BROWSE_PATH .. t
+	--Changed from LET_GAME_PAUSED because this makes more sense
+	if love.keyboard.hasTextInput() then
+		if #LET_BROWSE_PATH <= LET_TEXTBOX_MAXCHAR then
+			LET_BROWSE_PATH = LET_BROWSE_PATH .. t
+		end
 	end
 end
 
@@ -247,6 +265,7 @@ function love.update(dt)
 	mouseX, mouseY = love.mouse.getPosition()
 	worldMouseX, worldMouseY = cam:toWorld(mouseX, mouseY)
 
+	textbox_ticker_alpha_update(dt)
 	status.update(dt)
 	panel.update(dt)
 	button.update(dt)
@@ -273,21 +292,33 @@ function love.draw()
 		end)
 
 		--Draws to screen
-		editorHUDDraw()
+		if LET_CUR_GAME_STATE == "create_state" then
+			editorHUDDraw()
+		end
 	end
 
 	panel.draw()
+	panel.content_draw()
 	button.draw()
 	debugMenuDraw()
 
 	if LET_GAME_PAUSED then
 		love.graphics.setColor(1, 1, 1)
 		love.graphics.setFont(defaultFontHuge)
-		love.graphics.printf("PAUSED", 0, (gheight / 2) - 200, gwidth, "center")
+		love.graphics.printf("PAUSED", 0, (gheight / 2) - 300, gwidth, "center")
 		love.graphics.setFont(defaultFont)
 	end
 
 	status.draw()
+
+	--[[if LET_CONSOLE_OPEN then
+		love.graphics.setColor(.1, .2, .1, .7)
+		love.graphics.rectangle("fill", 0, 0, 400, 400)
+		love.graphics.setColor(.1, .2, .1, .9)
+		love.graphics.rectangle("fill", 10, 360, 370, 30)
+		love.graphics.setColor(1,1,1, LET_TEXTBOX_TICKER_ALPHA)
+		love.graphics.printf("|" .. LET_CONSOLE_TEXT, 10, 357, 400, "left")
+	end--]]
 end
 
 function createGridWorld()--called in main
@@ -299,20 +330,6 @@ function createGridWorld()--called in main
 				LET_GRIDWORLD_CREATED = true
 			end
 		end
-	end
-end
-
-function pauseGame()
-	if LET_GAME_PAUSED then
-		changeCursor()
-		--close out of any previously opened panels for resume
-		LET_PANEL_FOCUS = false
-		LET_PANEL_OPEN = ""
-		LET_GAME_PAUSED = false
-	else
-		LET_GAME_PAUSED = true
-		--Set cursor back to default for menus
-		love.mouse.setCursor(default_cursor)
 	end
 end
 
@@ -374,7 +391,7 @@ function loadOfficialLevel(name)
 				data = TSerial.unpack(data, true)
 				generateData(file, data)
 
-				status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
+				--status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. "')")
 			else
 				file = nil
 				status.print("LEVEL LOAD FAILED (Level name does not exist)")
@@ -399,7 +416,7 @@ function loadEditorLevel(name)
 		data = TSerial.unpack(data, true)
 		generateData(lower_name, data)
 
-		status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
+		--status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
 	else
 		status.print("LEVEL LOAD FAILED (Level name does not exist)")
 		LET_CURRENT_LEVEL = ""
@@ -485,7 +502,7 @@ function debugMenuDraw()
 	if LET_DEBUG_M then
 		local CONST_DEBUG_W = 350
 		local CONST_DEBUG_H = 280
-		local CONST_DEBUG_X = 0
+		local CONST_DEBUG_X = 12
 		local CONST_DEBUG_Y = 12
 		love.graphics.setFont(defaultFont)
 		love.graphics.setColor(0, 1, 0, .25)

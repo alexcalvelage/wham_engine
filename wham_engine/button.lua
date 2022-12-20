@@ -12,8 +12,13 @@ function button.update(dt)
 	for i = 1, #button do
 		button.detectVisibility(button[i])
 
+		--Prevents buttons from being selectable if they aren't enabled(drawn+active)
 		if button[i].enabled then
 			button.highlight(button[i])
+			--if the console is opened, turn off button highlighting
+			if LET_CONSOLE_OPEN then
+				button[i].highlight = false
+			end
 		end
 	end
 end
@@ -54,7 +59,7 @@ function button.draw()
 					love.graphics.setColor(0,0,0)
 				end
 				--Change Button Text Font on Keybind buttons
-				if string.sub(button[i].quad, 1, 7) == "keybind" then
+				if string.sub(button[i].action, 9, 16) == "keybinds" then
 					love.graphics.setFont(defaultKeyBindFont)
 				elseif button[i].height <= 48 then --Change font size on smaller buttons
 					love.graphics.setFont(defaultFontSmol)
@@ -153,10 +158,12 @@ function button.clickAction(mButton)
 				elseif action == "options_keybinds_moveCrouch" then
 					start_keybind_change("moveCrouch", button[i])
 --LEVEL SELECTION ACTIONS
+				elseif action == "lvl00_action" then
+					button.levelSelect("level_00")
 				elseif action == "lvl01_action" then
-					button.levelSelect("garden")
-				elseif action == "lvl02_action" then
 					button.levelSelect("level_01")
+				elseif action == "lvl02_action" then
+					button.levelSelect("garden")
 --EDITOR ACTIONS
 				elseif action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)

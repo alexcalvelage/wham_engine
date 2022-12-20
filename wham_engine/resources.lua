@@ -3,6 +3,9 @@ function fontLoad()
 	defaultFont = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 16)
 	defaultFontHuge = love.graphics.newFont("resources/fonts/Biryani-Regular.ttf", 96)
 	--MENU Fonts
+	font_panel_title = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 64)
+	font_panel_subtitle = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 36)
+	font_panel_subtitle2 = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 18)
 	defaultFontBold = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 22)
 	defaultFontSmol = love.graphics.newFont("resources/fonts/Biryani-Bold.ttf", 18)
 	--KEYBIND BUTTON Font
@@ -25,7 +28,7 @@ function resourceLoad()
 	--Images
 	block_all_IMG = love.graphics.newImage("resources/textures/block/block_sheet.png")
 	objects_all_IMG = love.graphics.newImage("resources/textures/objects/objects_sheet.png")
-	ui_buttons_all_IMG = love.graphics.newImage("resources/textures/ui/button_sheet.png")
+	ui_buttons_all_IMG = love.graphics.newImage("resources/textures/ui/button_sheet_redux.png")
 	ui_panels_all_IMG = love.graphics.newImage("resources/textures/ui/panel_sheet_redux.png")
 	--SpriteBatches
 	block_SB = love.graphics.newSpriteBatch(block_all_IMG)
@@ -53,68 +56,24 @@ function resourceLoad()
 	item_block_QD = love.graphics.newQuad(68, 68, 32, 32, block_all_IMG:getDimensions())
 	water_block_QD = love.graphics.newQuad(102, 68, 32, 32, block_all_IMG:getDimensions())
 	--*buttonQDS
-	--**Long buttons
-	long_button_QD = love.graphics.newQuad(764, 0, 193, 49, ui_buttons_all_IMG:getDimensions())
-	long_button_QD_2 = love.graphics.newQuad(764, 50, 193, 49, ui_buttons_all_IMG:getDimensions())
-	small_button_QD = love.graphics.newQuad(806, 99, 110, 28, ui_buttons_all_IMG:getDimensions())
-	small_button_QD_2 = love.graphics.newQuad(806, 127, 110, 28, ui_buttons_all_IMG:getDimensions())
-	back_button_QD = love.graphics.newQuad(958, 0, 67, 38, ui_buttons_all_IMG:getDimensions())
-	back_button_QD_2 = love.graphics.newQuad(958, 39, 67, 38, ui_buttons_all_IMG:getDimensions())
-	keybind_button_QD = love.graphics.newQuad(958, 78, 67, 36, ui_buttons_all_IMG:getDimensions())
-	keybind_button_QD_2 = love.graphics.newQuad(958, 115, 67, 36, ui_buttons_all_IMG:getDimensions())
-
-	resume_button_QD = love.graphics.newQuad(0, 0, 194, 49, ui_buttons_all_IMG:getDimensions())
-	resume_button_QD_2 = love.graphics.newQuad(0, 49, 194, 49, ui_buttons_all_IMG:getDimensions())
-	save_level_button_QD = love.graphics.newQuad(0, 98, 194, 49, ui_buttons_all_IMG:getDimensions())
-	save_level_button_QD_2 = love.graphics.newQuad(0, 147, 194, 49, ui_buttons_all_IMG:getDimensions())
-	load_level_button_QD = love.graphics.newQuad(0, 196, 194, 49, ui_buttons_all_IMG:getDimensions())
-	load_level_button_QD_2 = love.graphics.newQuad(0, 245, 194, 49, ui_buttons_all_IMG:getDimensions())
-	options_button_QD = love.graphics.newQuad(0, 294, 194, 49, ui_buttons_all_IMG:getDimensions())
-	options_button_QD_2 = love.graphics.newQuad(0, 343, 194, 49, ui_buttons_all_IMG:getDimensions())
-	quit_sesh_button_QD = love.graphics.newQuad(0, 392, 194, 49, ui_buttons_all_IMG:getDimensions())
-	quit_sesh_button_QD_2 = love.graphics.newQuad(0, 441, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_play_button_QD = love.graphics.newQuad(244, 0, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_play_button_QD_2 = love.graphics.newQuad(244, 49, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_create_button_QD = love.graphics.newQuad(244, 98, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_create_button_QD_2 = love.graphics.newQuad(244, 147, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_new_level_button_QD = love.graphics.newQuad(244, 196, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_new_level_button_QD_2 = love.graphics.newQuad(244, 245, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_quit_button_QD = love.graphics.newQuad(244, 294, 194, 49, ui_buttons_all_IMG:getDimensions())
-	menu_quit_button_QD_2 = love.graphics.newQuad(244, 343, 194, 49, ui_buttons_all_IMG:getDimensions())
-	--**Small buttons
-	select_button_QD = love.graphics.newQuad(194, 0, 50, 50, ui_buttons_all_IMG:getDimensions())
-	select_button_QD_2 = love.graphics.newQuad(194, 50, 50, 50, ui_buttons_all_IMG:getDimensions())
-	draw_button_QD = love.graphics.newQuad(194, 100, 50, 50, ui_buttons_all_IMG:getDimensions())
-	draw_button_QD_2 = love.graphics.newQuad(194, 150, 50, 50, ui_buttons_all_IMG:getDimensions())
-	eraser_button_QD = love.graphics.newQuad(194, 200, 50, 50, ui_buttons_all_IMG:getDimensions())
-	eraser_button_QD_2 = love.graphics.newQuad(194, 250, 50, 50, ui_buttons_all_IMG:getDimensions())
-	dropper_button_QD = love.graphics.newQuad(194, 300, 50, 50, ui_buttons_all_IMG:getDimensions())
-	dropper_button_QD_2 = love.graphics.newQuad(194, 350, 50, 50, ui_buttons_all_IMG:getDimensions())
+	button_QD = love.graphics.newQuad(0, 0, 64, 64, ui_buttons_all_IMG:getDimensions())
+	button_QD_2 = love.graphics.newQuad(0, 65, 64, 64, ui_buttons_all_IMG:getDimensions())
+	--**Editor buttons
+	select_button_QD = love.graphics.newQuad(0, 130, 64, 64, ui_buttons_all_IMG:getDimensions())
+	select_button_QD_2 = love.graphics.newQuad(0, 195, 64, 64, ui_buttons_all_IMG:getDimensions())
+	draw_button_QD = love.graphics.newQuad(65, 130, 64, 64, ui_buttons_all_IMG:getDimensions())
+	draw_button_QD_2 = love.graphics.newQuad(65, 195, 64, 64, ui_buttons_all_IMG:getDimensions())
+	dropper_button_QD = love.graphics.newQuad(130, 130, 64, 64, ui_buttons_all_IMG:getDimensions())
+	dropper_button_QD_2 = love.graphics.newQuad(130, 195, 64, 64, ui_buttons_all_IMG:getDimensions())
+	eraser_button_QD = love.graphics.newQuad(195, 130, 64, 64, ui_buttons_all_IMG:getDimensions())
+	eraser_button_QD_2 = love.graphics.newQuad(195, 195, 64, 64, ui_buttons_all_IMG:getDimensions())
 	--*panelQDS
 	--**Saving/Loading
-	saving_panel_QD = love.graphics.newQuad(0, 0, 298, 98, ui_panels_all_IMG:getDimensions())
-	loading_panel_QD = love.graphics.newQuad(0, 98, 298, 98, ui_panels_all_IMG:getDimensions())
-	options_panel_QD = love.graphics.newQuad(0, 0, 709, 509, ui_panels_all_IMG:getDimensions())
-	dialogue_panel_QD = love.graphics.newQuad(0, 513, 1024, 298, ui_panels_all_IMG:getDimensions())
-	lvlwarn_panel_QD = love.graphics.newQuad(300, 0, 350, 135, ui_panels_all_IMG:getDimensions())
-	lvlselection_panel_QD = love.graphics.newQuad(300, 137, 600, 300, ui_panels_all_IMG:getDimensions())
-	--Panel Buttons
-	save_button_QD = love.graphics.newQuad(195, 400, 75, 25, ui_buttons_all_IMG:getDimensions())
-	save_button_QD_2 = love.graphics.newQuad(195, 425, 75, 25, ui_buttons_all_IMG:getDimensions())
-	browse_button_QD = love.graphics.newQuad(270, 400, 75, 25, ui_buttons_all_IMG:getDimensions())
-	browse_button_QD_2 = love.graphics.newQuad(270, 425, 75, 25, ui_buttons_all_IMG:getDimensions())
-	load_button_QD = love.graphics.newQuad(195, 450, 75, 25, ui_buttons_all_IMG:getDimensions())
-	load_button_QD_2 = love.graphics.newQuad(195, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
-	--back_button_QD = love.graphics.newQuad(270, 450, 75, 25, ui_buttons_all_IMG:getDimensions())
-	--back_button_QD_2 = love.graphics.newQuad(270, 475, 75, 25, ui_buttons_all_IMG:getDimensions())
-	delete_button_QD = love.graphics.newQuad(346, 400, 100, 33, ui_buttons_all_IMG:getDimensions())
-	delete_button_QD_2 = love.graphics.newQuad(346, 433, 100, 33, ui_buttons_all_IMG:getDimensions())
-	cancel_button_QD = love.graphics.newQuad(446, 400, 100, 33, ui_buttons_all_IMG:getDimensions())
-	cancel_button_QD_2 = love.graphics.newQuad(446, 433, 100, 33, ui_buttons_all_IMG:getDimensions())
-
-
-	--keybind_button_QD = love.graphics.newQuad(195, 500, 37, 25, ui_buttons_all_IMG:getDimensions())
-	--keybind_button_QD_2 = love.graphics.newQuad(195, 525, 37, 25, ui_buttons_all_IMG:getDimensions())
+	options_panel_QD = love.graphics.newQuad(0, 0, 705, 505, ui_panels_all_IMG:getDimensions())
+	generic_panel_QD = love.graphics.newQuad(706, 0, 506, 307, ui_panels_all_IMG:getDimensions())
+	dialogue_panel_QD = generic_panel_QD
+	lvlwarn_panel_QD = generic_panel_QD
+	lvlselection_panel_QD = generic_panel_QD
 	--*objectsQDS
 	--**Cogs
 	cog_object_QD = love.graphics.newQuad(0, 0, 32, 32, objects_all_IMG:getDimensions())
@@ -215,4 +174,5 @@ function resourceLoad()
 	game_level_data = {}
 	game_level_data[1] = {title = "garden", path = "resources/levels/garden.lvl"}
 	game_level_data[2] = {title = "level_01", path = "resources/levels/level_01.lvl"}
+	game_level_data[3] = {title = "level_00", path = "resources/levels/level_00.lvl"}
 end

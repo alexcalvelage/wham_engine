@@ -9,6 +9,12 @@
 	-Called with 'status.print()'; renamed from 'status_text.create()'
 	-Pushes new messages to bottom of stack
 	-Fades and moves smoother
+*Added flashing ticker to textbox menus
+*Added crouch walking
+*Added console
+	-Commands: loadlevel [arg1], 
+	-UI bug occurs when pressing ESC key when console is open
+
 --FIXES
 *Fixed Pause Menu buttons not appearing correctly when pausing in Editor Mode
 *Fixed menu buttons disappearing when going into Options menu and then pressing Escape and Quitting Session

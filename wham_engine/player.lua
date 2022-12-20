@@ -1,5 +1,6 @@
 local defaultWidth, defaultHeight = 25, 64
 local cameraY, cameraYTransitionSpeed = 0, 488
+local gravityIntensity = 1
 
 --initialize player data table
 player = {playerScaling = 1.66}
@@ -110,11 +111,11 @@ function player.update(dt)
 			end
 			--Response for going in water blocks
 			if coll.submerge then
-				v.isUnderwater = true
-				status_text.create(tostring(v.isUnderwater))
+				gravityIntensity = .5
+				--v.isUnderwater = true
 			else
-				v.isUnderwater = false
-				--status_text.create(tostring(v.isUnderwater))
+				gravityIntensity = 1
+				--v.isUnderwater = false
 			end
 		end
 
@@ -167,34 +168,33 @@ function player.movementController(dt, plr)
 	--Checks if any movement keys are being held down
 	local keyDown = love.keyboard.isDown(moveRight, moveLeft, moveJump, moveCrouch)
 
-	--Idle
-	if not keyDown and plr.isOnGround then
-		plr.xVel = 0
-		stateChange(plr, "idle")
-	elseif love.keyboard.isDown(moveCrouch) and plr.isOnGround then
-		plr.xVel = 0
-		stateChange(plr, "crouch")
-	elseif not love.keyboard.isDown(moveCrouch) and plr.isCrouching then
-		stateChange(plr, "idle")
-	elseif not love.keyboard.isDown(moveJump) and plr.jumpHeld then
-		--Flips our jumpHeld var back to false, cancelling high jump if player lets go of control mid-air
-		plr.jumpHeld = false
-	end
-
 	--Running
 	if not plr.isKnockback then
-		if love.keyboard.isDown(moveRight) and not plr.isCrouching then
+		if love.keyboard.isDown(moveRight) then
 			plr.xVel = plr.speed
 			plr.dir = 1
 			if plr.isOnGround then
-				stateChange(plr, "run")
+				if plr.isCrouching then
+					stateChange(plr, "crouch_walk")
+				else
+					stateChange(plr, "run")
+				end
 			end
-		elseif love.keyboard.isDown(moveLeft) and not plr.isCrouching then
+		elseif love.keyboard.isDown(moveLeft) then
 			plr.xVel = -plr.speed
 			plr.dir = -1
 			if plr.isOnGround then
-				stateChange(plr, "run")
+				if plr.isCrouching then
+					stateChange(plr, "crouch_walk")
+				else
+					stateChange(plr, "run")
+				end
 			end
+
+		--Resets horizontal velocity when letting go of crouch walk
+		elseif (not love.keyboard.isDown(moveRight) or not love.keyboard.isDown(moveLeft)) and plr.isCrouching then
+			plr.xVel = 0
+			stateChange(plr, "crouch")
 		end
 	end
 
@@ -237,6 +237,7 @@ function player.movementController(dt, plr)
 
 		plr.isOnGround = false
 	end
+
 --[[
 	--Crouch Walking Reset
 	if plr.state == "crouch_walk" then
@@ -253,6 +254,22 @@ function player.movementController(dt, plr)
 	--Also make sure the player is not on the ground
 	if (plr.state ~= "front_flip" and plr.state ~= "jump" and plr.state ~= "crouch") and not plr.isOnGround then
 		stateChange(plr, "fall")
+	end
+
+		--Idle
+	if (not keyDown and plr.isOnGround) then
+		plr.xVel = 0
+		stateChange(plr, "idle")
+	elseif (love.keyboard.isDown(moveCrouch) and plr.isOnGround and plr.state ~= "crouch_walk") then
+		plr.xVel = 0
+		stateChange(plr, "crouch")
+	--Prevents crouch state sticking when holding movement keys
+	elseif (not love.keyboard.isDown(moveCrouch) and plr.isCrouching) then
+		plr.xVel = 0
+		stateChange(plr, "idle")
+	--Flips our jumpHeld var back to false, cancelling high jump if player lets go of control mid-air
+	elseif (not love.keyboard.isDown(moveJump) and plr.jumpHeld) then
+		plr.jumpHeld = false
 	end
 end
 
@@ -338,13 +355,18 @@ player.filter = function(item, other)
 		--Orient player towards enemy that hit them
 		--Knock back player in relation(opposite of) to enemy's direction
 		if playerRight >= otherX or playerX <= otherX + otherW then
-			if item.dir == 1 then
-				item.damageDir = 2
-			elseif item.dir == -1 then
-				item.damageDir = 1
-			end
+			if item.isOnGround then
+				if item.dir == 1 then
+					item.damageDir = 2
+				elseif item.dir == -1 then
+					item.damageDir = 1
+				end
 
-			return 'knockback'
+				return 'knockback'
+			elseif not item.isOnGround then
+
+				return 'bounce'
+			end
 		end
 	end
 end
