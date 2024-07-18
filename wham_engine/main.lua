@@ -2,8 +2,10 @@
 gamera = require "resources/libraries/gamera"
 bump = require "resources/libraries/bump"
 require "resources/libraries/TSerial"
+
 --My Libaries
 status = require "status_text"
+
 --Load in necessary lua files
 require "utilities"
 require "resources"
@@ -18,6 +20,11 @@ require "objects"
 local utf8 = require("utf8")
 
 function love.load()
+	LET_BUILD_VERSION = "0.8a"
+	LET_BUILD_DATE = "02/03/2023"
+	LET_LOVE_VERSION = "11.3"
+
+	latestBuildInit()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	love.keyboard.setTextInput(false)
 	love.keyboard.setKeyRepeat(false)
@@ -35,13 +42,15 @@ function love.load()
 	--Can set this to start the game with a specific level loaded
 	--LET_CURRENT_LEVEL = "dev_world"
 	LET_CURRENT_LEVEL = ""
-	gridColsX = 200
-	gridRowsY = 30
+	gridColsX = 100
+	gridRowsY = 100
+	world_params = {width = gridColsX, height = gridRowsY}
 
 	--initialize our 
 	cam:setScale(1.25)
 	cam:setWindow(0, 0, 1280, 720)
-	cam:setWorld(0, 0, gridColsX * 32, 992)
+	cam:setWorld(0, 0, world_params.width * 32, world_params.height * 32)
+	--cam:setWorld(0, 0, world_params.width * 32, 992) --Keeping old Y height here just in case
 
 --BEGIN GAME
 	--initialize engine vars
@@ -86,11 +95,11 @@ function love.load()
 	LET_EDITOR_OBJECTTYPE_SELECTED_INDEX = 1
 
 	--begins game logic
-	createGridWorld()
+	--createGridWorld() --relocated to when game loads a level
 	love.graphics.setBackgroundColor(LET_SKY_COLOR)
 
 	--Initialize player keybindings
-	moveLeft, moveRight, moveJump, moveCrouch = "a", "d", "space", "lctrl"
+	moveLeft, moveRight, moveJump, moveCrouch, moveInteract = "a", "d", "space", "lctrl", "f"
 	keys_pressed = {}
 
 	--[[Object Creation]]
@@ -98,8 +107,9 @@ function love.load()
 	panel.spawn("generic_panel_QD", "savePanel", gwidth / 2, (gheight / 2) + 50, 506, 307)
 	panel.spawn("generic_panel_QD", "loadPanel", gwidth / 2, (gheight / 2) + 50, 506, 307)
 	panel.spawn("options_panel_QD", "optionsPanel", gwidth / 2, (gheight / 2), 709, 509)
-	panel.spawn("generic_panel_QD", "lvlwarnPanel", gwidth / 2, (gheight / 2) + 50, 350, 135)
-	panel.spawn("generic_panel_QD", "lvlselectionPanel", gwidth / 2, (gheight / 2) + 50, 600, 300)
+	panel.spawn("generic_panel_QD", "lvlwarnPanel", (gwidth / 2), (gheight / 2) + 50, 600, 200)
+	panel.spawn("generic_panel_QD", "lvlselectionPanel", (gwidth / 2), (gheight / 2) + 50, 600, 300)
+	panel.spawn("generic_panel_QD", "lvlcreationPanel", (gwidth / 2), (gheight / 2) + 50, 600, 300)
 	panel.spawn("generic_panel_QD", "consolePanel", 300, 400, 600, 800)
 	panel.spawn("dialogue_panel_QD", "dialoguePanel", gwidth / 2, 150, 1024, 298)
 --Main Menu buttons
@@ -120,6 +130,7 @@ function love.load()
 	button.spawn("draw_button_QD", "tool_draw_action", "create_state", gwidth - 50, gheight / 2 - 50, 50, 50)
 	button.spawn("dropper_button_QD", "tool_dropper_action", "create_state", gwidth - 50, gheight / 2 + 5, 50, 50)
 	button.spawn("eraser_button_QD", "tool_nuke_action", "create_state", gwidth - 50, gheight / 2 + 60, 50, 50)
+	button.spawn("dropper_button_QD", "tool_linker_action", "create_state", gwidth - 50, gheight / 2 + 115, 50, 50)
 --Editor Mode Warning buttons
 	button.spawn("button_QD", "confirmwipe_action", "lvlwarnPanel", gwidth / 2 - (33/2) - 20, gheight / 2 + (33/2), 100, 33, "Confirm")
 	button.spawn("button_QD", "cancelwipe_action", "lvlwarnPanel", gwidth / 2 + (33*2) + 20, gheight / 2 + (33/2), 100, 33, "Cancel")
@@ -137,15 +148,23 @@ function love.load()
 	button.spawn("button_QD", "options_keybinds_moveCrouch", "optionsPanel", (gwidth / 2) - 67 *  4.25, (gheight / 2) + 72, 67, 36, moveCrouch)
 	button.spawn("button_QD", "back_action", "optionsPanel", (gwidth / 2) - 67 *  4, (gheight / 2) + 204, 67, 38, "Back")
 --Level Selection buttons
-	button.spawn("button_QD", "lvl00_action", "lvlselectionPanel", (gwidth / 2) - 250, (gheight / 2) - 60, 50, 50, "00")
-	button.spawn("button_QD", "lvl01_action", "lvlselectionPanel", (gwidth / 2) - 190, (gheight / 2) - 60, 50, 50, "01")
-	button.spawn("button_QD", "lvl02_action", "lvlselectionPanel", (gwidth / 2) - 130, (gheight / 2) - 60, 50, 50, "02")
+	button.spawn("button_QD", "lvl00_action", "lvlselectionPanel", (gwidth / 2) - 200, (gheight / 2) - 60, 50, 50, "00")
+	button.spawn("button_QD", "lvl01_action", "lvlselectionPanel", (gwidth / 2) - 140, (gheight / 2) - 60, 50, 50, "01")
+	button.spawn("button_QD", "lvl02_action", "lvlselectionPanel", (gwidth / 2) - 80, (gheight / 2) - 60, 50, 50, "02")
 	button.spawn("button_QD", "back_action", "lvlselectionPanel", (gwidth / 2) - 180, (gheight / 2) + 160, 80, 35, "Back")
+--Level Creation buttons
+	button.spawn("button_QD", "lvlX-_action", "lvlcreationPanel", (gwidth / 2) - 200, (gheight / 2) + 60, 50, 50, "-", true)
+	button.spawn("button_QD", "lvlX+_action", "lvlcreationPanel", (gwidth / 2) - 100, (gheight / 2) + 60, 50, 50, "+", true)
+	button.spawn("button_QD", "lvlY-_action", "lvlcreationPanel", (gwidth / 2) + 100, (gheight / 2) + 60, 50, 50, "-", true)
+	button.spawn("button_QD", "lvlY+_action", "lvlcreationPanel", (gwidth / 2) + 200, (gheight / 2) + 60, 50, 50, "+", true)
+	button.spawn("button_QD", "back_action", "lvlcreationPanel", (gwidth / 2) - 225, (gheight / 2) + 160, 80, 35, "Back")
+	button.spawn("button_QD", "create_action", "lvlcreationPanel", (gwidth / 2), (gheight / 2) + 145, 120, 70, "Create")
+	button.spawn("button_QD", "load_action", "lvlcreationPanel", (gwidth / 2) + 180, (gheight / 2) + 160, 80, 35, "Load")
 
 end
 
 function love.keypressed(key)
-	if key == "1" then
+	if key == "`" then
 		if LET_CUR_GAME_STATE == "play_state" or LET_CUR_GAME_STATE == "create_state" then
 			if LET_DEBUG_M then
 				LET_DEBUG_M = false
@@ -163,6 +182,12 @@ function love.keypressed(key)
 		end
 	elseif key == "]" then
 		panel.typeChange("dialoguePanel")
+	elseif key == "p" then
+		if LET_CUR_GAME_STATE == "play_state" then
+			switchGameState("create_state")
+		elseif LET_CUR_GAME_STATE == "create_state" then
+			switchGameState("play_state")
+		end
 	elseif key == "escape" then
 		if LET_CUR_GAME_STATE ~= "menu_state" then
 			--Allows use of ESC key to back out of current menu into previous
@@ -184,10 +209,12 @@ function love.keypressed(key)
 			elseif LET_PANEL_OPEN == "consolePanel" then
 				--Activate console command based on textbox input
 				console_exec(LET_BROWSE_PATH)
+			elseif LET_PANEL_OPEN == "lvlcreationPanel" then
+				--add functionality
 			end
 		end
 	elseif key == "`" then
-		console_toggle()
+		--console_toggle()
 	end
 
 	--Gathers any key pressed
@@ -295,6 +322,8 @@ function love.draw()
 		if LET_CUR_GAME_STATE == "create_state" then
 			editorHUDDraw()
 		end
+	elseif LET_CUR_GAME_STATE == "menu_state" then
+		latestBuildDraw(18, 0) -- height is calculated in function
 	end
 
 	panel.draw()
@@ -323,14 +352,15 @@ end
 
 function createGridWorld()--called in main
 	if not LET_GRIDWORLD_CREATED then
-		--Begins index at 0 so that the blocks spawn at the very edges of the screen
-		for i = 0, gridColsX do
-			for j = 0, gridRowsY do
-				block.spawn("air_block", 32 * i, 32 * j)
+		for i = 1, world_params.width do
+			for j = 1, world_params.height do
+				block.spawn("air_block", (32 * i)-32, (32 * j)-32)
 				LET_GRIDWORLD_CREATED = true
 			end
 		end
 	end
+
+	return LET_GRIDWORLD_CREATED
 end
 
 function changeCursor()
@@ -344,12 +374,13 @@ function changeCursor()
 	end
 end
 
-function saveLevel(name, t1, t2, t3)
+function saveLevel(name, t1, t2, t3, t4)
 	local lower_name = string.lower(name)
 	local mainTable = {}
 	local blockTable = {}
 	local enemyTable = {}
 	local objectTable = {}
+	local worldTable = {}
 
 	for i = 1, #t1 do
 		table.insert(blockTable, {subtype = t1[i].subtype, quad = t1[i].quad, itemInside = t1[i].itemInside})
@@ -360,16 +391,20 @@ function saveLevel(name, t1, t2, t3)
 	for i = 1, #t3 do
 		table.insert(objectTable, {subtype = t3[i].subtype, x = t3[i].x, y = t3[i].y})
 	end
+	--for i = 1, #t4 do
+	table.insert(worldTable, {width = t4.width, height = t4.height})
+	--end
 
 	table.insert(mainTable, blockTable)
 	table.insert(mainTable, enemyTable)
 	table.insert(mainTable, objectTable)
+	table.insert(mainTable, worldTable)
 
 	local success, message = love.filesystem.write(lower_name  .. ".lvl", TSerial.pack(mainTable, true, true))
 	if success then
 		status.print("Level Saved! ('" .. lower_name .. ".lvl')")
 	else
-		status.print("LEVEL SAVE FAILED (Unable to write to directory)")
+		status.print("LEVEL SAVE FAILED" .. message)
 	end
 end
 
@@ -404,16 +439,19 @@ end
 
 function loadEditorLevel(name)
 	local lower_name = string.lower(name)
-	local file = love.filesystem.getInfo(lower_name .. ".lvl")
+	local file_name = lower_name .. ".lvl"
+	local file = love.filesystem.getInfo(file_name)
 	
 	if file then
 		--Delete everything in current level
 		sterilizeLevel()
 
 		--Read save file text
-		local data = love.filesystem.read(lower_name .. ".lvl")
+		local data = love.filesystem.read(file_name)
+
 		--Unserialize string into table
 		data = TSerial.unpack(data, true)
+
 		generateData(lower_name, data)
 
 		--status.print("Level Loaded! ('" .. LET_CURRENT_LEVEL .. ".lvl')")
@@ -425,6 +463,18 @@ end
 
 function generateData(name, data_string)
 	if data_string ~= nil then
+
+		--WORLD PARAMETERS LOADING
+		--Checks length of fourth data string for world params
+		if data_string[4] ~= nil then
+			for i = 1, #data_string[4] do
+				world_params.width = data_string[4][i].width
+				world_params.height = data_string[4][i].height
+			end
+		end
+
+		createLevelGridData() --Grid generation
+
 		--BLOCK LOADING
 		if data_string[1] ~= nil then
 			for i = 1, #data_string[1] do
@@ -565,4 +615,32 @@ function debugDraw()
 			love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
 		end
 	end
+end
+
+function latestBuildInit()
+	mainFileInfo = {}
+	local isOutOfDate = false
+	local fileToCheck = love.filesystem.getInfo("main.lua", "file", mainFileInfo)
+	if (mainFileInfo.modtime < os.time(os.date("!*t"))) then
+		isOutOfDate = true
+	end
+end
+
+function latestBuildDraw(x, y)
+	local spacing = (4 * 2) --# of strings * 2
+	local str_prjName = "WHAM Engine | Alex Calvelage"
+	local str_buildDate = os.date("\nBuild Date: %x", mainFileInfo.modtime)
+	--local str_buildDate = os.date("\nBuild Date: " .. LET_BUILD_DATE)
+	local str_buildVer = "\nBuild Version: " .. LET_BUILD_VERSION
+	local str_loveVer = "\nLove2D Version: " .. LET_LOVE_VERSION
+	local w,h = 350, 18 * spacing
+	local x,y = x, (gheight - h) - (spacing * 2)
+
+	love.graphics.setColor(0, 0, 0, .25)
+	love.graphics.rectangle("fill", x, y, w, h)
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.rectangle("line", x, y, w, h)
+	love.graphics.setColor(1,1,1)
+	love.graphics.setFont(defaultFontSmol)
+	love.graphics.print(str_prjName .. str_buildDate .. str_buildVer .. str_loveVer, x + spacing, y + spacing)
 end

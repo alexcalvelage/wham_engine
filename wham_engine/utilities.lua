@@ -55,11 +55,22 @@ end
 
 --Function used to scrub memory of all level objects before loading a new stage
 function sterilizeLevel()
+	while #block ~= 0 do rawset(block, #block, nil) end
 	while #enemy ~= 0 do rawset(enemy, #enemy, nil) end
 	while #player ~= 0 do rawset(player, #player, nil) end
 	while #object ~= 0 do rawset(object, #object, nil) end
-	--Re-initialize our world to force-update collisions
+	--Re-initialize our world to force-update collisions/regenerate blocks for level
+	LET_GRIDWORLD_CREATED = false
 	world = bump.newWorld(32)
+end
+
+function createLevelGridData()
+	local success = createGridWorld()
+	if success then
+		status.print("SUCCESS: BLOCK GRID GENERATION... " .. tostring(world_params.width) .. " / " .. tostring(world_params.height))
+	else
+		status.print("FAILED: BLOCK GRID GENERATION")
+	end
 end
 
 function initializeLevel()
@@ -74,6 +85,49 @@ function initializeLevel()
 				player.spawn(v.x + 4, v.y - 4)
 			end
 		end
+
+		cam:setWorld(0, 0, world_params.width * 32, world_params.height * 32)
+	end
+end
+
+--world_params = {width = gridColsX, height = gridRowsY}
+function modifyWorldWidth(amount)
+	gridColsX = gridColsX + amount
+	world_params.width = gridColsX
+end
+
+function modifyWorldHeight(amount)
+	gridRowsY = gridRowsY + amount
+	world_params.height = gridRowsY
+end
+
+--Prevents user from crashing the game with invalid string data or invalid level sizes
+function createNewLevelForEditor(name, width, height)
+	local isNameValid = false
+	local isLevelValid = false
+
+	if (name ~= "" and not string.match(name, "%W")) then
+		LET_CURRENT_LEVEL = name
+		isNameValid = true
+	else
+		status.print("ERROR: Level name can only contain alphanumeric characters!")
+	end
+
+	if (width > 1 and height > 1) then
+		isLevelValid = true
+	else
+		status.print("ERROR: Level size (width and height) must be greater than 1!")
+	end
+
+	if (isNameValid == true and isLevelValid == true) then
+		createLevelGridData()
+		--Floor numbers to prevent odd level sizes from causing crashes when spawning
+		block.typeChange(block[math.floor(gridRowsY/2)], "player_spawn")
+		block.typeChange(block[math.floor(gridRowsY/2+1)], "dev_block")
+		initializeLevel()
+		return true
+	else
+		return false
 	end
 end
 
@@ -218,6 +272,9 @@ function animationStateController(dt, ent)
 			if ent.state == "jump" or ent.state == "front_flip" then
 				--overrides any previous animation changes
 				stateChange(ent, "fall")
+			elseif ent.state == "interact" then
+				ent.isInteracting = false
+				status.print(tostring(ent.current_frame) .. " frame")
 			end
 			--Once we reach the end of the animation data table, start back at the beginning
 			--Lua indices start at 1 instead of 0
@@ -243,6 +300,8 @@ function character_animation_change(ent)
 	if ent.state == "jump" then
 		animationTimeScale(ent, 3)
 	elseif ent.state == "front_flip" then
+		animationTimeScale(ent, 16)
+	elseif ent.state == "interact" then
 		animationTimeScale(ent, 16)
 	end
 

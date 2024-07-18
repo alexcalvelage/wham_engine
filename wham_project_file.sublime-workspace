@@ -487,7 +487,7 @@
 			"file": "wham_engine/resources.lua",
 			"settings":
 			{
-				"buffer_size": 12896,
+				"buffer_size": 12654,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -496,7 +496,7 @@
 			"file": "wham_engine/main.lua",
 			"settings":
 			{
-				"buffer_size": 15103,
+				"buffer_size": 24235,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -505,7 +505,7 @@
 			"file": "wham_engine/block.lua",
 			"settings":
 			{
-				"buffer_size": 7823,
+				"buffer_size": 9988,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -514,7 +514,7 @@
 			"file": "wham_engine/utilities.lua",
 			"settings":
 			{
-				"buffer_size": 5619,
+				"buffer_size": 12257,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -523,7 +523,7 @@
 			"file": "wham_engine/player.lua",
 			"settings":
 			{
-				"buffer_size": 8279,
+				"buffer_size": 12069,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -532,7 +532,7 @@
 			"file": "wham_engine/conf.lua",
 			"settings":
 			{
-				"buffer_size": 144,
+				"buffer_size": 175,
 				"line_ending": "Unix"
 			}
 		},
@@ -540,7 +540,7 @@
 			"file": "wham_engine/objects.lua",
 			"settings":
 			{
-				"buffer_size": 1711,
+				"buffer_size": 2150,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -549,7 +549,7 @@
 			"file": "wham_engine/enemy.lua",
 			"settings":
 			{
-				"buffer_size": 5117,
+				"buffer_size": 6123,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -558,7 +558,7 @@
 			"file": "wham_engine/button.lua",
 			"settings":
 			{
-				"buffer_size": 4798,
+				"buffer_size": 9420,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -567,7 +567,7 @@
 			"file": "wham_engine/panel.lua",
 			"settings":
 			{
-				"buffer_size": 2268,
+				"buffer_size": 5371,
 				"line_ending": "Unix"
 			}
 		}
@@ -755,7 +755,7 @@
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 31.0
 	},
 	"find_in_files":
 	{
@@ -939,15 +939,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12896,
+						"buffer_size": 12654,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								400,
-								400
+								0,
+								0
 							]
 						],
 						"settings":
@@ -968,15 +968,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 15103,
+						"buffer_size": 24235,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								9708,
-								9708
+								0,
+								0
 							]
 						],
 						"settings":
@@ -997,20 +997,21 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7823,
+						"buffer_size": 9988,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1807,
-								1807
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax"
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 568.0,
@@ -1025,15 +1026,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5619,
+						"buffer_size": 12257,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1216,
-								1216
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1054,15 +1055,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8279,
+						"buffer_size": 12069,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2022,
-								2022
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1083,15 +1084,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 144,
+						"buffer_size": 175,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								144,
-								144
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1111,15 +1112,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1711,
+						"buffer_size": 2150,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								531,
-								531
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1140,15 +1141,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5117,
+						"buffer_size": 6123,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								700,
-								700
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1169,15 +1170,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4798,
+						"buffer_size": 9420,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1456,
-								1456
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1198,15 +1199,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2268,
+						"buffer_size": 5371,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2162,
-								2162
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1226,7 +1227,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 36.0
+		"height": 31.0
 	},
 	"input":
 	{
@@ -1267,7 +1268,7 @@
 	"project": "wham_project_file.sublime-project",
 	"replace":
 	{
-		"height": 74.0
+		"height": 58.0
 	},
 	"save_all_on_build": true,
 	"select_file":

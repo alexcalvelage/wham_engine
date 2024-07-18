@@ -34,8 +34,9 @@ end
 status_text.draw = function()
 	for i,v in ipairs(status_text) do
 		love.graphics.setFont(textFont)
+		--[][][]Add support for different colored messages
 		love.graphics.setColor(1, 1, 1, v.alpha)
-		love.graphics.printf(v.text, v.x, v.y, gameWindowWidth / 2, "left")
+		love.graphics.printf(v.text, v.x, v.y, gameWindowWidth / 1.5, "left")
 	end
 end
 

@@ -15,6 +15,8 @@ function panel.update(dt)
 
 		if LET_PANEL_OPEN == "consolePanel" then
 			newPanelTextboxY = panel[i].y + (panel[i].height / 2) - 128
+		elseif LET_PANEL_OPEN == "lvlcreationPanel" then
+			newPanelTextboxY = panel[i].y + (panel[i].height / 2) + 192
 		else
 			newPanelTextboxY = nil
 		end
@@ -27,8 +29,9 @@ function panel.draw()
 	panel_SB:clear()
 	for i = 1, #panel do
 		if panel[i].enabled then
+			local sx, sy, sw, sh = _G[panel[i].quad]:getViewport()
 			--Turn string back into Global		
-			panel_SB:add(_G[panel[i].quad], panel[i].x, panel[i].y)
+			panel_SB:add(_G[panel[i].quad], panel[i].x, panel[i].y, 0, panel[i].width / sw, panel[i].height / sh)
 		end
 	end
 
@@ -44,7 +47,7 @@ function panel.draw()
 				if panel[i].activeState == "loadPanel" then
 					--hint_path = "From '%APPDATA%' you can drag+drop a level file here."
 					hint_path = "Browse to drag+drop a level file here"
-				elseif panel[i].activeState == "savePanel" then
+				elseif panel[i].activeState == "savePanel" or panel[i].activeState == "lvlcreationPanel" then
 					hint_path = "Ex: 'something_funny_v1'"
 				elseif panel[i].activeState == "consolePanel" then
 					hint_path = "Enter a command:"
@@ -131,5 +134,15 @@ function panel.content_draw()
 		love.graphics.setColor(1, 1, 1)
 		love.graphics.setFont(font_panel_subtitle)
 		love.graphics.printf("Load Level", 0, 270, 1280, "center")
+	elseif LET_PANEL_OPEN == "lvlcreationPanel" then
+		love.graphics.setColor(1,1,1)
+		love.graphics.setFont(font_panel_subtitle)
+		love.graphics.printf("Create Level", 0, 270, 1280, "center")
+		love.graphics.setFont(font_panel_subtitle2)
+		love.graphics.printf("Level Name:", -235, 320, 1280, "center")
+		love.graphics.printf("Level Width:", -150, 370, 1280, "center")
+		love.graphics.printf(tostring(world_params.width), -150, 400, 1280, "center")
+		love.graphics.printf("Level Height:", 150, 370, 1280, "center")
+		love.graphics.printf(tostring(world_params.height), 150, 400, 1280, "center")
 	end
 end

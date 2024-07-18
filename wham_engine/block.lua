@@ -32,6 +32,12 @@ function block.update(dt)
 				elseif love.mouse.isDown(2) then
 					block.editor_dropper_paint(v, true)
 				end
+			elseif LET_EDITOR_TOOL == "editor_tool_linker" then
+				--linker will let user select 2 objects to link them
+				if love.mouse.isDown(1) then --lmb (for first object)
+				elseif love.mouse.isDown(2) then --rmb (for second object)
+				elseif love.mouse.isDown(3) then --mmb (clear link?)
+				end
 			end
 		elseif LET_EDITOR_TOOL == "editor_tool_select" then
 			block.clickActionUpdate(v)
@@ -189,7 +195,7 @@ function block.editor_dropper_paint(me, erase)
 		elseif not erase then
 			if not me.itemInside then
 				--Branch off for actual objects vs enemies
-				if LET_EDITOR_OBJECTTYPE_SELECTED == "cog" then
+				if LET_EDITOR_OBJECTTYPE_SELECTED ~= "enemy" then
 					object.spawn(LET_EDITOR_OBJECTTYPE_SELECTED, me.x, me.y)
 					--Plugin the lastly spawned object as the item inside(TABLE DATA)
 					me.itemInside = object[#object]
@@ -254,7 +260,7 @@ end
 
 --
 function block.cycleSelectedObject(y)
-	local maxIndex = 2
+	local maxIndex = 4
 	if y < 0 then
 		LET_EDITOR_OBJECTTYPE_SELECTED_INDEX = LET_EDITOR_OBJECTTYPE_SELECTED_INDEX + 1
 	elseif y > 0 then
@@ -271,6 +277,10 @@ function block.cycleSelectedObject(y)
 		LET_EDITOR_OBJECTTYPE_SELECTED = "cog"
 	elseif LET_EDITOR_OBJECTTYPE_SELECTED_INDEX == 2 then
 		LET_EDITOR_OBJECTTYPE_SELECTED = "enemy"
+	elseif LET_EDITOR_OBJECTTYPE_SELECTED_INDEX == 3 then
+		LET_EDITOR_OBJECTTYPE_SELECTED = "button"
+	elseif LET_EDITOR_OBJECTTYPE_SELECTED_INDEX == 4 then
+		LET_EDITOR_OBJECTTYPE_SELECTED = "door"
 	end
 end
 

@@ -90,9 +90,13 @@ function resourceLoad()
 	player_fall = {}
 	player_crouch = {}
 	player_crouch_walk = {}
+	player_interact = {}
 	--*Objects
 	cog_idle = {}
 	cog_spin = {}
+	button_idle = {}
+	door_idle = {}
+	door_open = {}
 	--Animation Tables
 	--*Player/Enemy
 	player_idle[1] = love.graphics.newImage("resources/textures/player/idle/1.png")
@@ -141,6 +145,15 @@ function resourceLoad()
 		player_crouch_walk[6] = love.graphics.newImage("resources/textures/player/crawl/6.png")
 		player_crouch_walk[7] = love.graphics.newImage("resources/textures/player/crawl/7.png")
 		player_crouch_walk[8] = love.graphics.newImage("resources/textures/player/crawl/8.png")
+	player_interact[1] = love.graphics.newImage("resources/textures/player/idle/1.png")
+		player_interact[2] = love.graphics.newImage("resources/textures/player/run/2.png")
+		player_interact[3] = love.graphics.newImage("resources/textures/player/run/2.png")
+		player_interact[4] = love.graphics.newImage("resources/textures/player/run/6.png")
+		player_interact[5] = love.graphics.newImage("resources/textures/player/run/6.png")
+		player_interact[6] = love.graphics.newImage("resources/textures/player/run/6.png")
+		player_interact[7] = love.graphics.newImage("resources/textures/player/run/2.png")
+		player_interact[8] = love.graphics.newImage("resources/textures/player/run/2.png")
+		player_interact[9] = love.graphics.newImage("resources/textures/player/idle/1.png")
 	--*Objects
 	cog_idle[1] = love.graphics.newImage("resources/textures/objects/anims/cog/1.png")
 	cog_spin[1] = love.graphics.newImage("resources/textures/objects/anims/cog/1.png")
@@ -153,6 +166,9 @@ function resourceLoad()
 		cog_spin[8] = love.graphics.newImage("resources/textures/objects/anims/cog/8.png")
 		cog_spin[9] = love.graphics.newImage("resources/textures/objects/anims/cog/9.png")
 		cog_spin[10] = love.graphics.newImage("resources/textures/objects/anims/cog/10.png")
+	button_idle[1] = love.graphics.newImage("resources/textures/objects/anims/cog/1.png")
+	door_idle[1] = love.graphics.newImage("resources/textures/objects/anims/cog/1.png")
+	door_open[1] = love.graphics.newImage("resources/textures/objects/anims/cog/5.png")
 --SOUNDS
 	masterVolume = 1.0
 	soundsVolume = 1.0

@@ -31,7 +31,7 @@ function enemy.update(dt)
 			local goalX, goalY = v.x, v.y
 
 			--Handles keyboard movements (NO BINDINGS SUPPORT)
-			enemy.movementController(dt, enemy[i])
+			enemy.movementController(dt, v)
 
 			--Constantly is updating our enemy's x,y position
 			goalX = goalX + (v.xVel * dt)
@@ -171,7 +171,7 @@ enemy.filter = function(item, other)
 			return 'slide'
 		end
 		
-	elseif other.subtype == "dev_block" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
+	elseif other.subtype == "dev_block" or other.subtype == "dev_block2" or other.subtype == "grass_block" or other.subtype == "grass_block_r" or other.subtype == "grass_block_l" or other.subtype == "dirt_block" or other.subtype == "item_block" then
 		return 'slide'
 
 	elseif other.subtype == "spike_block_u" then

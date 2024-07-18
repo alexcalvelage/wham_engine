@@ -1,7 +1,7 @@
 --initialize object data table
 object = {objectScaling = 1}
 function object.spawn(subtype, x, y)
-	table.insert(object, {id = #object + 1, type = "object", subtype = subtype, x = x, y = y, width = 32, height = 32, cleanup = false, state = "", animationTable = nil, current_frame = 1, animation_timescale = 1, tick = 0})
+	table.insert(object, {id = #object + 1, type = "object", subtype = subtype, x = x, y = y, width = 32, height = 32, cleanup = false, state = "", animationTable = nil, current_frame = 1, animation_timescale = 1, tick = 0, isActivated = false, linked_object = nil})
 	world:add(object[#object], object[#object].x, object[#object].y, object[#object].width, object[#object].height)
 end
 
@@ -33,6 +33,10 @@ function object.draw()
 	for i,v in ipairs(object) do
 		if v.animationTable then
 			love.graphics.setColor(1, 1, 1)
+			if (v.isActivated) then
+				love.graphics.setColor(1, .5, .5)
+			end
+
 			love.graphics.draw(v.animationTable[v.current_frame], v.x + (v.width / 2), v.y, 0, object.objectScaling, object.objectScaling, v.animationTable[v.current_frame]:getWidth() / 2, 0)
 			--love.graphics.print(object[i].id, v.x, v.y)
 			--love.graphics.print(tostring(v.cleanup), v.x, v.y+12)

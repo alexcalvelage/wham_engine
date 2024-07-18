@@ -1,7 +1,7 @@
 
 button = {}
-function button.spawn(quad, action, activeState, x, y, w, h, text)
-	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, text = text or nil, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 193, height = h or 49, highlight = false})
+function button.spawn(quad, action, activeState, x, y, w, h, text, held)
+	table.insert(button, {id = #button + 1, type = "button", action = action, activeState = activeState, text = text or nil, enabled = enabled, quad = quad, quad_overlay = nil, x = x, y = y, width = w or 193, height = h or 49, highlight = false, held = held or false, heldTimer = {current_time = 0, trigger_time = .1}})
 	--Center our button according to our width, height
 	button[#button].x, button[#button].y = button[#button].x - (button[#button].width / 2), button[#button].y - (button[#button].height / 2)
 	--Concatenate quad extension
@@ -15,9 +15,22 @@ function button.update(dt)
 		--Prevents buttons from being selectable if they aren't enabled(drawn+active)
 		if button[i].enabled then
 			button.highlight(button[i])
+
+			if (button[i].highlight and button[i].held and love.mouse.isDown(1)) then
+				button[i].heldTimer.current_time = button[i].heldTimer.current_time + 1 * dt
+				if button[i].heldTimer.current_time >= button[i].heldTimer.trigger_time then
+					button.clickAction(1)
+					button[i].heldTimer.current_time = 0
+				end
+			end
+
 			--if the console is opened, turn off button highlighting
 			if LET_CONSOLE_OPEN then
 				button[i].highlight = false
+			end
+
+			if not love.mouse.isDown(1) then
+				button[i].heldTimer.current_time = 0
 			end
 		end
 	end
@@ -78,7 +91,7 @@ end
 function button.detectVisibility(me)
 	--Checks to make sure buttons are only usable/rendered when they need to be.
 	--CHECKS: PAUSE MENU -> PANEL BUTTONS -> EDITOR BUTTONS + MENU BUTTONS
-	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED and not LET_OPTIONS_MENU and not LET_LVLSELECTION_MENU) then
+	if (me.activeState == "pauseButton" and LET_GAME_PAUSED and LET_PANEL_FOCUS == false) or (me.activeState == LET_PANEL_OPEN) or (me.activeState == LET_CUR_GAME_STATE and not LET_GAME_PAUSED and not LET_OPTIONS_MENU and not LET_LVLSELECTION_MENU and not LET_LVLCRT_MENU) then
 		me.enabled = true
 	else
 		me.enabled = false
@@ -113,13 +126,19 @@ function button.clickAction(mButton)
 					LET_LVLSELECTION_MENU = true
 				elseif action == "load_game_action" then
 				elseif action == "create_level_action" then
-					--Remove for menu implementation
+					panel.typeChange("lvlcreationPanel")
+					LET_LVLCRT_MENU = true
+					love.keyboard.setTextInput(true)
+					love.keyboard.setKeyRepeat(true)
+					--Original Code
+					--[[
 					if LET_CURRENT_LEVEL ~= "" then
 						loadEditorLevel(LET_CURRENT_LEVEL)
 					else
 						status.print("global: LET_CURRENT_LEVEL NOT SET")
 						button.levelSelect("garden", true)
 					end
+					--]]
 				elseif action == "options_action" then
 					panel.typeChange("optionsPanel")
 					LET_OPTIONS_MENU = true
@@ -145,7 +164,8 @@ function button.clickAction(mButton)
 				elseif action == "browse_action" then
 					love.system.openURL("file://"..love.filesystem.getSaveDirectory())
 				elseif action == "save_action" then
-					saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object)
+					saveLevel(tostring(LET_BROWSE_PATH), block, enemy, object, world_params)
+					status.print(world_params.width)
 				elseif action == "load_action" then
 					loadEditorLevel(tostring(LET_BROWSE_PATH))
 --OPTIONS ACTIONS
@@ -164,6 +184,21 @@ function button.clickAction(mButton)
 					button.levelSelect("level_01")
 				elseif action == "lvl02_action" then
 					button.levelSelect("garden")
+--LEVEL CREATION ACTIONS
+				elseif action == "lvlX-_action" then
+					modifyWorldWidth(-1)
+				elseif action == "lvlX+_action" then
+					modifyWorldWidth(1)
+				elseif action == "lvlY-_action" then
+					modifyWorldHeight(-1)
+				elseif action == "lvlY+_action" then
+					modifyWorldHeight(1)
+				elseif action == "create_action" then
+					local success = createNewLevelForEditor(tostring(LET_BROWSE_PATH), world_params.width, world_params.height)
+					if success then
+						button.backButtonReset()
+						switchGameState("create_state")
+					end
 --EDITOR ACTIONS
 				elseif action == "tool_selection_action" then
 					editor_change_mode("editor_tool_select", selection_cursor)
@@ -181,6 +216,8 @@ function button.clickAction(mButton)
 					button.confirmWipe()
 				elseif action == "cancelwipe_action" then
 					button.cancelWipe()
+				elseif action == "tool_linker_action" then
+					status.print("LINKER FUNCTIONALITY NOT ADDED")
 				end
 			end
 		end
@@ -196,6 +233,7 @@ function button.backButtonReset()
 	LET_PANEL_FOCUS = false
 	LET_OPTIONS_MENU = false
 	LET_LVLSELECTION_MENU = false
+	LET_LVLCRT_MENU = false
 end
 
 function button.levelSelect(level_name, editor_bool)

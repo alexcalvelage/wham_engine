@@ -9,7 +9,7 @@ function player.spawn(x, y)
 	--insert (1) player into the player table with included values
 	table.insert(player, {type = "player", name = "Phil", health = 3, score = 0, x = x, y = y, width = 25, height = 64, speed = 200, xVel = 0, yVel = 0, jumpHeight = -600, 
 	jumpHeld = false, isOnGround = false, isCrouching = false, isKnockback = false, isUnderwater = false, isDamaged = false, isDamagedTimer = 0, isDamagedTimerMax = 1.5, dir = 1, damageDir = 0, 
-	state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0})
+	state = "fall", prevState = "", animationTable = player_idle, current_frame = 1, animation_timescale = 12, tick = 0, isInteracting = false, interactRadius = 64})
 	
 	--adds collisions to each player created
 	world:add(player[#player], player[#player].x, player[#player].y, player[#player].width, player[#player].height)
@@ -18,7 +18,7 @@ function player.spawn(x, y)
 end
 
 function player.update(dt)
-	dt = dt * LET_TIME_DILATION
+	--dt = dt * LET_TIME_DILATION
 	for i,v in ipairs(player) do
 		--Cue gravity
 		v.yVel = v.yVel + (CONST_GRAVITY * dt) * (gravityIntensity or 1)
@@ -86,6 +86,9 @@ function player.update(dt)
 			--[[coll.normal.y <= 0 -lets player jump off side off blocks]]--
 				v.isOnGround = true
 				v.yVel = 0
+			end
+			if coll.normal.y >= 1 then
+				
 			end
 			--Response for knockback damage
 			if coll.knockback then
@@ -169,7 +172,7 @@ function player.movementController(dt, plr)
 	local keyDown = love.keyboard.isDown(moveRight, moveLeft, moveJump, moveCrouch)
 
 	--Running
-	if not plr.isKnockback then
+	if not plr.isKnockback and not plr.isInteracting then
 		if love.keyboard.isDown(moveRight) then
 			plr.xVel = plr.speed
 			plr.dir = 1
@@ -221,7 +224,7 @@ function player.movementController(dt, plr)
 	end--]]
 
 	--Jumping update(item, x2,y2,w2,h2)
-	if love.keyboard.isDown(moveJump) and plr.isOnGround and not plr.isCrouching then
+	if love.keyboard.isDown(moveJump) and plr.isOnGround and not plr.isCrouching and not plr.isInteracting then
 		plr.yVel = plr.jumpHeight
 		plr.jumpHeld = true
 		--Checks xVel to see if we're doing a vertical jump or a frontflip
@@ -257,10 +260,10 @@ function player.movementController(dt, plr)
 	end
 
 		--Idle
-	if (not keyDown and plr.isOnGround) then
+	if (not keyDown and plr.isOnGround and not plr.isInteracting) then
 		plr.xVel = 0
 		stateChange(plr, "idle")
-	elseif (love.keyboard.isDown(moveCrouch) and plr.isOnGround and plr.state ~= "crouch_walk") then
+	elseif (love.keyboard.isDown(moveCrouch) and plr.isOnGround and plr.state ~= "crouch_walk" and not plr.isInteracting) then
 		plr.xVel = 0
 		stateChange(plr, "crouch")
 	--Prevents crouch state sticking when holding movement keys
@@ -270,6 +273,22 @@ function player.movementController(dt, plr)
 	--Flips our jumpHeld var back to false, cancelling high jump if player lets go of control mid-air
 	elseif (not love.keyboard.isDown(moveJump) and plr.jumpHeld) then
 		plr.jumpHeld = false
+	end
+
+	player.interact(plr)
+end
+
+function player.interact(plr)
+	if (love.keyboard.isDown(moveInteract)) and (not plr.isInteracting and plr.isOnGround) then 
+		local items, len = world:queryRect(plr.x, plr.y, plr.width, plr.height)
+		for i = 1, #items do
+			if (items[i].subtype == "button") then
+				plr.xVel = 0
+				plr.isInteracting = true
+				items[i].isActivated = true
+				stateChange(plr, "interact")
+			end
+		end
 	end
 end
 

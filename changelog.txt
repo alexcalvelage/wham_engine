@@ -5,15 +5,22 @@
 	-Options[X]
 	-Editor UI[]
 *Modified button elements to scale automatically with set size
+*Modified panel elements to scale automatically with set size
 *Modified status_text() messaging functionality:
 	-Called with 'status.print()'; renamed from 'status_text.create()'
 	-Pushes new messages to bottom of stack
 	-Fades and moves smoother
+*Modified how levels are loaded
+	-Block Grid is now destroyed when loading a new level and regenerated (Allows for levels of different sizes)
+*Modified camera to account for wider and taller levels
 *Added flashing ticker to textbox menus
 *Added crouch walking
-*Added console
+*Added console functionality
 	-Commands: loadlevel [arg1], 
-	-UI bug occurs when pressing ESC key when console is open
+	!!!Console is currently DISABLED because of menuing bugs
+*Added ability to create custom level sizes
+*Added interaction functionality with nearby interactables (buttons)
+*Added latest build details to main menu
 
 --FIXES
 *Fixed Pause Menu buttons not appearing correctly when pausing in Editor Mode
@@ -34,4 +41,6 @@
 *Spritebatch render errors when sharing screen on Discord
 *Water collisions are currently broken
 *Crouching next to a wall, holding the opposite movement direction, and letting go of crouch causes
-player to phase through the wall on the side they were facingc
+player to phase through the wall on the side they were facing
+	-This bug extends to crouchwalking left to right and jumping with a block above player
+*Premade levels are now broken
